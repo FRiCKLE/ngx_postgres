@@ -1,0 +1,71 @@
+ngx_feature="libpq library"
+ngx_feature_name=
+ngx_feature_run=no
+ngx_feature_incs="#include <libpq-fe.h>"
+ngx_feature_path=
+ngx_feature_libs="-lpq"
+ngx_feature_test="PQconndefaults();"
+. auto/feature
+
+if [ $ngx_found = no ]; then
+    # FreeBSD
+    ngx_feature="libpq library in /usr/local/"
+    ngx_feature_path="/usr/local/include"
+    if [ $NGX_RPATH = YES ]; then
+        ngx_feature_libs="-R/usr/local/lib -L/usr/local/lib -lpq"
+    else
+        ngx_feature_libs="-L/usr/local/lib -lpq"
+    fi
+    . auto/feature
+fi
+
+if [ $ngx_found = no ]; then
+    # OpenBSD
+    ngx_feature="libpq library in /usr/local/../postgresql/"
+    ngx_feature_path="/usr/local/include/postgresql"
+    if [ $NGX_RPATH = YES ]; then
+        ngx_feature_libs="-R/usr/local/lib -L/usr/local/lib -lpq"
+    else
+        ngx_feature_libs="-L/usr/local/lib -lpq"
+    fi
+    . auto/feature
+fi
+
+if [ $ngx_found = no ]; then
+    # NetBSD
+    ngx_feature="libpq library in /usr/pkg/"
+    ngx_feature_path="/usr/pkg/include/"
+    if [ $NGX_RPATH = YES ]; then
+        ngx_feature_libs="-R/usr/pkg/lib -L/usr/pkg/lib -lpq"
+    else
+        ngx_feature_libs="-L/usr/pkg/lib -lpq"
+    fi
+    . auto/feature
+fi
+
+if [ $ngx_found = no ]; then
+    # MacPorts
+    ngx_feature="libpq library in /opt/local/"
+    ngx_feature_path="/opt/local/include"
+    if [ $NGX_RPATH = YES ]; then
+        ngx_feature_libs="-R/opt/local/lib -L/opt/local/lib -lpq"
+    else
+        ngx_feature_libs="-L/opt/local/lib -lpq"
+    fi
+    . auto/feature
+fi
+
+if [ $ngx_found = yes ]; then
+    CORE_INCS="$CORE_INCS $ngx_feature_path"
+    CORE_LIBS="$CORE_LIBS $ngx_feature_libs"
+else
+ cat << END
+ $0: error: the ngx_postgres addon requires the libpq library.
+END
+ exit 1
+fi
+
+ngx_addon_name=ngx_postgres_module
+HTTP_MODULES="$HTTP_MODULES ngx_postgres_module"
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/src/ngx_postgres_module.c $ngx_addon_dir/src/ngx_postgres_handler.c $ngx_addon_dir/src/ngx_postgres_processor.c $ngx_addon_dir/src/ngx_postgres_upstream.c $ngx_addon_dir/src/ngx_postgres_util.c $ngx_addon_dir/src/ngx_postgres_output.c $ngx_addon_dir/src/ngx_postgres_keepalive.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/src/ngx_postgres_ddebug.h $ngx_addon_dir/src/ngx_postgres_module.h $ngx_addon_dir/src/ngx_postgres_handler.h $ngx_addon_dir/src/ngx_postgres_processor.h $ngx_addon_dir/src/ngx_postgres_upstream.h $ngx_addon_dir/src/ngx_postgres_util.h $ngx_addon_dir/src/ngx_postgres_output.h $ngx_addon_dir/src/resty_dbd_stream.h $ngx_addon_dir/src/ngx_postgres_keepalive.h"

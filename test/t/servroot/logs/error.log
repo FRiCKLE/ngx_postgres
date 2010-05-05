@@ -1,0 +1,303 @@
+2010/05/05 20:38:39 [debug] 30962#0: bind() 0.0.0.0:1984 #7 
+2010/05/05 20:38:39 [notice] 30962#0: using the "kqueue" event method
+2010/05/05 20:38:39 [notice] 30962#0: nginx/0.8.34
+2010/05/05 20:38:39 [notice] 30962#0: built by gcc 3.3.5 (propolice)
+2010/05/05 20:38:39 [notice] 30962#0: getrlimit(RLIMIT_NOFILE): 128:1024
+2010/05/05 20:38:39 [debug] 1373#0: write: 8, 00007F7FFFFCD1E0, 5, 0
+2010/05/05 20:38:39 [debug] 1373#0: malloc: 0000000204F4C000:12288
+2010/05/05 20:38:39 [debug] 1373#0: malloc: 000000020122C000:12288
+2010/05/05 20:38:39 [debug] 1373#0: malloc: 000000020F89A000:12288
+2010/05/05 20:38:39 [debug] 1373#0: malloc: 0000000208B4D000:22528
+2010/05/05 20:38:39 [debug] 1373#0: malloc: 00000002077E5000:14336
+2010/05/05 20:38:39 [debug] 1373#0: malloc: 0000000208D15000:14336
+2010/05/05 20:38:39 [debug] 1373#0: kevent set event: 7: ft:-1 fl:0005
+2010/05/05 20:38:39 [debug] 1373#0: worker cycle
+2010/05/05 20:38:39 [debug] 1373#0: kevent timer: -1, changes: 1
+2010/05/05 20:38:39 [debug] 1373#0: kevent events: 1
+2010/05/05 20:38:39 [debug] 1373#0: kevent: 7: ft:-1 fl:0005 ff:00000000 d:1 ud:00000002077E5000
+2010/05/05 20:38:39 [debug] 1373#0: accept on 0.0.0.0:1984, ready: 1
+2010/05/05 20:38:39 [debug] 1373#0: malloc: 00000002023E4B00:256
+2010/05/05 20:38:39 [debug] 1373#0: *1 accept: 127.0.0.1 fd:8
+2010/05/05 20:38:39 [debug] 1373#0: *1 event timer add: 8: 60000:1273091979484
+2010/05/05 20:38:39 [debug] 1373#0: *1 kevent set event: 8: ft:-1 fl:0025
+2010/05/05 20:38:39 [debug] 1373#0: timer delta: 24
+2010/05/05 20:38:39 [debug] 1373#0: posted events 0000000000000000
+2010/05/05 20:38:39 [debug] 1373#0: worker cycle
+2010/05/05 20:38:39 [debug] 1373#0: kevent timer: 60000, changes: 1
+2010/05/05 20:38:39 [debug] 1373#0: kevent events: 1
+2010/05/05 20:38:39 [debug] 1373#0: kevent: 8: ft:-1 fl:0025 ff:00000000 d:62 ud:00000002077E5070
+2010/05/05 20:38:39 [debug] 1373#0: *1 malloc: 000000020AEFC800:1224
+2010/05/05 20:38:39 [debug] 1373#0: *1 malloc: 00000002023E4C00:256
+2010/05/05 20:38:39 [debug] 1373#0: *1 malloc: 0000000207D60400:1024
+2010/05/05 20:38:39 [debug] 1373#0: *1 malloc: 0000000209D3B000:4096
+2010/05/05 20:38:39 [debug] 1373#0: *1 http process request line
+2010/05/05 20:38:39 [debug] 1373#0: *1 recv: eof:0, avail:62, err:0
+2010/05/05 20:38:39 [debug] 1373#0: *1 recv: fd:8 62 of 1024
+2010/05/05 20:38:39 [debug] 1373#0: *1 http request line: "GET /postgres HTTP/1.1"
+2010/05/05 20:38:39 [debug] 1373#0: *1 http uri: "/postgres"
+2010/05/05 20:38:39 [debug] 1373#0: *1 http args: ""
+2010/05/05 20:38:39 [debug] 1373#0: *1 http exten: ""
+2010/05/05 20:38:39 [debug] 1373#0: *1 http process request header line
+2010/05/05 20:38:39 [debug] 1373#0: *1 http header: "Host: localhost"
+2010/05/05 20:38:39 [debug] 1373#0: *1 http header: "Connection: Close"
+2010/05/05 20:38:39 [debug] 1373#0: *1 http header done
+2010/05/05 20:38:39 [debug] 1373#0: *1 event timer del: 8: 1273091979484
+2010/05/05 20:38:39 [debug] 1373#0: *1 generic phase: 0
+2010/05/05 20:38:39 [debug] 1373#0: *1 test location: "/"
+2010/05/05 20:38:39 [debug] 1373#0: *1 test location: "postgres"
+2010/05/05 20:38:39 [debug] 1373#0: *1 using configuration "/postgres"
+2010/05/05 20:38:39 [debug] 1373#0: *1 http cl:-1 max:31457280
+2010/05/05 20:38:39 [debug] 1373#0: *1 generic phase: 2
+2010/05/05 20:38:39 [debug] 1373#0: *1 http script value: "database"
+2010/05/05 20:38:39 [debug] 1373#0: *1 http script set $backend
+2010/05/05 20:38:39 [debug] 1373#0: *1 post rewrite phase: 3
+2010/05/05 20:38:39 [debug] 1373#0: *1 generic phase: 4
+2010/05/05 20:38:39 [debug] 1373#0: *1 generic phase: 5
+2010/05/05 20:38:39 [debug] 1373#0: *1 access phase: 6
+2010/05/05 20:38:39 [debug] 1373#0: *1 access phase: 7
+2010/05/05 20:38:39 [debug] 1373#0: *1 post access phase: 8
+2010/05/05 20:38:39 [debug] 1373#0: *1 http set discard body
+2010/05/05 20:38:39 [debug] 1373#0: *1 http script var: "database"
+2010/05/05 20:38:39 [debug] 1373#0: *1 http init upstream, client timer: 0
+2010/05/05 20:38:39 [debug] 1373#0: *1 kevent set event: 8: ft:-2 fl:0025
+2010/05/05 20:38:39 [debug] 1373#0: *1 http cleanup add: 0000000209D3BE30
+2010/05/05 20:38:39 [debug] 1373#0: *1 kevent set event: 9: ft:-1 fl:0025
+2010/05/05 20:38:39 [debug] 1373#0: *1 kevent set event: 9: ft:-2 fl:0025
+2010/05/05 20:38:39 [debug] 1373#0: *1 http upstream connect: -2
+2010/05/05 20:38:39 [debug] 1373#0: *1 event timer add: 9: 10000:1273091929484
+2010/05/05 20:38:39 [debug] 1373#0: *1 http finalize request: -4, "/postgres?" a:1, c:2
+2010/05/05 20:38:39 [debug] 1373#0: *1 http request count:2 blk:0
+2010/05/05 20:38:39 [debug] 1373#0: timer delta: 0
+2010/05/05 20:38:39 [debug] 1373#0: posted events 0000000000000000
+2010/05/05 20:38:39 [debug] 1373#0: worker cycle
+2010/05/05 20:38:39 [debug] 1373#0: kevent timer: 10000, changes: 3
+2010/05/05 20:38:39 [debug] 1373#0: kevent events: 2
+2010/05/05 20:38:39 [debug] 1373#0: kevent: 8: ft:-2 fl:0025 ff:00000000 d:16384 ud:0000000208D15070
+2010/05/05 20:38:39 [debug] 1373#0: *1 http run request: "/postgres?"
+2010/05/05 20:38:39 [debug] 1373#0: *1 http request empty handler
+2010/05/05 20:38:39 [debug] 1373#0: kevent: 9: ft:-2 fl:0025 ff:00000000 d:16384 ud:0000000208D150E0
+2010/05/05 20:38:39 [debug] 1373#0: *1 http upstream request: "/postgres?"
+2010/05/05 20:38:39 [debug] 1373#0: timer delta: 4
+2010/05/05 20:38:39 [debug] 1373#0: posted events 0000000000000000
+2010/05/05 20:38:39 [debug] 1373#0: worker cycle
+2010/05/05 20:38:39 [debug] 1373#0: kevent timer: 9996, changes: 0
+2010/05/05 20:38:39 [debug] 1373#0: kevent events: 2
+2010/05/05 20:38:39 [debug] 1373#0: kevent: 9: ft:-2 fl:0025 ff:00000000 d:16384 ud:0000000208D150E0
+2010/05/05 20:38:39 [debug] 1373#0: *1 http upstream request: "/postgres?"
+2010/05/05 20:38:39 [debug] 1373#0: kevent: 9: ft:-1 fl:0025 ff:00000000 d:13 ud:00000002077E50E0
+2010/05/05 20:38:39 [debug] 1373#0: *1 http upstream request: "/postgres?"
+2010/05/05 20:38:39 [debug] 1373#0: timer delta: 0
+2010/05/05 20:38:39 [debug] 1373#0: posted events 0000000000000000
+2010/05/05 20:38:39 [debug] 1373#0: worker cycle
+2010/05/05 20:38:39 [debug] 1373#0: kevent timer: 9996, changes: 0
+2010/05/05 20:38:39 [debug] 1373#0: kevent events: 2
+2010/05/05 20:38:39 [debug] 1373#0: kevent: 9: ft:-2 fl:0025 ff:00000000 d:16384 ud:0000000208D150E0
+2010/05/05 20:38:39 [debug] 1373#0: *1 http upstream request: "/postgres?"
+2010/05/05 20:38:39 [debug] 1373#0: *1 event timer del: 9: 1273091929484
+2010/05/05 20:38:39 [debug] 1373#0: *1 event timer add: 9: 30000:1273091949490
+2010/05/05 20:38:39 [debug] 1373#0: kevent: 9: ft:-1 fl:0025 ff:00000000 d:276 ud:00000002077E50E0
+2010/05/05 20:38:39 [debug] 1373#0: *1 http upstream request: "/postgres?"
+2010/05/05 20:38:39 [debug] 1373#0: timer delta: 2
+2010/05/05 20:38:39 [debug] 1373#0: posted events 0000000000000000
+2010/05/05 20:38:39 [debug] 1373#0: worker cycle
+2010/05/05 20:38:39 [debug] 1373#0: kevent timer: 30000, changes: 0
+2010/05/05 20:38:39 [debug] 1373#0: kevent events: 2
+2010/05/05 20:38:39 [debug] 1373#0: kevent: 9: ft:-2 fl:0025 ff:00000000 d:16384 ud:0000000208D150E0
+2010/05/05 20:38:39 [debug] 1373#0: *1 http upstream request: "/postgres?"
+2010/05/05 20:38:39 [debug] 1373#0: *1 event timer del: 9: 1273091949490
+2010/05/05 20:38:39 [debug] 1373#0: *1 finalize http upstream request: 0
+2010/05/05 20:38:39 [debug] 1373#0: *1 malloc: 000000020122B000:4096
+2010/05/05 20:38:39 [debug] 1373#0: *1 HTTP/1.1 200 OK
+Server: nginx/0.8.34
+Date: Wed, 05 May 2010 20:38:39 GMT
+Content-Type: application/x-resty-dbd-stream
+Transfer-Encoding: chunked
+Connection: close
+
+2010/05/05 20:38:39 [debug] 1373#0: *1 write new buf t:1 f:0 000000020122B020, pos 000000020122B020, size: 171 file: 0, size: 0
+2010/05/05 20:38:39 [debug] 1373#0: *1 http write filter: l:0 f:0 s:171
+2010/05/05 20:38:39 [debug] 1373#0: *1 http output filter "/postgres?"
+2010/05/05 20:38:39 [debug] 1373#0: *1 http copy filter: "/postgres?"
+2010/05/05 20:38:39 [debug] 1373#0: *1 http postpone filter "/postgres?" 0000000209D3BF90
+2010/05/05 20:38:39 [debug] 1373#0: *1 http chunk: 30
+2010/05/05 20:38:39 [debug] 1373#0: *1 write old buf t:1 f:0 000000020122B020, pos 000000020122B020, size: 171 file: 0, size: 0
+2010/05/05 20:38:39 [debug] 1373#0: *1 write new buf t:1 f:0 0000000000000000, pos 000000020122B198, size: 4 file: 0, size: 0
+2010/05/05 20:38:39 [debug] 1373#0: *1 write new buf t:1 f:0 0000000209D3BF70, pos 0000000209D3BF70, size: 30 file: 0, size: 0
+2010/05/05 20:38:39 [debug] 1373#0: *1 write new buf t:0 f:0 0000000000000000, pos 000000000056F9D6, size: 2 file: 0, size: 0
+2010/05/05 20:38:39 [debug] 1373#0: *1 http write filter: l:0 f:1 s:207
+2010/05/05 20:38:39 [debug] 1373#0: *1 http write filter limit 0
+2010/05/05 20:38:39 [debug] 1373#0: *1 writev: 207
+2010/05/05 20:38:39 [debug] 1373#0: *1 http write filter 0000000000000000
+2010/05/05 20:38:39 [debug] 1373#0: *1 http copy filter: 0 "/postgres?"
+2010/05/05 20:38:39 [debug] 1373#0: *1 postgres: free keepalive peer
+2010/05/05 20:38:39 [debug] 1373#0: *1 postgres: free keepalive peer: saving connection 0000000208B4D160
+2010/05/05 20:38:39 [debug] 1373#0: *1 http output filter "/postgres?"
+2010/05/05 20:38:39 [debug] 1373#0: *1 http copy filter: "/postgres?"
+2010/05/05 20:38:39 [debug] 1373#0: *1 http postpone filter "/postgres?" 00007F7FFFFCD050
+2010/05/05 20:38:39 [debug] 1373#0: *1 http chunk: 0
+2010/05/05 20:38:39 [debug] 1373#0: *1 write new buf t:0 f:0 0000000000000000, pos 000000000056F9D3, size: 5 file: 0, size: 0
+2010/05/05 20:38:39 [debug] 1373#0: *1 http write filter: l:1 f:0 s:5
+2010/05/05 20:38:39 [debug] 1373#0: *1 http write filter limit 0
+2010/05/05 20:38:39 [debug] 1373#0: *1 writev: 5
+2010/05/05 20:38:39 [debug] 1373#0: *1 http write filter 0000000000000000
+2010/05/05 20:38:39 [debug] 1373#0: *1 http copy filter: 0 "/postgres?"
+2010/05/05 20:38:39 [debug] 1373#0: *1 http finalize request: 0, "/postgres?" a:1, c:1
+2010/05/05 20:38:39 [debug] 1373#0: *1 http request count:1 blk:0
+2010/05/05 20:38:39 [debug] 1373#0: *1 http close request
+2010/05/05 20:38:39 [debug] 1373#0: *1 http log handler
+2010/05/05 20:38:39 [debug] 1373#0: *1 free: 0000000209D3B000, unused: 0
+2010/05/05 20:38:39 [debug] 1373#0: *1 free: 000000020122B000, unused: 3275
+2010/05/05 20:38:39 [debug] 1373#0: *1 close http connection: 8
+2010/05/05 20:38:39 [debug] 1373#0: *1 free: 0000000207D60400
+2010/05/05 20:38:39 [debug] 1373#0: *1 free: 000000020AEFC800
+2010/05/05 20:38:39 [debug] 1373#0: *1 free: 00000002023E4B00, unused: 8
+2010/05/05 20:38:39 [debug] 1373#0: *1 free: 00000002023E4C00, unused: 128
+2010/05/05 20:38:39 [debug] 1373#0: kevent: 9: ft:-1 fl:0025 ff:00000000 d:20 ud:00000002077E50E0
+2010/05/05 20:38:39 [debug] 1373#0: timer delta: 2
+2010/05/05 20:38:39 [debug] 1373#0: posted events 0000000000000000
+2010/05/05 20:38:39 [debug] 1373#0: worker cycle
+2010/05/05 20:38:39 [debug] 1373#0: kevent timer: -1, changes: 0
+2010/05/05 20:38:39 [debug] 1373#0: kevent events: 1
+2010/05/05 20:38:39 [debug] 1373#0: kevent: 7: ft:-1 fl:0005 ff:00000000 d:1 ud:00000002077E5000
+2010/05/05 20:38:39 [debug] 1373#0: accept on 0.0.0.0:1984, ready: 1
+2010/05/05 20:38:39 [debug] 1373#0: malloc: 00000002023E4B00:256
+2010/05/05 20:38:39 [debug] 1373#0: *3 accept: 127.0.0.1 fd:8
+2010/05/05 20:38:39 [debug] 1373#0: *3 event timer add: 8: 60000:1273091979503
+2010/05/05 20:38:39 [debug] 1373#0: *3 kevent set event: 8: ft:-1 fl:0025
+2010/05/05 20:38:39 [debug] 1373#0: timer delta: 11
+2010/05/05 20:38:39 [debug] 1373#0: posted events 0000000000000000
+2010/05/05 20:38:39 [debug] 1373#0: worker cycle
+2010/05/05 20:38:39 [debug] 1373#0: kevent timer: 60000, changes: 1
+2010/05/05 20:38:39 [debug] 1373#0: kevent events: 1
+2010/05/05 20:38:39 [debug] 1373#0: kevent: 8: ft:-1 fl:0025 ff:00000000 d:62 ud:00000002077E50E1
+2010/05/05 20:38:39 [debug] 1373#0: *3 malloc: 0000000209D3B000:1224
+2010/05/05 20:38:39 [debug] 1373#0: *3 malloc: 00000002023E4300:256
+2010/05/05 20:38:39 [debug] 1373#0: *3 malloc: 0000000208035000:1024
+2010/05/05 20:38:39 [debug] 1373#0: *3 malloc: 000000020122B000:4096
+2010/05/05 20:38:39 [debug] 1373#0: *3 http process request line
+2010/05/05 20:38:39 [debug] 1373#0: *3 recv: eof:0, avail:62, err:0
+2010/05/05 20:38:39 [debug] 1373#0: *3 recv: fd:8 62 of 1024
+2010/05/05 20:38:39 [debug] 1373#0: *3 http request line: "GET /postgres HTTP/1.1"
+2010/05/05 20:38:39 [debug] 1373#0: *3 http uri: "/postgres"
+2010/05/05 20:38:39 [debug] 1373#0: *3 http args: ""
+2010/05/05 20:38:39 [debug] 1373#0: *3 http exten: ""
+2010/05/05 20:38:39 [debug] 1373#0: *3 http process request header line
+2010/05/05 20:38:39 [debug] 1373#0: *3 http header: "Host: localhost"
+2010/05/05 20:38:39 [debug] 1373#0: *3 http header: "Connection: Close"
+2010/05/05 20:38:39 [debug] 1373#0: *3 http header done
+2010/05/05 20:38:39 [debug] 1373#0: *3 event timer del: 8: 1273091979503
+2010/05/05 20:38:39 [debug] 1373#0: *3 generic phase: 0
+2010/05/05 20:38:39 [debug] 1373#0: *3 test location: "/"
+2010/05/05 20:38:39 [debug] 1373#0: *3 test location: "postgres"
+2010/05/05 20:38:39 [debug] 1373#0: *3 using configuration "/postgres"
+2010/05/05 20:38:39 [debug] 1373#0: *3 http cl:-1 max:31457280
+2010/05/05 20:38:39 [debug] 1373#0: *3 generic phase: 2
+2010/05/05 20:38:39 [debug] 1373#0: *3 http script value: "database"
+2010/05/05 20:38:39 [debug] 1373#0: *3 http script set $backend
+2010/05/05 20:38:39 [debug] 1373#0: *3 post rewrite phase: 3
+2010/05/05 20:38:39 [debug] 1373#0: *3 generic phase: 4
+2010/05/05 20:38:39 [debug] 1373#0: *3 generic phase: 5
+2010/05/05 20:38:39 [debug] 1373#0: *3 access phase: 6
+2010/05/05 20:38:39 [debug] 1373#0: *3 access phase: 7
+2010/05/05 20:38:39 [debug] 1373#0: *3 post access phase: 8
+2010/05/05 20:38:39 [debug] 1373#0: *3 http set discard body
+2010/05/05 20:38:39 [debug] 1373#0: *3 http script var: "database"
+2010/05/05 20:38:39 [debug] 1373#0: *3 http init upstream, client timer: 0
+2010/05/05 20:38:39 [debug] 1373#0: *3 kevent set event: 8: ft:-2 fl:0025
+2010/05/05 20:38:39 [debug] 1373#0: *3 http cleanup add: 000000020122BE30
+2010/05/05 20:38:39 [debug] 1373#0: *3 kevent set event: 9: ft:-1 fl:0025
+2010/05/05 20:38:39 [debug] 1373#0: *3 kevent set event: 9: ft:-2 fl:0025
+2010/05/05 20:38:39 [debug] 1373#0: *3 http upstream connect: -2
+2010/05/05 20:38:39 [debug] 1373#0: *3 event timer add: 9: 10000:1273091929503
+2010/05/05 20:38:39 [debug] 1373#0: *3 http finalize request: -4, "/postgres?" a:1, c:2
+2010/05/05 20:38:39 [debug] 1373#0: *3 http request count:2 blk:0
+2010/05/05 20:38:39 [debug] 1373#0: timer delta: 0
+2010/05/05 20:38:39 [debug] 1373#0: posted events 0000000000000000
+2010/05/05 20:38:39 [debug] 1373#0: worker cycle
+2010/05/05 20:38:39 [debug] 1373#0: kevent timer: 10000, changes: 3
+2010/05/05 20:38:39 [debug] 1373#0: kevent events: 2
+2010/05/05 20:38:39 [debug] 1373#0: kevent: 8: ft:-2 fl:0025 ff:00000000 d:16384 ud:0000000208D150E1
+2010/05/05 20:38:39 [debug] 1373#0: *3 http run request: "/postgres?"
+2010/05/05 20:38:39 [debug] 1373#0: *3 http request empty handler
+2010/05/05 20:38:39 [debug] 1373#0: kevent: 9: ft:-2 fl:0025 ff:00000000 d:16384 ud:0000000208D15071
+2010/05/05 20:38:39 [debug] 1373#0: *3 http upstream request: "/postgres?"
+2010/05/05 20:38:39 [debug] 1373#0: timer delta: 0
+2010/05/05 20:38:39 [debug] 1373#0: posted events 0000000000000000
+2010/05/05 20:38:39 [debug] 1373#0: worker cycle
+2010/05/05 20:38:39 [debug] 1373#0: kevent timer: 10000, changes: 0
+2010/05/05 20:38:39 [debug] 1373#0: kevent events: 2
+2010/05/05 20:38:39 [debug] 1373#0: kevent: 9: ft:-2 fl:0025 ff:00000000 d:16384 ud:0000000208D15071
+2010/05/05 20:38:39 [debug] 1373#0: *3 http upstream request: "/postgres?"
+2010/05/05 20:38:39 [debug] 1373#0: kevent: 9: ft:-1 fl:0025 ff:00000000 d:13 ud:00000002077E5071
+2010/05/05 20:38:39 [debug] 1373#0: *3 http upstream request: "/postgres?"
+2010/05/05 20:38:39 [debug] 1373#0: timer delta: 4
+2010/05/05 20:38:39 [debug] 1373#0: posted events 0000000000000000
+2010/05/05 20:38:39 [debug] 1373#0: worker cycle
+2010/05/05 20:38:39 [debug] 1373#0: kevent timer: 9996, changes: 0
+2010/05/05 20:38:39 [debug] 1373#0: kevent events: 2
+2010/05/05 20:38:39 [debug] 1373#0: kevent: 9: ft:-2 fl:0025 ff:00000000 d:16384 ud:0000000208D15071
+2010/05/05 20:38:39 [debug] 1373#0: *3 http upstream request: "/postgres?"
+2010/05/05 20:38:39 [debug] 1373#0: *3 event timer del: 9: 1273091929503
+2010/05/05 20:38:39 [debug] 1373#0: *3 event timer add: 9: 30000:1273091949511
+2010/05/05 20:38:39 [debug] 1373#0: kevent: 9: ft:-1 fl:0025 ff:00000000 d:276 ud:00000002077E5071
+2010/05/05 20:38:39 [debug] 1373#0: *3 http upstream request: "/postgres?"
+2010/05/05 20:38:39 [debug] 1373#0: timer delta: 4
+2010/05/05 20:38:39 [debug] 1373#0: posted events 0000000000000000
+2010/05/05 20:38:39 [debug] 1373#0: worker cycle
+2010/05/05 20:38:39 [debug] 1373#0: kevent timer: 30000, changes: 0
+2010/05/05 20:38:39 [debug] 1373#0: kevent events: 2
+2010/05/05 20:38:39 [debug] 1373#0: kevent: 9: ft:-2 fl:0025 ff:00000000 d:16384 ud:0000000208D15071
+2010/05/05 20:38:39 [debug] 1373#0: *3 http upstream request: "/postgres?"
+2010/05/05 20:38:39 [debug] 1373#0: *3 event timer del: 9: 1273091949511
+2010/05/05 20:38:39 [debug] 1373#0: *3 finalize http upstream request: 0
+2010/05/05 20:38:39 [debug] 1373#0: *3 malloc: 000000020AEFC000:4096
+2010/05/05 20:38:39 [debug] 1373#0: *3 HTTP/1.1 200 OK
+Server: nginx/0.8.34
+Date: Wed, 05 May 2010 20:38:39 GMT
+Content-Type: application/x-resty-dbd-stream
+Transfer-Encoding: chunked
+Connection: close
+
+2010/05/05 20:38:39 [debug] 1373#0: *3 write new buf t:1 f:0 000000020AEFC020, pos 000000020AEFC020, size: 171 file: 0, size: 0
+2010/05/05 20:38:39 [debug] 1373#0: *3 http write filter: l:0 f:0 s:171
+2010/05/05 20:38:39 [debug] 1373#0: *3 http output filter "/postgres?"
+2010/05/05 20:38:39 [debug] 1373#0: *3 http copy filter: "/postgres?"
+2010/05/05 20:38:39 [debug] 1373#0: *3 http postpone filter "/postgres?" 000000020122BF90
+2010/05/05 20:38:39 [debug] 1373#0: *3 http chunk: 30
+2010/05/05 20:38:39 [debug] 1373#0: *3 write old buf t:1 f:0 000000020AEFC020, pos 000000020AEFC020, size: 171 file: 0, size: 0
+2010/05/05 20:38:39 [debug] 1373#0: *3 write new buf t:1 f:0 0000000000000000, pos 000000020AEFC198, size: 4 file: 0, size: 0
+2010/05/05 20:38:39 [debug] 1373#0: *3 write new buf t:1 f:0 000000020122BF70, pos 000000020122BF70, size: 30 file: 0, size: 0
+2010/05/05 20:38:39 [debug] 1373#0: *3 write new buf t:0 f:0 0000000000000000, pos 000000000056F9D6, size: 2 file: 0, size: 0
+2010/05/05 20:38:39 [debug] 1373#0: *3 http write filter: l:0 f:1 s:207
+2010/05/05 20:38:39 [debug] 1373#0: *3 http write filter limit 0
+2010/05/05 20:38:39 [debug] 1373#0: *3 writev: 207
+2010/05/05 20:38:39 [debug] 1373#0: *3 http write filter 0000000000000000
+2010/05/05 20:38:39 [debug] 1373#0: *3 http copy filter: 0 "/postgres?"
+2010/05/05 20:38:39 [debug] 1373#0: *3 postgres: free keepalive peer
+2010/05/05 20:38:39 [debug] 1373#0: *3 postgres: free keepalive peer: saving connection 0000000208B4D0B0
+2010/05/05 20:38:39 [debug] 1373#0: *3 http output filter "/postgres?"
+2010/05/05 20:38:39 [debug] 1373#0: *3 http copy filter: "/postgres?"
+2010/05/05 20:38:39 [debug] 1373#0: *3 http postpone filter "/postgres?" 00007F7FFFFCD050
+2010/05/05 20:38:39 [debug] 1373#0: *3 http chunk: 0
+2010/05/05 20:38:39 [debug] 1373#0: *3 write new buf t:0 f:0 0000000000000000, pos 000000000056F9D3, size: 5 file: 0, size: 0
+2010/05/05 20:38:39 [debug] 1373#0: *3 http write filter: l:1 f:0 s:5
+2010/05/05 20:38:39 [debug] 1373#0: *3 http write filter limit 0
+2010/05/05 20:38:39 [debug] 1373#0: *3 writev: 5
+2010/05/05 20:38:39 [debug] 1373#0: *3 http write filter 0000000000000000
+2010/05/05 20:38:39 [debug] 1373#0: *3 http copy filter: 0 "/postgres?"
+2010/05/05 20:38:39 [debug] 1373#0: *3 http finalize request: 0, "/postgres?" a:1, c:1
+2010/05/05 20:38:39 [debug] 1373#0: *3 http request count:1 blk:0
+2010/05/05 20:38:39 [debug] 1373#0: *3 http close request
+2010/05/05 20:38:39 [debug] 1373#0: *3 http log handler
+2010/05/05 20:38:39 [debug] 1373#0: *3 free: 000000020122B000, unused: 0
+2010/05/05 20:38:39 [debug] 1373#0: *3 free: 000000020AEFC000, unused: 3275
+2010/05/05 20:38:39 [debug] 1373#0: *3 close http connection: 8
+2010/05/05 20:38:39 [debug] 1373#0: *3 free: 0000000208035000
+2010/05/05 20:38:39 [debug] 1373#0: *3 free: 0000000209D3B000
+2010/05/05 20:38:39 [debug] 1373#0: *3 free: 00000002023E4B00, unused: 8
+2010/05/05 20:38:39 [debug] 1373#0: *3 free: 00000002023E4300, unused: 128
+2010/05/05 20:38:39 [debug] 1373#0: kevent: 9: ft:-1 fl:0025 ff:00000000 d:20 ud:00000002077E5071
+2010/05/05 20:38:39 [debug] 1373#0: timer delta: 1
+2010/05/05 20:38:39 [debug] 1373#0: posted events 0000000000000000
+2010/05/05 20:38:39 [debug] 1373#0: worker cycle
+2010/05/05 20:38:39 [debug] 1373#0: kevent timer: -1, changes: 0
