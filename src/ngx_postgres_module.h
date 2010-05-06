@@ -29,11 +29,72 @@
 #ifndef _NGX_POSTGRES_MODULE_H_
 #define _NGX_POSTGRES_MODULE_H_
 
+#include <nginx.h>
 #include <ngx_core.h>
 #include <ngx_http.h>
 
 
 ngx_module_t  ngx_postgres_module;
+
+
+typedef enum {
+    postgres_keepalive_overflow_ignore = 0,
+    postgres_keepalive_overflow_reject
+} ngx_postgres_keepalive_overflow_t;
+
+typedef struct {
+#if defined(nginx_version) && (nginx_version >= 8022)
+    ngx_addr_t                         *addrs;
+#else
+    ngx_peer_addr_t  *addrs;
+#endif
+    ngx_uint_t                          naddrs;
+    in_port_t                           port;
+    ngx_str_t                           dbname;
+    ngx_str_t                           user;
+    ngx_str_t                           password;
+} ngx_postgres_upstream_server_t;
+
+typedef struct {
+    struct sockaddr                    *sockaddr;
+    socklen_t                           socklen;
+    ngx_str_t                           name;
+    ngx_str_t                           host;
+    in_port_t                           port;
+    ngx_str_t                           dbname;
+    ngx_str_t                           user;
+    ngx_str_t                           password;
+} ngx_postgres_upstream_peer_t;
+
+typedef struct {
+    ngx_uint_t                          single;
+    ngx_uint_t                          number;
+    ngx_str_t                          *name;
+    ngx_postgres_upstream_peer_t        peer[1];
+} ngx_postgres_upstream_peers_t;
+
+typedef struct {
+    ngx_postgres_upstream_peers_t      *peers;
+    ngx_uint_t                          current;
+    ngx_array_t                        *servers;
+    ngx_pool_t                         *pool;
+    /* keepalive */
+    ngx_flag_t                          single;
+    ngx_queue_t                         free;
+    ngx_queue_t                         cache;
+    ngx_uint_t                          active_conns;
+    ngx_uint_t                          max_cached;
+    ngx_postgres_keepalive_overflow_t   overflow;
+} ngx_postgres_upstream_srv_conf_t;
+
+typedef struct {
+    /* simple values */
+    ngx_str_t                           query;
+    ngx_http_upstream_conf_t            upstream;
+    /* complex values */
+    ngx_http_complex_value_t           *query_cv;
+    ngx_http_complex_value_t           *upstream_cv;
+} ngx_postgres_loc_conf_t;
 
 
 void  *ngx_postgres_upstream_create_srv_conf(ngx_conf_t *);
