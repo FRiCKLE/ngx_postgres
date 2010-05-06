@@ -247,6 +247,11 @@ ngx_postgres_keepalive_close_handler(ngx_event_t *ev)
     c = ev->data;
     item = c->data;
 
+    if (PQconsumeInput(item->pgconn) && !PQisBusy(item->pgconn)) {
+        dd("returning");
+        return;      
+    }
+
     pgscf = item->srv_conf;
 
     ngx_queue_remove(&item->queue);
