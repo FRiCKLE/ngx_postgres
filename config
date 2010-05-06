@@ -8,6 +8,13 @@ ngx_feature_test="PQconndefaults();"
 . auto/feature
 
 if [ $ngx_found = no ]; then
+    # Debian
+    ngx_feature="libpq library in /usr/../postgresql/"
+    ngx_feature_path="/usr/include/postgresql"
+    . auto/feature
+fi
+
+if [ $ngx_found = no ]; then
     # FreeBSD
     ngx_feature="libpq library in /usr/local/"
     ngx_feature_path="/usr/local/include"
@@ -34,7 +41,7 @@ fi
 if [ $ngx_found = no ]; then
     # NetBSD
     ngx_feature="libpq library in /usr/pkg/"
-    ngx_feature_path="/usr/pkg/include/"
+    ngx_feature_path="/usr/pkg/include"
     if [ $NGX_RPATH = YES ]; then
         ngx_feature_libs="-R/usr/pkg/lib -L/usr/pkg/lib -lpq"
     else

@@ -1,5 +1,8 @@
 2010-05-06
     * Remove connection timeout from re-used keepalive connection.
 
+    * Fix libpq headers detection on Debian.
+      Patch from Weibin Yao.
+
 2010-05-05    VERSION 0.1
     * Initial release
