@@ -26,6 +26,10 @@ CONFIGURATION DIRECTIVES:
   ------------------------------------------------------
   default: none
 
+  postgres_get_value row column (context: http, server, location)
+  ---------------------------------------------------------------
+  default: none
+
   postgres_connect_timeout timeout (context: http, server, location)
   ------------------------------------------------------------------
   default: 10s
@@ -35,8 +39,8 @@ CONFIGURATION DIRECTIVES:
   default: 30s
 
 
-EXAMPLE CONFIGURATION:
-----------------------
+EXAMPLE CONFIGURATION #1:
+-------------------------
 http {
     upstream database {
         postgres_server  127.0.0.1 dbname=test
@@ -47,6 +51,29 @@ http {
         location / {
             postgres_pass   database;
             postgres_query  "select * from cats";
+        }
+    }
+}
+
+EXAMPLE CONFIGURATION #2:
+-------------------------
+http {
+    upstream database {
+        postgres_server  127.0.0.1 dbname=test
+                         user=monty password=some_pass;
+    }
+
+    server {
+        location / {
+            eval_subrequest_in_memory off;
+
+            eval $backend {
+                postgres_pass       database;
+                postgres_query      "select * from backends limit 1";
+                postgres_get_value  0 0;
+            }
+
+            proxy_pass $backend;
         }
     }
 }

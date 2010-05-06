@@ -281,7 +281,7 @@ ngx_postgres_upstream_get_result(ngx_http_request_t *r, ngx_connection_t *pgxc,
     dd("result received successfully, cols:%d rows:%d",
        PQnfields(res), PQntuples(res));
 
-    rc = ngx_postgres_output_rds(r, res);
+    rc = ngx_postgres_output(r, res);
 
     PQclear(res);
 

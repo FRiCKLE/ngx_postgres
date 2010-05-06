@@ -4,5 +4,8 @@
     * Fix libpq headers detection on Debian.
       Patch from Weibin Yao.
 
+    * Add "postgres_get_value" directive.
+      Requested by Johan Bergstroem.
+
 2010-05-05    VERSION 0.1
     * Initial release

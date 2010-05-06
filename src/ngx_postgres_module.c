@@ -64,6 +64,13 @@ static ngx_command_t ngx_postgres_module_commands[] = {
       0,
       NULL },
 
+    { ngx_string("postgres_get_value"),
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE2,
+      ngx_postgres_conf_get_value,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      0,
+      NULL },
+
     { ngx_string("postgres_connect_timeout"),
       NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
       ngx_conf_set_msec_slot,
@@ -160,6 +167,9 @@ ngx_postgres_create_loc_conf(ngx_conf_t *cf)
     conf->upstream.connect_timeout = NGX_CONF_UNSET_MSEC;
     conf->upstream.read_timeout = NGX_CONF_UNSET_MSEC;
 
+    conf->get_value[0] = NGX_CONF_UNSET;
+    conf->get_value[1] = NGX_CONF_UNSET;
+
     /* the hardcoded values */
     conf->upstream.cyclic_temp_file = 0;
     conf->upstream.buffering = 1;
@@ -200,6 +210,14 @@ ngx_postgres_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
     if ((conf->upstream.upstream == NULL) && (conf->upstream_cv == NULL)) {
         conf->upstream.upstream = prev->upstream.upstream;
         conf->upstream_cv = prev->upstream_cv;
+    }
+
+    if (conf->get_value[0] == NGX_CONF_UNSET) {
+        conf->get_value[0] = prev->get_value[0];
+    }
+
+    if (conf->get_value[1] == NGX_CONF_UNSET) {
+        conf->get_value[1] = prev->get_value[1];
     }
 
     dd("returning NGX_CONF_OK");
@@ -553,6 +571,43 @@ ngx_postgres_conf_query(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         dd("returning NGX_CONF_OK");
         return NGX_CONF_OK;
     }
+}
+
+char *
+ngx_postgres_conf_get_value(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+{
+    ngx_str_t                         *value = cf->args->elts;
+    ngx_postgres_loc_conf_t           *pglcf = conf;
+
+    dd("entering");
+
+    if (pglcf->get_value[0] != NGX_CONF_UNSET) {
+        dd("returning");
+        return "is duplicate";
+    }
+
+    pglcf->get_value[0] = ngx_atoi(value[1].data, value[1].len);
+    if (pglcf->get_value[0] < 0) {
+        ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
+                           "postgres: invalid row number \"%V\""
+                           " in postgres_get_value", &value[1]);
+
+        dd("returning NGX_CONF_ERROR");
+        return NGX_CONF_ERROR;
+    }
+
+    pglcf->get_value[1] = ngx_atoi(value[2].data, value[2].len);
+    if (pglcf->get_value[1] < 0) {
+        ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
+                           "postgres: invalid column number \"%V\""
+                           " in postgres_get_value", &value[2]);
+
+        dd("returning NGX_CONF_ERROR");
+        return NGX_CONF_ERROR;
+    }
+
+    dd("returning NGX_CONF_OK");
+    return NGX_CONF_OK;
 }
 
 ngx_http_upstream_srv_conf_t *

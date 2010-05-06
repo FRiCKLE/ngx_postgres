@@ -94,6 +94,8 @@ typedef struct {
     /* complex values */
     ngx_http_complex_value_t           *query_cv;
     ngx_http_complex_value_t           *upstream_cv;
+    /* get_value */
+    ngx_int_t                           get_value[2];
 } ngx_postgres_loc_conf_t;
 
 
@@ -104,6 +106,7 @@ char  *ngx_postgres_conf_server(ngx_conf_t *, ngx_command_t *, void *);
 char  *ngx_postgres_conf_keepalive(ngx_conf_t *, ngx_command_t *, void *);
 char  *ngx_postgres_conf_pass(ngx_conf_t *, ngx_command_t *, void *);
 char  *ngx_postgres_conf_query(ngx_conf_t *, ngx_command_t *, void *);
+char  *ngx_postgres_conf_get_value(ngx_conf_t *, ngx_command_t *, void *);
 
 ngx_http_upstream_srv_conf_t  *ngx_postgres_find_upstream(ngx_http_request_t *,
                                    ngx_url_t *);
