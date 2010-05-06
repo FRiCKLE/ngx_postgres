@@ -175,6 +175,7 @@ ngx_postgres_upstream_connect(ngx_http_request_t *r, ngx_connection_t *pgxc,
         return NGX_AGAIN;
     }
 
+    /* remove connection timeout from new connection */
     if (pgxc->write->timer_set) {
         ngx_del_timer(pgxc->write);
     }
@@ -226,6 +227,7 @@ ngx_postgres_upstream_send_query(ngx_http_request_t *r, ngx_connection_t *pgxc,
         return NGX_ERROR;
     }
 
+    /* set result timeout */
     ngx_add_timer(pgxc->read, r->upstream->conf->read_timeout);
 
     dd("query sent successfully");
@@ -246,6 +248,11 @@ ngx_postgres_upstream_get_result(ngx_http_request_t *r, ngx_connection_t *pgxc,
     ngx_int_t        rc;
 
     dd("entering");
+
+    /* remove connection timeout from re-used keepalive connection */
+    if (pgxc->write->timer_set) {
+        ngx_del_timer(pgxc->write);
+    }
 
     if (!PQconsumeInput(pgdt->pgconn)) {
         dd("returning NGX_ERROR");
@@ -310,6 +317,7 @@ ngx_postgres_upstream_get_ack(ngx_http_request_t *r, ngx_connection_t *pgxc,
         return NGX_AGAIN;
     }
 
+    /* remove result timeout */
     if (pgxc->read->timer_set) {
         ngx_del_timer(pgxc->read);
     }
