@@ -319,8 +319,8 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
     pgdt->pgconn = PQconnectStart((const char *)connstring);
     if (PQsetnonblocking(pgdt->pgconn, 1) == -1) {
         ngx_log_error(NGX_LOG_ERR, pc->log, 0,
-                      "postgres: failed to connect: %s in upstream \"%V\"",
-                      PQerrorMessage(pgdt->pgconn), &peer->name);
+                      "postgres: connection failed: could not connect to"
+                      " database server in upstream \"%V\"", &peer->name);
 
         PQfinish(pgdt->pgconn);
         pgdt->pgconn = NULL;
