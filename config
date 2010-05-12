@@ -1,3 +1,5 @@
+ngx_feature="libpq library"
+ngx_feature_libs="-lpq"
 ngx_feature_name=
 ngx_feature_run=no
 ngx_feature_incs="#include <libpq-fe.h>"
