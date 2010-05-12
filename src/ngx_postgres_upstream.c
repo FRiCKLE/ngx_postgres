@@ -127,6 +127,7 @@ ngx_postgres_upstream_init_peer(ngx_http_request_t *r,
     ngx_postgres_upstream_peer_data_t  *pgdt;
     ngx_postgres_upstream_srv_conf_t   *pgscf;
     ngx_postgres_loc_conf_t            *pglcf;
+    ngx_http_core_loc_conf_t           *clcf;
     ngx_http_upstream_t                *u;
     ngx_str_t                           query;
 
@@ -161,9 +162,12 @@ ngx_postgres_upstream_init_peer(ngx_http_request_t *r,
         }
 
         if (query.len == 0) {
+            clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
+
             ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                          "postgres: empty \"postgres_query\""
-                          " in upstream \"%V\"", pgscf->peers->name);
+                          "postgres: missing or empty \"postgres_query\""
+                          " (was: \"%V\") in location \"%V\"",
+                          &pglcf->query_cv->value, &clcf->name);
 
             dd("returning NGX_ERROR");
             return NGX_ERROR;
@@ -173,12 +177,21 @@ ngx_postgres_upstream_init_peer(ngx_http_request_t *r,
 
         dd("returning NGX_OK");
         return NGX_OK;
-    } else {
+    } else if (pglcf->query.len != 0) {
         /* use simple value */
         pgdt->query = pglcf->query;
 
         dd("returning NGX_OK");
         return NGX_OK;
+    } else {
+        clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
+
+        ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
+                      "postgres: missing or empty \"postgres_query\""
+                      " in location \"%V\"", &clcf->name);
+
+        dd("returning NGX_ERROR");
+        return NGX_ERROR;
     }
 }
 

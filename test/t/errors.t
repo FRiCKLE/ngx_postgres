@@ -91,3 +91,43 @@ little-endian systems only
 GET /postgres
 --- error_code: 500
 --- timeout: 10
+
+
+
+=== TEST 5: missing query
+little-endian systems only
+
+--- http_config
+    upstream database {
+        postgres_server     127.0.0.1 dbname=test
+                            user=monty password=some_pass;
+    }
+--- config
+    location /postgres {
+        postgres_pass       database;
+    }
+--- request
+GET /postgres
+--- error_code: 500
+--- timeout: 10
+
+
+
+=== TEST 6: empty query
+little-endian systems only
+
+--- http_config
+    upstream database {
+        postgres_server     127.0.0.1 dbname=test
+                            user=monty password=some_pass;
+    }
+--- config
+    location /postgres {
+        set $query          "";
+        postgres_pass       database;
+        postgres_query      $query;
+    }
+--- request
+GET /postgres
+--- error_code: 500
+--- timeout: 10

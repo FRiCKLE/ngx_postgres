@@ -463,6 +463,10 @@ ngx_postgres_conf_pass(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     }
 
     if (value[1].len == 0) {
+        ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
+                           "postgres: empty value in \"%V\" directive",
+                           &cmd->name);
+
         dd("returning NGX_CONF_ERROR");
         return NGX_CONF_ERROR;
     }
@@ -534,6 +538,10 @@ ngx_postgres_conf_query(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     }
 
     if (value[1].len == 0) {
+        ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
+                           "postgres: empty value in \"%V\" directive",
+                           &cmd->name);
+
         dd("returning NGX_CONF_ERROR");
         return NGX_CONF_ERROR;
     }
