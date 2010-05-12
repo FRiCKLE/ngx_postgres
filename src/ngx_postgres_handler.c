@@ -40,12 +40,13 @@
 ngx_int_t
 ngx_postgres_handler(ngx_http_request_t *r)
 {
-    ngx_postgres_loc_conf_t  *pglcf;
-    ngx_http_upstream_t      *u;
-    ngx_connection_t         *c;
-    ngx_str_t                 host;
-    ngx_url_t                 url;
-    ngx_int_t                 rc;
+    ngx_postgres_loc_conf_t   *pglcf;
+    ngx_http_core_loc_conf_t  *clcf;
+    ngx_http_upstream_t       *u;
+    ngx_connection_t          *c;
+    ngx_str_t                  host;
+    ngx_url_t                  url;
+    ngx_int_t                  rc;
 
     dd("entering");
 
@@ -114,11 +115,15 @@ ngx_postgres_handler(ngx_http_request_t *r)
         }
 
         if (host.len == 0) {
-            ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                          "postgres: empty \"postgres_pass\"");
+            clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
 
-            dd("returning NGX_ERROR");
-            return NGX_ERROR;
+            ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
+                          "postgres: empty \"postgres_pass\" (was: \"%V\")"
+                          " in location \"%V\"", &pglcf->upstream_cv->value,
+                          &clcf->name);
+
+            dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
+            return NGX_HTTP_INTERNAL_SERVER_ERROR;
         }
 
         ngx_memzero(&url, sizeof(ngx_url_t));

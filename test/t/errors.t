@@ -131,3 +131,24 @@ little-endian systems only
 GET /postgres
 --- error_code: 500
 --- timeout: 10
+
+
+
+=== TEST 7: empty pass
+little-endian systems only
+
+--- http_config
+    upstream database {
+        postgres_server     127.0.0.1 dbname=test
+                            user=monty password=some_pass;
+    }
+--- config
+    location /postgres {
+        set $database       "";
+        postgres_pass       $database;
+        postgres_query      "update cats set name='bob' where name='bob'";
+    }
+--- request
+GET /postgres
+--- error_code: 500
+--- timeout: 10
