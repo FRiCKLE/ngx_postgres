@@ -1,11 +1,26 @@
-ngx_feature="libpq library"
 ngx_feature_name=
 ngx_feature_run=no
 ngx_feature_incs="#include <libpq-fe.h>"
 ngx_feature_path=
-ngx_feature_libs="-lpq"
 ngx_feature_test="PQconndefaults();"
-. auto/feature
+
+if [ -n "$LIBPQ_LIB" ]; then
+    # explicit set libpq lib path
+    ngx_feature="libpq library in $LIBPQ_LIB (specified by the LIBPQ_LIB env)"
+    ngx_feature_path="$LIBPQ_INC"
+    if [ $NGX_RPATH = YES ]; then
+        ngx_feature_libs="-R$LIBPQ_LIB -L$LIBPQ_LIB -lpq"
+    else
+        ngx_feature_libs="-L$LIBPQ_LIB -lpq"
+    fi
+    . auto/feature
+fi
+
+if [ $ngx_found = no ]; then
+    ngx_feature="libpq library"
+    ngx_feature_libs="-lpq"
+    . auto/feature
+fi
 
 if [ $ngx_found = no ]; then
     # Debian
