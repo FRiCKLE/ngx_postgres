@@ -54,9 +54,9 @@ ngx_postgres_handler(ngx_http_request_t *r)
         /* TODO: add support for subrequest in memory by
          * emitting output into u->buffer instead */
 
-        ngx_log_error(NGX_LOG_ALERT, r->connection->log, 0,
-                      "ngx_postgres does not support "
-                      "subrequest in memory");
+        ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
+                      "postgres: ngx_postgres module does not support"
+                      " subrequests in memory");
 
         dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
         return NGX_HTTP_INTERNAL_SERVER_ERROR;
@@ -314,8 +314,8 @@ ngx_postgres_process_header(ngx_http_request_t *r)
     dd("entering");
 
     ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-           "ngx_postgres_process_header should not be called"
-           " by the upstream");
+                  "postgres: ngx_postgres_process_header should not"
+                  " be called by the upstream");
 
     dd("returning NGX_ERROR");
     return NGX_ERROR;
@@ -329,8 +329,8 @@ ngx_postgres_input_filter_init(void *data)
     dd("entering");
 
     ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-           "ngx_postgres_input_filter_init should not be called"
-           " by the upstream");
+                  "postgres: ngx_postgres_input_filter_init should not"
+                  " be called by the upstream");
 
     dd("returning NGX_ERROR");
     return NGX_ERROR;
@@ -344,8 +344,8 @@ ngx_postgres_input_filter(void *data, ssize_t bytes)
     dd("entering");
 
     ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-           "ngx_postgres_input_filter should not be called"
-           " by the upstream");
+                  "postgres: ngx_postgres_input_filter should not"
+                  " be called by the upstream");
 
     dd("returning NGX_ERROR");
     return NGX_ERROR;

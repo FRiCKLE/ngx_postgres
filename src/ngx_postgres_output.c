@@ -172,8 +172,8 @@ done:
 }
 
 ngx_chain_t *
-ngx_postgres_render_rds_header(ngx_http_request_t *r, ngx_pool_t *pool, PGresult *res,
-    ngx_int_t col_count)
+ngx_postgres_render_rds_header(ngx_http_request_t *r, ngx_pool_t *pool,
+    PGresult *res, ngx_int_t col_count)
 {
     ngx_chain_t  *cl;
     ngx_buf_t    *b;
@@ -268,8 +268,8 @@ ngx_postgres_render_rds_header(ngx_http_request_t *r, ngx_pool_t *pool, PGresult
 }
 
 ngx_chain_t *
-ngx_postgres_render_rds_columns(ngx_http_request_t *r, ngx_pool_t *pool, PGresult *res,
-    ngx_int_t col_count)
+ngx_postgres_render_rds_columns(ngx_http_request_t *r, ngx_pool_t *pool,
+    PGresult *res, ngx_int_t col_count)
 {
     ngx_chain_t  *cl;
     ngx_buf_t    *b;
@@ -338,8 +338,8 @@ ngx_postgres_render_rds_columns(ngx_http_request_t *r, ngx_pool_t *pool, PGresul
 }
 
 ngx_chain_t *
-ngx_postgres_render_rds_row(ngx_http_request_t *r, ngx_pool_t *pool, PGresult *res,
-    ngx_int_t col_count, ngx_int_t row)
+ngx_postgres_render_rds_row(ngx_http_request_t *r, ngx_pool_t *pool,
+    PGresult *res, ngx_int_t col_count, ngx_int_t row)
 {
     ngx_chain_t  *cl;
     ngx_buf_t    *b;

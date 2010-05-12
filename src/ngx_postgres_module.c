@@ -312,7 +312,7 @@ ngx_postgres_conf_server(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
         ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
                            "postgres: invalid parameter \"%V\" in"
-                           " postgres_server", &value[i]);
+                           " \"postgres_server\"", &value[i]);
 
         dd("returning NGX_CONF_ERROR");
         return NGX_CONF_ERROR;
@@ -360,7 +360,7 @@ ngx_postgres_conf_keepalive(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
             if (n == NGX_ERROR || n < 0) {
                 ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
-                                   "invalid \"max\" value \"%V\""
+                                   "postgres: invalid \"max\" value \"%V\""
                                    " in \"%V\" directive",
                                    &value[i], &cmd->name);
 
@@ -598,7 +598,7 @@ ngx_postgres_conf_get_value(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     if (pglcf->get_value[0] < 0) {
         ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
                            "postgres: invalid row number \"%V\""
-                           " in postgres_get_value", &value[1]);
+                           " in \"postgres_get_value\"", &value[1]);
 
         dd("returning NGX_CONF_ERROR");
         return NGX_CONF_ERROR;
@@ -608,7 +608,7 @@ ngx_postgres_conf_get_value(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     if (pglcf->get_value[1] < 0) {
         ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
                            "postgres: invalid column number \"%V\""
-                           " in postgres_get_value", &value[2]);
+                           " in \"postgres_get_value\"", &value[2]);
 
         dd("returning NGX_CONF_ERROR");
         return NGX_CONF_ERROR;
