@@ -1,3 +1,14 @@
+2010-05-12    VERSION 0.2
+    * Add various improvements to build and testing infrastructures.
+      Mostly done by Yichun Zhang (agentzh).
+
+    * Put more restrictions on "postgres_pass" and "postgres_query"
+      directives. Handle their bad configuration properly.
+
+2010-05-10
+    * Log PostgreSQL errors into error.log.
+      Reminded by Yichun Zhang (agentzh).
+
 2010-05-06
     * Remove connection timeout from re-used keepalive connection.
 
@@ -7,5 +18,10 @@
     * Add "postgres_get_value" directive.
       Requested by Johan Bergstroem.
 
+    * Bring back fail-safe check that got lost during pre-release
+      refactorization. Without this check performance was reduced
+      few times under high load, because about 1% of keepalive
+      connections got disconnected.
+
 2010-05-05    VERSION 0.1
-    * Initial release
+    * Initial release.
