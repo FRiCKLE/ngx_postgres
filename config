@@ -87,6 +87,9 @@ END
 fi
 
 ngx_addon_name=ngx_postgres_module
+
 HTTP_MODULES="$HTTP_MODULES ngx_postgres_module"
 NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/src/ngx_postgres_module.c $ngx_addon_dir/src/ngx_postgres_handler.c $ngx_addon_dir/src/ngx_postgres_processor.c $ngx_addon_dir/src/ngx_postgres_upstream.c $ngx_addon_dir/src/ngx_postgres_util.c $ngx_addon_dir/src/ngx_postgres_output.c $ngx_addon_dir/src/ngx_postgres_keepalive.c"
 NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/src/ngx_postgres_ddebug.h $ngx_addon_dir/src/ngx_postgres_module.h $ngx_addon_dir/src/ngx_postgres_handler.h $ngx_addon_dir/src/ngx_postgres_processor.h $ngx_addon_dir/src/ngx_postgres_upstream.h $ngx_addon_dir/src/ngx_postgres_util.h $ngx_addon_dir/src/ngx_postgres_output.h $ngx_addon_dir/src/resty_dbd_stream.h $ngx_addon_dir/src/ngx_postgres_keepalive.h"
+
+have=NGX_POSTGRES_MODULE . auto/have
