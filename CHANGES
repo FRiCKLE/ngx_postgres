@@ -1,3 +1,7 @@
+2010-06-03
+    * Allow request methods other than GET and HEAD.
+      From Yichun Zhang (agentzh) via ngx_drizzle.
+
 2010-05-12    VERSION 0.2
     * Add various improvements to build and testing infrastructures.
       Mostly done by Yichun Zhang (agentzh).

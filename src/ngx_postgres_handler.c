@@ -46,7 +46,6 @@ ngx_postgres_handler(ngx_http_request_t *r)
     ngx_connection_t          *c;
     ngx_str_t                  host;
     ngx_url_t                  url;
-    ngx_int_t                  rc;
 
     dd("entering");
 
@@ -58,22 +57,6 @@ ngx_postgres_handler(ngx_http_request_t *r)
                       "postgres: ngx_postgres module does not support"
                       " subrequests in memory");
 
-        dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
-        return NGX_HTTP_INTERNAL_SERVER_ERROR;
-    }
-
-    if (!(r->method & (NGX_HTTP_GET|NGX_HTTP_HEAD))) {
-        dd("returning NGX_HTTP_NOT_ALLOWED");
-        return NGX_HTTP_NOT_ALLOWED;
-    }
-
-    rc = ngx_http_discard_request_body(r);
-    if (rc != NGX_OK) {
-        dd("returning rc:%d", (int) rc);
-        return rc;
-    }
-
-    if (ngx_http_set_content_type(r) != NGX_OK) {
         dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
         return NGX_HTTP_INTERNAL_SERVER_ERROR;
     }
