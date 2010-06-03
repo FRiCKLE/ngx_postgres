@@ -94,7 +94,6 @@ ngx_postgres_output_value(ngx_http_request_t *r, PGresult *res, ngx_int_t row,
 
     cl->buf = b;
     b->memory = 1;
-    b->flush = 1;
     b->tag = r->upstream->output.tag;
     b->last_buf = 1;
 
@@ -221,7 +220,6 @@ ngx_postgres_render_rds_header(ngx_http_request_t *r, ngx_pool_t *pool,
 
     cl->buf = b;
     b->memory = 1;
-    b->flush = 1;
     b->tag = r->upstream->output.tag;
 
     /* fill data */
@@ -307,7 +305,6 @@ ngx_postgres_render_rds_columns(ngx_http_request_t *r, ngx_pool_t *pool,
 
     cl->buf = b;
     b->memory = 1;
-    b->flush = 1;
     b->tag = r->upstream->output.tag;
 
     /* fill data */
@@ -371,7 +368,6 @@ ngx_postgres_render_rds_row(ngx_http_request_t *r, ngx_pool_t *pool,
 
     cl->buf = b;
     b->memory = 1;
-    b->flush = 1;
     b->tag = r->upstream->output.tag;
 
     /* fill data */
@@ -424,7 +420,6 @@ ngx_postgres_render_rds_row_terminator(ngx_http_request_t *r, ngx_pool_t *pool)
 
     cl->buf = b;
     b->memory = 1;
-    b->flush = 1;
     b->tag = r->upstream->output.tag;
     b->last_buf = 1;
 
