@@ -34,7 +34,7 @@
 #include <ngx_http.h>
 
 
-ngx_module_t  ngx_postgres_module;
+extern ngx_module_t  ngx_postgres_module;
 
 
 typedef enum {
