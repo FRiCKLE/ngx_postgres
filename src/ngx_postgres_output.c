@@ -234,7 +234,7 @@ ngx_postgres_render_rds_header(ngx_http_request_t *r, ngx_pool_t *pool,
 
     *b->last++ = 0;
 
-    *(uint16_t *) b->last = (uint16_t) PQresultStatus(res);
+    *(uint16_t *) b->last = (uint16_t) 0;
     b->last += sizeof(uint16_t);
 
     *(uint16_t *) b->last = (uint16_t) PQresultStatus(res);

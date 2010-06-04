@@ -46,7 +46,7 @@ Content-Type: application/x-resty-dbd-stream
 "\x{00}".        # endian
 "\x{03}\x{00}\x{00}\x{00}".  # format version 0.0.3
 "\x{00}".        # result type
-"\x{02}\x{00}".  # std errcode
+"\x{00}\x{00}".  # std errcode
 "\x{02}\x{00}".  # driver errcode
 "\x{00}\x{00}".  # driver errstr len
 "".              # driver errstr data
