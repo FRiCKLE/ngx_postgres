@@ -208,7 +208,7 @@ GET /postgres
 
 
 
-=== TEST 5: variables in drizzle_pass
+=== TEST 5: variables in postgres_pass
 little-endian systems only
 
 db init:
