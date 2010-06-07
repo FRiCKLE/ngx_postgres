@@ -78,4 +78,333 @@
    fun:ngx_create_pool
    fun:main
 }
-
+{
+   nginx_value8_001__use_of_uninitialised_value_of_size_8
+   Memcheck:Value8
+   fun:ngx_sprintf_num
+   fun:ngx_vslprintf
+   fun:ngx_log_error_core
+   fun:ngx_kqueue_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   nginx_value8_002__use_of_uninitialised_value_of_size_8
+   Memcheck:Value8
+   fun:ngx_http_process_request_line
+   fun:ngx_http_init_request
+   fun:ngx_kqueue_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   nginx_value8_003__use_of_uninitialised_value_of_size_8
+   Memcheck:Value8
+   fun:ngx_http_process_request_headers
+   fun:ngx_http_process_request_line
+   fun:ngx_http_init_request
+   fun:ngx_kqueue_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   nginx_value8_004__use_of_uninitialised_value_of_size_8
+   Memcheck:Value8
+   fun:ngx_http_upstream_handler
+   fun:ngx_kqueue_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   nginx_value8_005__use_of_uninitialised_value_of_size_8
+   Memcheck:Value8
+   fun:ngx_http_init_request
+   fun:ngx_kqueue_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   nginx_value8_006__use_of_uninitialised_value_of_size_8
+   Memcheck:Value8
+   fun:ngx_event_accept
+   fun:ngx_kqueue_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   nginx_value8_007__use_of_uninitialised_value_of_size_8
+   Memcheck:Value8
+   fun:ngx_kqueue_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   nginx_value8_008__use_of_uninitialised_value_of_size_8
+   Memcheck:Value8
+   fun:ngx_postgres_keepalive_close_handler
+   fun:ngx_kqueue_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   nginx_cond_001__conditional_jump_or_move_depends_on_uninitialised_value
+   Memcheck:Cond
+   fun:ngx_sprintf_num
+   fun:ngx_vslprintf
+   fun:ngx_log_error_core
+   fun:ngx_kqueue_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   nginx_cond_002__conditional_jump_or_move_depends_on_uninitialised_value
+   Memcheck:Cond
+   fun:ngx_kqueue_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   nginx_cond_003__conditional_jump_or_move_depends_on_uninitialised_value
+   Memcheck:Cond
+   fun:ngx_vslprintf
+   fun:ngx_log_error_core
+   fun:ngx_kqueue_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   nginx_cond_004__conditional_jump_or_move_depends_on_uninitialised_value
+   Memcheck:Cond
+   fun:ngx_event_accept
+   fun:ngx_kqueue_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   nginx_cond_005__conditional_jump_or_move_depends_on_uninitialised_value
+   Memcheck:Cond
+   fun:ngx_sprintf_num
+   fun:ngx_vslprintf
+   fun:ngx_log_error_core
+   fun:ngx_event_accept
+   fun:ngx_kqueue_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   nginx_cond_006__conditional_jump_or_move_depends_on_uninitialised_value
+   Memcheck:Cond
+   fun:ngx_vslprintf
+   fun:ngx_log_error_core
+   fun:ngx_event_accept
+   fun:ngx_kqueue_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   nginx_param_001__syscall_param_write_buf_points_to_uninitialised_bytes
+   Memcheck:Param
+   write(buf)
+   fun:__sys_write
+   fun:ngx_log_error_core
+   fun:ngx_kqueue_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   nginx_param_002__syscall_param_write_buf_points_to_uninitialised_bytes
+   Memcheck:Param
+   write(buf)
+   fun:__sys_write
+   fun:ngx_log_error_core
+   fun:ngx_event_accept
+   fun:ngx_kqueue_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   libpq_value8_001__use_of_uninitialised_value_of_size_8
+   Memcheck:Value8
+   fun:strerror_r
+   fun:pqStrerror
+   obj:/usr/local/lib/libpq.so.5
+   fun:PQconnectPoll
+   fun:ngx_postgres_upstream_connect
+   fun:ngx_postgres_process_events
+   fun:ngx_postgres_rev_handler
+   fun:ngx_http_upstream_handler
+   fun:ngx_kqueue_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   libpq_cond_001__conditional_jump_or_move_depends_on_uninitialised_value
+   Memcheck:Cond
+   fun:pq_block_sigpipe
+   fun:pqsecure_write
+   obj:/usr/local/lib/libpq.so.5
+   obj:/usr/local/lib/libpq.so.5
+   fun:PQfinish
+   fun:ngx_postgres_upstream_free_connection
+   fun:ngx_postgres_keepalive_cleanup
+   fun:ngx_postgres_cleanup
+   fun:ngx_destroy_pool
+   fun:ngx_master_process_exit
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   libpq_cond_002__conditional_jump_or_move_depends_on_uninitialised_value
+   Memcheck:Cond
+   fun:pq_block_sigpipe
+   fun:pqsecure_write
+   obj:/usr/local/lib/libpq.so.5
+   fun:PQsendQuery
+   fun:ngx_postgres_upstream_send_query
+   fun:ngx_postgres_upstream_connect
+   fun:ngx_postgres_process_events
+   fun:ngx_postgres_wev_handler
+   fun:ngx_http_upstream_handler
+   fun:ngx_kqueue_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+}
+{
+   libpq_cond_003__conditional_jump_or_move_depends_on_uninitialised_value
+   Memcheck:Cond
+   fun:pq_block_sigpipe
+   fun:pqsecure_write
+   obj:/usr/local/lib/libpq.so.5
+   obj:/usr/local/lib/libpq.so.5
+   fun:PQfinish
+   fun:ngx_postgres_upstream_free_connection
+   fun:ngx_postgres_upstream_free_peer
+   fun:ngx_postgres_upstream_finalize_request
+   fun:ngx_postgres_upstream_done
+   fun:ngx_postgres_upstream_get_ack
+   fun:ngx_postgres_upstream_get_result
+   fun:ngx_postgres_process_events
+}
+{
+   libpq_cond_004__conditional_jump_or_move_depends_on_uninitialised_value
+   Memcheck:Cond
+   fun:pq_block_sigpipe
+   fun:pqsecure_write
+   obj:/usr/local/lib/libpq.so.5
+   fun:pqPacketSend
+   fun:PQconnectPoll
+   fun:ngx_postgres_upstream_connect
+   fun:ngx_postgres_process_events
+   fun:ngx_postgres_wev_handler
+   fun:ngx_http_upstream_handler
+   fun:ngx_kqueue_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+}
+{
+   libpq_cond_005__conditional_jump_or_move_depends_on_uninitialised_value
+   Memcheck:Cond
+   fun:pq_block_sigpipe
+   fun:pqsecure_write
+   obj:/usr/local/lib/libpq.so.5
+   fun:PQsendQuery
+   fun:ngx_postgres_upstream_send_query
+   fun:ngx_postgres_upstream_connect
+   fun:ngx_postgres_process_events
+   fun:ngx_postgres_rev_handler
+   fun:ngx_http_upstream_handler
+   fun:ngx_kqueue_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+}
+{
+   libpq_cond_006__conditional_jump_or_move_depends_on_uninitialised_value
+   Memcheck:Cond
+   fun:pq_block_sigpipe
+   fun:pqsecure_write
+   obj:/usr/local/lib/libpq.so.5
+   obj:/usr/local/lib/libpq.so.5
+   fun:PQfinish
+   fun:ngx_postgres_upstream_free_connection
+   fun:ngx_postgres_upstream_free_peer
+   fun:ngx_postgres_upstream_finalize_request
+   fun:ngx_postgres_process_events
+   fun:ngx_postgres_wev_handler
+   fun:ngx_http_upstream_handler
+   fun:ngx_kqueue_process_events
+}
+{
+   libpq_cond_007__conditional_jump_or_move_depends_on_uninitialised_value
+   Memcheck:Cond
+   fun:pq_block_sigpipe
+   fun:pqsecure_write
+   obj:/usr/local/lib/libpq.so.5
+   obj:/usr/local/lib/libpq.so.5
+   fun:PQfinish
+   fun:ngx_postgres_upstream_free_connection
+   fun:ngx_postgres_upstream_free_peer
+   fun:ngx_postgres_upstream_finalize_request
+   fun:ngx_postgres_process_events
+   fun:ngx_postgres_rev_handler
+   fun:ngx_http_upstream_handler
+   fun:ngx_kqueue_process_events
+}
+{
+   libpq_cond_008__conditional_jump_or_move_depends_on_uninitialised_value
+   Memcheck:Cond
+   fun:strerror_r
+   fun:pqStrerror
+   obj:/usr/local/lib/libpq.so.5
+   fun:PQconnectPoll
+   fun:ngx_postgres_upstream_connect
+   fun:ngx_postgres_process_events
+   fun:ngx_postgres_rev_handler
+   fun:ngx_http_upstream_handler
+   fun:ngx_kqueue_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   libpq_cond_009__conditional_jump_or_move_depends_on_uninitialised_value
+   Memcheck:Cond
+   fun:PQconnectPoll
+   fun:ngx_postgres_upstream_connect
+   fun:ngx_postgres_process_events
+   fun:ngx_postgres_wev_handler
+   fun:ngx_http_upstream_handler
+   fun:ngx_kqueue_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   libpq_cond_010__conditional_jump_or_move_depends_on_uninitialised_value
+   Memcheck:Cond
+   fun:PQconnectPoll
+   fun:ngx_postgres_upstream_connect
+   fun:ngx_postgres_process_events
+   fun:ngx_postgres_rev_handler
+   fun:ngx_http_upstream_handler
+   fun:ngx_kqueue_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
