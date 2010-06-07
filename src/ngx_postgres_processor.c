@@ -288,6 +288,8 @@ ngx_postgres_upstream_get_result(ngx_http_request_t *r, ngx_connection_t *pgxc,
                       " \"%V\"", PQresStatus(pgrc),
                       PQerrorMessage(pgdt->pgconn), pgdt->name);
 
+        PQclear(res);
+
         dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
         return NGX_HTTP_INTERNAL_SERVER_ERROR;
     }

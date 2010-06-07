@@ -2,6 +2,10 @@
     * Free keepalive connections on nginx shutdown.
       Requested by Yichun Zhang (agentzh).
 
+    * Fix memory leak that was happening when nginx was configured
+      to use non-existing database tables, etc.
+      Found by Valgrind, reported by Yichun Zhang (agentzh).
+
 2010-06-04
     * Use recently standardized error codes in RDS format.
 
