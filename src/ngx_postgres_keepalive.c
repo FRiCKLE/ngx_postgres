@@ -273,3 +273,38 @@ ngx_postgres_keepalive_close_handler(ngx_event_t *ev)
 
     dd("returning");
 }
+
+void
+ngx_postgres_keepalive_cleanup(void *data)
+{
+    ngx_postgres_upstream_srv_conf_t  *pgscf = data;
+    ngx_postgres_keepalive_cache_t    *item;
+    ngx_queue_t                       *q;
+
+    dd("entering");
+
+    /* ngx_queue_empty is broken when used on unitialized queue */
+    if (pgscf->cache.prev == NULL) {
+        dd("returning");
+        return;
+    }
+
+    /* just to be on the safe-side */
+    pgscf->max_cached = 0;
+
+    while (!ngx_queue_empty(&pgscf->cache)) {
+        q = ngx_queue_head(&pgscf->cache);
+        ngx_queue_remove(q);
+
+        item = ngx_queue_data(q, ngx_postgres_keepalive_cache_t,
+                              queue);
+
+        dd("postgres: disconnecting %p", item->connection);
+
+        ngx_postgres_upstream_free_connection(item->connection->log,
+                                              item->connection,
+                                              item->pgconn, pgscf);
+    }
+
+    dd("returning");
+}

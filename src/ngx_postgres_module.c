@@ -29,6 +29,7 @@
 #define DDEBUG 0
 #include "ngx_postgres_ddebug.h"
 #include "ngx_postgres_handler.h"
+#include "ngx_postgres_keepalive.h"
 #include "ngx_postgres_module.h"
 #include "ngx_postgres_upstream.h"
 #include "ngx_postgres_util.h"
@@ -122,6 +123,7 @@ void *
 ngx_postgres_upstream_create_srv_conf(ngx_conf_t *cf)
 {
     ngx_postgres_upstream_srv_conf_t  *conf;
+    ngx_pool_cleanup_t                *cln;
 
     dd("entering");
 
@@ -146,6 +148,10 @@ ngx_postgres_upstream_create_srv_conf(ngx_conf_t *cf)
     /* enable keepalive (single) by default */
     conf->max_cached = 10;
     conf->single = 1;
+
+    cln = ngx_pool_cleanup_add(cf->pool, 0);
+    cln->handler = ngx_postgres_keepalive_cleanup;
+    cln->data = conf;
 
     dd("returning");
     return conf;

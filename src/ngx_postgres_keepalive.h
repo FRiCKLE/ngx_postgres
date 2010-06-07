@@ -60,5 +60,6 @@ void        ngx_postgres_keepalive_free_peer(ngx_peer_connection_t *,
                 ngx_postgres_upstream_srv_conf_t *, ngx_uint_t);
 void        ngx_postgres_keepalive_dummy_handler(ngx_event_t *);
 void        ngx_postgres_keepalive_close_handler(ngx_event_t *);
+void        ngx_postgres_keepalive_cleanup(void *);
 
 #endif /* _NGX_POSTGRES_KEEPALIVE_H_ */
