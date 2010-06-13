@@ -61,6 +61,24 @@ ngx_postgres_handler(ngx_http_request_t *r)
         return NGX_HTTP_INTERNAL_SERVER_ERROR;
     }
 
+    pglcf = ngx_http_get_module_loc_conf(r, ngx_postgres_module);
+
+    if ((pglcf->default_query == NULL) && !(pglcf->methods_set & r->method)) {
+        if (pglcf->methods_set != 0) {
+            dd("returning NGX_HTTP_NOT_ALLOWED");
+            return NGX_HTTP_NOT_ALLOWED;
+        }
+
+        clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
+
+        ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
+                      "postgres: missing \"postgres_query\" in location \"%V\"",
+                      &clcf->name);
+
+        dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
+        return NGX_HTTP_INTERNAL_SERVER_ERROR;
+    }
+
 #if defined(nginx_version) \
     && (((nginx_version >= 7063) && (nginx_version < 8000)) \
         || (nginx_version >= 8007))
@@ -87,8 +105,6 @@ ngx_postgres_handler(ngx_http_request_t *r)
 #  endif
     r->upstream = u;
 #endif
-
-    pglcf = ngx_http_get_module_loc_conf(r, ngx_postgres_module);
 
     if (pglcf->upstream_cv) {
         /* use complex value */

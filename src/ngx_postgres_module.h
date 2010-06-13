@@ -88,15 +88,27 @@ typedef struct {
 } ngx_postgres_upstream_srv_conf_t;
 
 typedef struct {
-    /* simple values */
-    ngx_str_t                           query;
+    ngx_uint_t                          key;
+    ngx_str_t                           sv;
+    ngx_http_complex_value_t           *cv;
+} ngx_postgres_mixed_t;
+
+typedef struct {
+    /* upstream */
     ngx_http_upstream_conf_t            upstream;
-    /* complex values */
-    ngx_http_complex_value_t           *query_cv;
     ngx_http_complex_value_t           *upstream_cv;
+    /* queries */
+    ngx_postgres_mixed_t               *default_query;
+    ngx_uint_t                          methods_set;
+    ngx_array_t                        *queries;
     /* get_value */
     ngx_int_t                           get_value[2];
 } ngx_postgres_loc_conf_t;
+
+typedef struct {
+    u_char                             *name;
+    uint32_t                            key;
+} ngx_postgres_http_method_t;
 
 
 void  *ngx_postgres_upstream_create_srv_conf(ngx_conf_t *);

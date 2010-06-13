@@ -129,7 +129,9 @@ ngx_postgres_upstream_init_peer(ngx_http_request_t *r,
     ngx_postgres_loc_conf_t            *pglcf;
     ngx_http_core_loc_conf_t           *clcf;
     ngx_http_upstream_t                *u;
-    ngx_str_t                           query;
+    ngx_postgres_mixed_t               *query;
+    ngx_str_t                           sql;
+    ngx_uint_t                          i;
 
     dd("entering");
 
@@ -154,44 +156,62 @@ ngx_postgres_upstream_init_peer(ngx_http_request_t *r,
     u->peer.get = ngx_postgres_upstream_get_peer;
     u->peer.free = ngx_postgres_upstream_free_peer;
 
-    if (pglcf->query_cv) {
-        /* use complex value */
-        if (ngx_http_complex_value(r, pglcf->query_cv, &query) != NGX_OK) {
+    if (pglcf->methods_set & r->method) {
+        /* method-specific query */
+        dd("using method-specific query");
+
+        query = pglcf->queries->elts;
+        for (i = 0; i < pglcf->queries->nelts; i++) {
+            if (query[i].key & r->method) {
+                query = &query[i];
+                break;
+            }
+        }
+
+        if (i == pglcf->queries->nelts) {
+            dd("returning NGX_ERROR");
+            return NGX_ERROR;
+        }
+    } else {
+        /* default query */
+        dd("using default query");
+
+        query = pglcf->default_query;
+    }
+
+    if (query->cv) {
+        /* complex value */
+        dd("using complex value");
+
+        if (ngx_http_complex_value(r, query->cv, &sql) != NGX_OK) {
             dd("returning NGX_ERROR");
             return NGX_ERROR;
         }
 
-        if (query.len == 0) {
+        if (sql.len == 0) {
             clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
 
             ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
                           "postgres: empty \"postgres_query\" (was: \"%V\")"
-                          " in location \"%V\"", &pglcf->query_cv->value,
+                          " in location \"%V\"", &query->cv->value,
                           &clcf->name);
 
             dd("returning NGX_ERROR");
             return NGX_ERROR;
         }
 
-        pgdt->query = query;
-
-        dd("returning NGX_OK");
-        return NGX_OK;
-    } else if (pglcf->query.len != 0) {
-        /* use simple value */
-        pgdt->query = pglcf->query;
+        pgdt->query = sql;
 
         dd("returning NGX_OK");
         return NGX_OK;
     } else {
-        clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
+        /* simple value */
+        dd("using simple value");
 
-        ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                      "postgres: missing \"postgres_query\" in location \"%V\"",
-                      &clcf->name);
+        pgdt->query = query->sv;
 
-        dd("returning NGX_ERROR");
-        return NGX_ERROR;
+        dd("returning NGX_OK");
+        return NGX_OK;
     }
 }
 

@@ -37,9 +37,12 @@ CONFIGURATION DIRECTIVES:
   default: none
 
 
-  postgres_query query (context: http, server, location)
-  ------------------------------------------------------
-  Set query string (it can include variables).
+  postgres_query [method .. method] query (context: http, server, location)
+  -------------------------------------------------------------------------
+  Set query string (it can include variables). When methods are specified
+  then query is used only for them, otherwise it's used for all methods.
+
+  You can use this directive more than once within same context.
 
   default: none
 

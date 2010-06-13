@@ -59,7 +59,7 @@ static ngx_command_t ngx_postgres_module_commands[] = {
       NULL },
 
     { ngx_string("postgres_query"),
-      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_1MORE,
       ngx_postgres_conf_query,
       NGX_HTTP_LOC_CONF_OFFSET,
       0,
@@ -118,6 +118,23 @@ ngx_module_t ngx_postgres_module = {
     NGX_MODULE_V1_PADDING
 };
 
+ngx_postgres_http_method_t ngx_postgres_http_methods[] = {
+   { (u_char *) "GET",       (uint32_t) NGX_HTTP_GET },
+   { (u_char *) "HEAD",      (uint32_t) NGX_HTTP_HEAD },
+   { (u_char *) "POST",      (uint32_t) NGX_HTTP_POST },
+   { (u_char *) "PUT",       (uint32_t) NGX_HTTP_PUT },
+   { (u_char *) "DELETE",    (uint32_t) NGX_HTTP_DELETE },
+   { (u_char *) "MKCOL",     (uint32_t) NGX_HTTP_MKCOL },
+   { (u_char *) "COPY",      (uint32_t) NGX_HTTP_COPY },
+   { (u_char *) "MOVE",      (uint32_t) NGX_HTTP_MOVE },
+   { (u_char *) "OPTIONS",   (uint32_t) NGX_HTTP_OPTIONS },
+   { (u_char *) "PROPFIND" , (uint32_t) NGX_HTTP_PROPFIND },
+   { (u_char *) "PROPPATCH", (uint32_t) NGX_HTTP_PROPPATCH },
+   { (u_char *) "LOCK",      (uint32_t) NGX_HTTP_LOCK },
+   { (u_char *) "UNLOCK",    (uint32_t) NGX_HTTP_UNLOCK },
+   { NULL, 0 }
+};
+
 
 void *
 ngx_postgres_upstream_create_srv_conf(ngx_conf_t *cf)
@@ -134,13 +151,13 @@ ngx_postgres_upstream_create_srv_conf(ngx_conf_t *cf)
     }
 
     /* set by ngx_pcalloc:
-     *      conf->peers   = NULL
-     *      conf->current = 0
-     *      conf->servers = NULL
-     *      conf->single = 0
-     *      conf->max_cached = 0
-     *      conf->overflow = 0 (postgres_keepalive_overflow_ignore)
-     *      conf->postgres = NULL
+     *     conf->peers = NULL
+     *     conf->current = 0
+     *     conf->servers = NULL
+     *     conf->free = { NULL, NULL }
+     *     conf->cache = { NULL, NULL }
+     *     conf->active_conns = 0
+     *     conf->overflow = 0 (postgres_keepalive_overflow_ignore)
      */
 
     conf->pool = cf->pool;
@@ -169,6 +186,14 @@ ngx_postgres_create_loc_conf(ngx_conf_t *cf)
         dd("returning NULL");
         return NULL;
     }
+
+    /* set by ngx_pcalloc:
+     *     conf->upstream.* = 0 / NULL
+     *     conf->upstream_cv = NULL
+     *     conf->default_query = NULL
+     *     conf->methods_set = 0
+     *     conf->queries = NULL
+     */
 
     conf->upstream.connect_timeout = NGX_CONF_UNSET_MSEC;
     conf->upstream.read_timeout = NGX_CONF_UNSET_MSEC;
@@ -208,14 +233,15 @@ ngx_postgres_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
     ngx_conf_merge_msec_value(conf->upstream.read_timeout,
                               prev->upstream.read_timeout, 30000);
 
-    if ((conf->query.len == 0) && (conf->query_cv == NULL)) {
-        conf->query = prev->query;
-        conf->query_cv = prev->query_cv;
-    }
-
     if ((conf->upstream.upstream == NULL) && (conf->upstream_cv == NULL)) {
         conf->upstream.upstream = prev->upstream.upstream;
         conf->upstream_cv = prev->upstream_cv;
+    }
+
+    if ((conf->default_query == NULL) && (conf->queries == NULL)) {
+        conf->default_query = prev->default_query;
+        conf->methods_set = prev->methods_set;
+        conf->queries = prev->queries;
     }
 
     if (conf->get_value[0] == NGX_CONF_UNSET) {
@@ -486,7 +512,7 @@ ngx_postgres_conf_pass(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     }
 
     if (ngx_http_script_variables_count(&value[1])) {
-        /* complrex value */
+        /* complex value */
         dd("complex value");
 
         pglcf->upstream_cv = ngx_palloc(cf->pool,
@@ -533,17 +559,16 @@ char *
 ngx_postgres_conf_query(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
     ngx_str_t                         *value = cf->args->elts;
+    ngx_str_t                          sql = value[cf->args->nelts - 1];
     ngx_postgres_loc_conf_t           *pglcf = conf;
     ngx_http_compile_complex_value_t   ccv;
+    ngx_postgres_mixed_t              *query;
+    ngx_postgres_http_method_t        *method;
+    ngx_uint_t                         methods, i;
 
     dd("entering");
 
-    if ((pglcf->query.len != 0) || (pglcf->query_cv != NULL)) {
-        dd("returning");
-        return "is duplicate";
-    }
-
-    if (value[1].len == 0) {
+    if (sql.len == 0) {
         ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
                            "postgres: empty value in \"%V\" directive",
                            &cmd->name);
@@ -552,13 +577,85 @@ ngx_postgres_conf_query(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         return NGX_CONF_ERROR;
     }
 
-    if (ngx_http_script_variables_count(&value[1])) {
-        /* complrex value */
+    if (cf->args->nelts == 2) {
+        /* default query */
+        dd("default query");
+
+        if (pglcf->default_query != NULL) {
+            dd("returning");
+            return "is duplicate";
+        }
+
+        pglcf->default_query = ngx_pcalloc(cf->pool,
+                                           sizeof(ngx_postgres_mixed_t));
+        if (pglcf->default_query == NULL) {
+            dd("returning NGX_CONF_ERROR");
+            return NGX_CONF_ERROR;
+        }
+
+        methods = 0xFFFF;
+        query = pglcf->default_query;
+    } else {
+        /* method-specific query */
+        dd("method-specific query");
+
+        methods = 0;
+
+        for (i = 1; i < cf->args->nelts - 1; i++) {
+            for (method = ngx_postgres_http_methods; method->name; method++) {
+                if (ngx_strcasecmp(value[i].data, method->name) == 0) {
+                    /* correct method name */
+                    if (pglcf->methods_set & method->key) {
+                        ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
+                                           "postgres: \"%V\" directive"
+                                           " for method \"%V\" is duplicate",
+                                           &cmd->name, &value[i]);
+
+                        dd("returning NGX_CONF_ERROR");
+                        return NGX_CONF_ERROR;
+                    }
+
+                    methods |= method->key;
+                    goto next;
+                }
+            }
+
+            ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
+                               "postgres: invalid method \"%V\"", &value[i]);
+
+            dd("returning NGX_CONF_ERROR");
+            return NGX_CONF_ERROR;
+
+next:
+            continue;
+        }
+
+        if (pglcf->queries == NULL) {
+            pglcf->queries = ngx_array_create(cf->pool, 4,
+                                              sizeof(ngx_postgres_mixed_t));
+            if (pglcf->queries == NULL) {
+                dd("returning NGX_CONF_ERROR");
+                return NGX_CONF_ERROR;
+            }
+        }
+
+        query = ngx_array_push(pglcf->queries);
+        if (query == NULL) {
+            dd("returning NGX_CONF_ERROR");
+            return NGX_CONF_ERROR;
+        }
+
+        pglcf->methods_set |= methods;
+    }
+
+    if (ngx_http_script_variables_count(&sql)) {
+        /* complex value */
         dd("complex value");
 
-        pglcf->query_cv = ngx_palloc(cf->pool,
-                                     sizeof(ngx_http_complex_value_t));
-        if (pglcf->query_cv == NULL) {
+        query->key = methods;
+
+        query->cv = ngx_palloc(cf->pool, sizeof(ngx_http_complex_value_t));
+        if (query->cv == NULL) {
             dd("returning NGX_CONF_ERROR");
             return NGX_CONF_ERROR;
         }
@@ -566,25 +663,23 @@ ngx_postgres_conf_query(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         ngx_memzero(&ccv, sizeof(ngx_http_compile_complex_value_t));
 
         ccv.cf = cf;
-        ccv.value = &value[1];
-        ccv.complex_value = pglcf->query_cv;
+        ccv.value = &sql;
+        ccv.complex_value = query->cv;
 
         if (ngx_http_compile_complex_value(&ccv) != NGX_OK) {
             dd("returning NGX_CONF_ERROR");
             return NGX_CONF_ERROR;
         }
-
-        dd("returning NGX_CONF_OK");
-        return NGX_CONF_OK;
     } else {
         /* simple value */
         dd("simple value");
 
-        pglcf->query = value[1];
-
-        dd("returning NGX_CONF_OK");
-        return NGX_CONF_OK;
+        query->key = methods;
+        query->sv = sql;
     }
+
+    dd("returning NGX_CONF_OK");
+    return NGX_CONF_OK;
 }
 
 char *
