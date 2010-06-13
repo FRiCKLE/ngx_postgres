@@ -5,7 +5,7 @@ use Test::Nginx::Socket;
 
 repeat_each(2);
 
-plan tests => repeat_each() * 2 * blocks() + repeat_each() * 2;
+plan tests => repeat_each() * (blocks() * 3);
 
 worker_connections(128);
 run_tests();
@@ -93,6 +93,8 @@ insert into cats (id, name) values (3, 'bob');
 --- request
 GET /postgres
 --- error_code: 200
+--- response_headers
+Content-Type: application/x-resty-dbd-stream
 --- response_body eval
 "\x{00}".        # endian
 "\x{03}\x{00}\x{00}\x{00}".  # format version 0.0.3
@@ -148,6 +150,8 @@ insert into cats (id, name) values (3, 'bob');
 --- request
 GET /postgres
 --- error_code: 200
+--- response_headers
+Content-Type: application/x-resty-dbd-stream
 --- response_body eval
 "\x{00}".        # endian
 "\x{03}\x{00}\x{00}\x{00}".  # format version 0.0.3
@@ -184,6 +188,8 @@ insert into cats (id, name) values (3, 'bob');
 --- request
 GET /postgres
 --- error_code: 200
+--- response_headers
+Content-Type: application/x-resty-dbd-stream
 --- response_body eval
 "\x{00}".        # endian
 "\x{03}\x{00}\x{00}\x{00}".  # format version 0.0.3
