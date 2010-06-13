@@ -29,8 +29,8 @@ CONFIGURATION DIRECTIVES:
   default: max=10 mode=single overflow=ignore
 
 
-  postgres_pass upstream (context: http, server, location)
-  --------------------------------------------------------
+  postgres_pass upstream (context: location)
+  ------------------------------------------
   Set name of an upstream block that will be used for the database
   connections (it can include variables).
 
