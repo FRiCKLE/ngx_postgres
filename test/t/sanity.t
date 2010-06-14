@@ -250,3 +250,32 @@ Content-Type: application/x-resty-dbd-stream
 "\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}".  # insert id
 "\x{00}\x{00}"   # col count
 --- timeout: 10
+
+
+
+=== TEST 6: HEAD request
+little-endian systems only
+
+db init:
+
+create table cats (id integer, name text);
+insert into cats (id) values (2);
+insert into cats (id, name) values (3, 'bob');
+
+--- http_config
+    upstream database {
+        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
+    }
+--- config
+    location /postgres {
+        postgres_pass       database;
+        postgres_query      "select * from cats";
+    }
+--- request
+HEAD /postgres
+--- error_code: 200
+--- response_headers
+Content-Type: application/x-resty-dbd-stream
+--- response_body eval
+""
+--- timeout: 10

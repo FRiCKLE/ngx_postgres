@@ -463,14 +463,14 @@ ngx_postgres_output_chain(ngx_http_request_t *r, ngx_chain_t *cl)
         }
 
         rc = ngx_http_send_header(r);
-        if (rc == NGX_ERROR || rc >= NGX_HTTP_SPECIAL_RESPONSE) {
+        if (rc == NGX_ERROR || rc > NGX_OK || r->header_only) {
             dd("returning rc:%d", (int) rc);
             return rc;
         }
     }
 
     rc = ngx_http_output_filter(r, cl);
-    if (rc == NGX_ERROR || rc >= NGX_HTTP_SPECIAL_RESPONSE) {
+    if (rc == NGX_ERROR || rc > NGX_OK) {
         dd("returning rc:%d", (int) rc);
         return rc;
     }
