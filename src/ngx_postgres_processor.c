@@ -302,8 +302,8 @@ ngx_postgres_upstream_get_result(ngx_http_request_t *r, ngx_connection_t *pgxc,
     PQclear(res);
 
     if (rc != NGX_DONE) {
-        dd("returning NGX_ERROR");
-        return NGX_ERROR;
+        dd("returning rc:%d", (int) rc);
+        return rc;
     }
 
     dd("result processed successfully");

@@ -65,19 +65,19 @@ ngx_postgres_output_value(ngx_http_request_t *r, PGresult *res, ngx_int_t row,
     row_count = PQntuples(res);
 
     if ((row >= row_count) || (col >= col_count)) {
-        dd("returning NGX_ERROR");
-        return NGX_ERROR;
+        dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
+        return NGX_HTTP_INTERNAL_SERVER_ERROR;
     }
 
     if (PQgetisnull(res, row, col)) {
-        dd("returning NGX_ERROR");
-        return NGX_ERROR;
+        dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
+        return NGX_HTTP_INTERNAL_SERVER_ERROR;
     }
 
     len = PQgetlength(res, row, col); 
     if (len == 0) {
-        dd("returning NGX_ERROR");
-        return NGX_ERROR;
+        dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
+        return NGX_HTTP_INTERNAL_SERVER_ERROR;
     }
 
     b = ngx_create_temp_buf(r->pool, len);
