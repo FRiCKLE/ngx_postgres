@@ -90,8 +90,6 @@ insert into cats (id, name) values (3, 'bob');
         postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
     }
 --- config
-    default_type  text/html;
-
     location /postgres {
         postgres_pass       database;
         postgres_query      "select * from cats where name='bob'";
@@ -140,8 +138,6 @@ little-endian systems only
         postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
     }
 --- config
-    default_type  text/html;
-
     location /postgres {
         postgres_pass       database;
         postgres_query      "select '' as echo";

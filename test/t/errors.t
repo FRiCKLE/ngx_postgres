@@ -25,7 +25,7 @@ little-endian systems only
 --- config
     location /postgres {
         postgres_pass       database;
-        postgres_query      "update table_that_doesnt_exist set name='bob'";
+        postgres_query      "i'm bad";
     }
 --- request
 GET /postgres
@@ -147,6 +147,26 @@ little-endian systems only
         set $database       "";
         postgres_pass       $database;
         postgres_query      "update cats set name='bob' where name='bob'";
+    }
+--- request
+GET /postgres
+--- error_code: 500
+--- timeout: 10
+
+
+
+=== TEST 8: non-existing table
+little-endian systems only
+
+--- http_config
+    upstream database {
+        postgres_server     127.0.0.1 dbname=test
+                            user=monty password=some_pass;
+    }
+--- config
+    location /postgres {
+        postgres_pass       database;
+        postgres_query      "update table_that_doesnt_exist set name='bob'";
     }
 --- request
 GET /postgres
