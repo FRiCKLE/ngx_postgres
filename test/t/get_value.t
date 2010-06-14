@@ -5,7 +5,7 @@ use Test::Nginx::Socket;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 3 - 2 * 2);
+plan tests => repeat_each() * (blocks() * 3 - 3 * 2);
 
 worker_connections(128);
 run_tests();
@@ -124,6 +124,28 @@ insert into cats (id, name) values (3, 'bob');
         postgres_pass       database;
         postgres_query      "select * from cats where id='2'";
         postgres_get_value  0 1;
+    }
+--- request
+GET /postgres
+--- error_code: 500
+--- timeout: 10
+
+
+
+=== TEST 5: empty value
+little-endian systems only
+
+--- http_config
+    upstream database {
+        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
+    }
+--- config
+    default_type  text/html;
+
+    location /postgres {
+        postgres_pass       database;
+        postgres_query      "select '' as echo";
+        postgres_get_value  0 0;
     }
 --- request
 GET /postgres

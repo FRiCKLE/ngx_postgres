@@ -55,9 +55,10 @@ ngx_int_t
 ngx_postgres_output_value(ngx_http_request_t *r, PGresult *res, ngx_int_t row,
     ngx_int_t col)
 {
-    ngx_chain_t  *cl;
-    ngx_buf_t    *b;
-    ngx_int_t     col_count, row_count, len;
+    ngx_http_core_loc_conf_t  *clcf;
+    ngx_chain_t               *cl;
+    ngx_buf_t                 *b;
+    ngx_int_t                  col_count, row_count, len;
 
     dd("entering");
 
@@ -65,17 +66,36 @@ ngx_postgres_output_value(ngx_http_request_t *r, PGresult *res, ngx_int_t row,
     row_count = PQntuples(res);
 
     if ((row >= row_count) || (col >= col_count)) {
+        clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
+
+        ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
+                      "postgres: \"postgres_get_value\" requires value out of"
+                      " range of the received result-set (rows:%d cols:%d)"
+                      " in location \"%V\"", row_count, col_count, &clcf->name);
+
         dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
         return NGX_HTTP_INTERNAL_SERVER_ERROR;
     }
 
     if (PQgetisnull(res, row, col)) {
+        clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
+
+        ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
+                      "postgres: \"postgres_get_value\" received NULL value"
+                      " in location \"%V\"", &clcf->name);
+
         dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
         return NGX_HTTP_INTERNAL_SERVER_ERROR;
     }
 
     len = PQgetlength(res, row, col); 
     if (len == 0) {
+        clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
+
+        ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
+                      "postgres: \"postgres_get_value\" received empty value"
+                      " in location \"%V\"", &clcf->name);
+
         dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
         return NGX_HTTP_INTERNAL_SERVER_ERROR;
     }
