@@ -132,6 +132,9 @@ ngx_postgres_http_method_t ngx_postgres_http_methods[] = {
    { (u_char *) "PROPPATCH", (uint32_t) NGX_HTTP_PROPPATCH },
    { (u_char *) "LOCK",      (uint32_t) NGX_HTTP_LOCK },
    { (u_char *) "UNLOCK",    (uint32_t) NGX_HTTP_UNLOCK },
+#if defined(nginx_version) && (nginx_version >= 8041)
+   { (u_char *) "PATCH",     (uint32_t) NGX_HTTP_PATCH },
+#endif
    { NULL, 0 }
 };
 

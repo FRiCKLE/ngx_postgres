@@ -335,3 +335,44 @@ little-endian systems only
 HEAD /postgres
 --- error_code: 405
 --- timeout: 10
+
+
+
+=== TEST 10: HTTP PATCH request method
+little-endian systems only
+
+--- http_config
+    upstream database {
+        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
+    }
+--- config
+    location /postgres {
+        postgres_pass       database;
+        postgres_query      PATCH "select '$request_method' as echo";
+    }
+--- request
+PATCH /postgres
+--- error_code: 200
+--- response_headers
+Content-Type: application/x-resty-dbd-stream
+--- response_body eval
+"\x{00}".        # endian
+"\x{03}\x{00}\x{00}\x{00}".  # format version 0.0.3
+"\x{00}".        # result type
+"\x{00}\x{00}".  # std errcode
+"\x{02}\x{00}".  # driver errcode
+"\x{00}\x{00}".  # driver errstr len
+"".              # driver errstr data
+"\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}".  # rows affected
+"\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}".  # insert id
+"\x{01}\x{00}".  # col count
+"\x{00}\x{80}".  # std col type (unknown/str)
+"\x{c1}\x{02}".  # driver col type
+"\x{04}\x{00}".  # col name len
+"echo".          # col name data
+"\x{01}".        # valid row flag
+"\x{05}\x{00}\x{00}\x{00}".  # field len
+"PATCH".         # field data
+"\x{00}"         # row list terminator
+--- timeout: 10
+--- skip_nginx: 3: < 0.8.41
