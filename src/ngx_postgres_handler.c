@@ -34,8 +34,6 @@
 #include "ngx_postgres_processor.h"
 #include "ngx_postgres_util.h"
 
-#include <nginx.h>
-
 
 ngx_int_t
 ngx_postgres_handler(ngx_http_request_t *r)
@@ -295,13 +293,17 @@ ngx_postgres_abort_request(ngx_http_request_t *r)
 void
 ngx_postgres_finalize_request(ngx_http_request_t *r, ngx_int_t rc)
 {
-    ngx_chain_t  *response;
+    ngx_postgres_ctx_t  *pgctx;
 
     dd("entering");
 
     if (rc == NGX_OK) {
-        response = ngx_http_get_module_ctx(r, ngx_postgres_module);
-        ngx_postgres_output_chain(r, response);
+        pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
+        if (pgctx != NULL) {
+            ngx_postgres_output_chain(r, pgctx->response);
+        } else {
+            ngx_postgres_output_chain(r, NULL);
+        }
     }
 
     dd("returning");

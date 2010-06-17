@@ -55,6 +55,17 @@ CONFIGURATION DIRECTIVES:
   default: none
 
 
+  postgres_set $variable row column [optional|required] (context: http, server, location)
+  ---------------------------------------------------------------------------------------
+  Get single value from the result-set and keep it in $variable. When requirement level
+  is set to "required" and value is either out-of-range, NULL or zero-length, then nginx
+  returns 500 Internal Server Error. Such condition is silently ignored when requirement
+  level is set to "optional".
+  Row and column numbers start at 0.
+
+  default: none
+
+
   postgres_connect_timeout timeout (context: http, server, location)
   ------------------------------------------------------------------
   Set timeout for connecting to the database (in milliseconds).
@@ -67,6 +78,25 @@ CONFIGURATION DIRECTIVES:
   Set timeout for receiving result from the database (in milliseconds).
 
   default: 30000ms (30s)
+
+
+CONFIGURATION VARIABLES:
+------------------------
+
+  $postgres_column_count
+  ----------------------
+  Number of columns in received result-set.
+
+
+  $postgres_row_count
+  -------------------
+  Number of rows in received result-set.
+
+
+  $postgres_value
+  ---------------
+  Single value from the received result-set (available only when
+  "postgres_get_value" directive is being used).
 
 
 EXAMPLE CONFIGURATION #1:

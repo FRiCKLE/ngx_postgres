@@ -33,28 +33,10 @@
 
 
 ngx_int_t
-ngx_postgres_output(ngx_http_request_t *r, PGresult *res)
-{
-    ngx_postgres_loc_conf_t  *pglcf;
-
-    dd("entering");
-
-    pglcf = ngx_http_get_module_loc_conf(r, ngx_postgres_module);
-
-    if (pglcf->get_value[0] != NGX_CONF_UNSET) {
-        dd("returning (single value)");
-        return ngx_postgres_output_value(r, res, pglcf->get_value[0],
-                                         pglcf->get_value[1]);
-    } else {
-        dd("returning (RDS)");
-        return ngx_postgres_output_rds(r, res);
-    }
-}
-
-ngx_int_t
 ngx_postgres_output_value(ngx_http_request_t *r, PGresult *res, ngx_int_t row,
     ngx_int_t col)
 {
+    ngx_postgres_ctx_t        *pgctx;
     ngx_http_core_loc_conf_t  *clcf;
     ngx_chain_t               *cl;
     ngx_buf_t                 *b;
@@ -126,7 +108,17 @@ ngx_postgres_output_value(ngx_http_request_t *r, PGresult *res, ngx_int_t row,
 
     cl->next = NULL;
 
-    ngx_http_set_ctx(r, cl, ngx_postgres_module);
+    pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
+    pgctx->response = cl;
+
+    pgctx->var_value.len = len;
+    pgctx->var_value.data = ngx_pnalloc(r->pool, len);
+    if (pgctx->var_value.data == NULL) {
+        dd("returning NGX_ERROR");
+        return NGX_ERROR;
+    }
+
+    ngx_copy(pgctx->var_value.data, PQgetvalue(res, row, col), len);
 
     dd("returning NGX_DONE");
     return NGX_DONE;
@@ -135,8 +127,9 @@ ngx_postgres_output_value(ngx_http_request_t *r, PGresult *res, ngx_int_t row,
 ngx_int_t
 ngx_postgres_output_rds(ngx_http_request_t *r, PGresult *res)
 {
-    ngx_chain_t  *first, *last;
-    ngx_int_t     col_count, row_count, row;
+    ngx_postgres_ctx_t  *pgctx;
+    ngx_chain_t         *first, *last;
+    ngx_int_t            col_count, row_count, row;
 
     dd("entering");
 
@@ -184,7 +177,8 @@ ngx_postgres_output_rds(ngx_http_request_t *r, PGresult *res)
 done:
     last->next = NULL;
 
-    ngx_http_set_ctx(r, first, ngx_postgres_module);
+    pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
+    pgctx->response = first;
 
     dd("returning NGX_DONE");
     return NGX_DONE;
@@ -487,6 +481,11 @@ ngx_postgres_output_chain(ngx_http_request_t *r, ngx_chain_t *cl)
             dd("returning rc:%d", (int) rc);
             return rc;
         }
+    }
+
+    if (cl == NULL) {
+        dd("returning NGX_DONE");
+        return NGX_DONE;
     }
 
     rc = ngx_http_output_filter(r, cl);

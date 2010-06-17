@@ -31,6 +31,7 @@
 
 #include <ngx_core.h>
 #include <ngx_http.h>
+#include <libpq-fe.h>
 
 #include "ngx_postgres_upstream.h"
 
@@ -42,6 +43,7 @@ ngx_int_t  ngx_postgres_upstream_send_query(ngx_http_request_t *,
                ngx_connection_t *, ngx_postgres_upstream_peer_data_t *);
 ngx_int_t  ngx_postgres_upstream_get_result(ngx_http_request_t *,
                ngx_connection_t *, ngx_postgres_upstream_peer_data_t *);
+ngx_int_t  ngx_postgres_process_response(ngx_http_request_t *, PGresult *);
 ngx_int_t  ngx_postgres_upstream_get_ack(ngx_http_request_t *,
                ngx_connection_t *, ngx_postgres_upstream_peer_data_t *);
 ngx_int_t  ngx_postgres_upstream_done(ngx_http_request_t *,

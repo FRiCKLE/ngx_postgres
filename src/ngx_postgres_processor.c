@@ -31,6 +31,7 @@
 #include "ngx_postgres_output.h"
 #include "ngx_postgres_processor.h"
 #include "ngx_postgres_util.h"
+#include "ngx_postgres_variable.h"
 
 
 void
@@ -297,7 +298,8 @@ ngx_postgres_upstream_get_result(ngx_http_request_t *r, ngx_connection_t *pgxc,
     dd("result received successfully, cols:%d rows:%d",
        PQnfields(res), PQntuples(res));
 
-    rc = ngx_postgres_output(r, res);
+    pgxc->log->action = "processing result from PostgreSQL database";
+    rc = ngx_postgres_process_response(r, res);
 
     PQclear(res);
 
@@ -313,6 +315,72 @@ ngx_postgres_upstream_get_result(ngx_http_request_t *r, ngx_connection_t *pgxc,
 
     dd("returning");
     return ngx_postgres_upstream_get_ack(r, pgxc, pgdt);
+}
+
+ngx_int_t
+ngx_postgres_process_response(ngx_http_request_t *r, PGresult *res)
+{
+    ngx_postgres_loc_conf_t  *pglcf;
+    ngx_postgres_ctx_t       *pgctx;
+    ngx_postgres_variable_t  *pgvar;
+    ngx_str_t                *store;
+    ngx_uint_t                i;
+
+    dd("entering");
+
+    pglcf = ngx_http_get_module_loc_conf(r, ngx_postgres_module);
+
+    pgctx = ngx_pcalloc(r->pool, sizeof(ngx_postgres_ctx_t));
+    if (pgctx == NULL) {
+        dd("returning NGX_ERROR");
+        return NGX_ERROR;
+    }
+
+    /*
+     * set by ngx_pcalloc():
+     *
+     *     pgctx->response = NULL
+     *     pgctx->var_value = { 0, NULL }
+     *     pgctx->variables = NULL
+     */
+
+    pgctx->var_cols = PQnfields(res);
+    pgctx->var_rows = PQntuples(res);
+
+    ngx_http_set_ctx(r, pgctx, ngx_postgres_module);
+
+    if (pglcf->variables != NULL) {
+        /* set custom variables */
+        pgctx->variables = ngx_array_create(r->pool, pglcf->variables->nelts,
+                                            sizeof(ngx_str_t));
+        if (pgctx->variables == NULL) {
+            dd("returning NGX_ERROR");
+            return NGX_ERROR;
+        }
+
+        /* skip ngx_array_push'ing */
+        pgctx->variables->nelts = pglcf->variables->nelts;
+
+        pgvar = pglcf->variables->elts;
+        store = pgctx->variables->elts;
+
+        for (i = 0; i < pglcf->variables->nelts; i++) {
+            store[i] = ngx_postgres_variable_set_custom(r, res, &pgvar[i]);
+            if ((store[i].len == 0) && (pgvar[i].value.required)) {
+                dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
+                return NGX_HTTP_INTERNAL_SERVER_ERROR;
+            }
+        }
+    }
+
+    if (pglcf->get_value[0] != NGX_CONF_UNSET) {
+        dd("returning (single value)");
+        return ngx_postgres_output_value(r, res, pglcf->get_value[0],
+                                         pglcf->get_value[1]);
+    } else {
+        dd("returning (RDS)");
+        return ngx_postgres_output_rds(r, res);
+    }
 }
 
 ngx_int_t

@@ -1,7 +1,5 @@
 /*
  * Copyright (c) 2010, FRiCKLE Piotr Sikora <info@frickle.com>
- * Copyright (c) 2009-2010, Xiaozhe Wang <chaoslawful@gmail.com>
- * Copyright (c) 2009-2010, Yichun Zhang <agentzh@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,28 +24,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _NGX_POSTGRES_OUTPUT_H_
-#define _NGX_POSTGRES_OUTPUT_H_
+#ifndef _NGX_POSTGRES_VARIABLE_H_
+#define _NGX_POSTGRES_VARIABLE_H_
 
 #include <ngx_core.h>
 #include <ngx_http.h>
 #include <libpq-fe.h>
 
-#include "resty_dbd_stream.h"
+#include "ngx_postgres_module.h"
 
 
-ngx_int_t        ngx_postgres_output_value(ngx_http_request_t *, PGresult *,
-                     ngx_int_t, ngx_int_t);
-ngx_int_t        ngx_postgres_output_rds(ngx_http_request_t *, PGresult *);
-ngx_chain_t     *ngx_postgres_render_rds_header(ngx_http_request_t *,
-                     ngx_pool_t *, PGresult *, ngx_int_t);
-ngx_chain_t     *ngx_postgres_render_rds_columns(ngx_http_request_t *,
-                     ngx_pool_t *, PGresult *, ngx_int_t);
-ngx_chain_t     *ngx_postgres_render_rds_row(ngx_http_request_t *, ngx_pool_t *,
-                     PGresult *, ngx_int_t, ngx_int_t);
-ngx_chain_t     *ngx_postgres_render_rds_row_terminator(ngx_http_request_t *,
-                     ngx_pool_t *);
-ngx_int_t        ngx_postgres_output_chain(ngx_http_request_t *, ngx_chain_t *);
-rds_col_type_t   ngx_postgres_rds_col_type(Oid);
+ngx_int_t  ngx_postgres_variable_column_count(ngx_http_request_t *,
+               ngx_http_variable_value_t *, uintptr_t);
+ngx_int_t  ngx_postgres_variable_row_count(ngx_http_request_t *,
+               ngx_http_variable_value_t *, uintptr_t);
+ngx_int_t  ngx_postgres_variable_value(ngx_http_request_t *,
+               ngx_http_variable_value_t *, uintptr_t);
+ngx_int_t  ngx_postgres_variable_get_custom(ngx_http_request_t *,
+               ngx_http_variable_value_t *, uintptr_t);
+ngx_str_t  ngx_postgres_variable_set_custom(ngx_http_request_t *r,
+               PGresult *, ngx_postgres_variable_t *);
 
-#endif /* _NGX_POSTGRES_OUTPUT_H_ */
+#endif /* _NGX_POSTGRES_VARIABLE_H_ */
