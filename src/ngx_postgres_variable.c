@@ -223,7 +223,7 @@ ngx_postgres_variable_set_custom(ngx_http_request_t *r, PGresult *res,
         return value;
     }
 
-    ngx_copy(value.data, PQgetvalue(res, pgv->row, pgv->column), len);
+    ngx_memcpy(value.data, PQgetvalue(res, pgv->row, pgv->column), len);
     value.len = len;
 
     dd("returning non-empty value");

@@ -118,7 +118,7 @@ ngx_postgres_output_value(ngx_http_request_t *r, PGresult *res, ngx_int_t row,
         return NGX_ERROR;
     }
 
-    ngx_copy(pgctx->var_value.data, PQgetvalue(res, row, col), len);
+    ngx_memcpy(pgctx->var_value.data, PQgetvalue(res, row, col), len);
 
     dd("returning NGX_DONE");
     return NGX_DONE;
