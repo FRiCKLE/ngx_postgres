@@ -711,6 +711,8 @@ next:
             return NGX_CONF_ERROR;
         }
 
+        ngx_memzero(query, sizeof(ngx_postgres_mixed_t));
+
         pglcf->methods_set |= methods;
     }
 
