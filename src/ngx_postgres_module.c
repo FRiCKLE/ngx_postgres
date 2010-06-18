@@ -652,8 +652,8 @@ ngx_postgres_conf_query(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
             return "is duplicate";
         }
 
-        pglcf->default_query = ngx_pcalloc(cf->pool,
-                                           sizeof(ngx_postgres_mixed_t));
+        pglcf->default_query = ngx_palloc(cf->pool,
+                                          sizeof(ngx_postgres_mixed_t));
         if (pglcf->default_query == NULL) {
             dd("returning NGX_CONF_ERROR");
             return NGX_CONF_ERROR;
@@ -742,6 +742,7 @@ next:
 
         query->key = methods;
         query->sv = sql;
+        query->cv = NULL;
     }
 
     dd("returning NGX_CONF_OK");
