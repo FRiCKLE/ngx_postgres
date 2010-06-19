@@ -111,6 +111,7 @@ ngx_postgres_output_value(ngx_http_request_t *r, PGresult *res, ngx_int_t row,
     pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
     pgctx->response = cl;
 
+    /* set $postgres_value */
     pgctx->var_value.len = len;
     pgctx->var_value.data = ngx_pnalloc(r->pool, len);
     if (pgctx->var_value.data == NULL) {

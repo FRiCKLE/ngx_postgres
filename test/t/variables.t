@@ -5,7 +5,7 @@ use Test::Nginx::Socket;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 3 + 2 * 1 - 3 * 2);
+plan tests => repeat_each() * (blocks() * 3 + 1 * 4 + 2 * 1 - 3 * 2);
 
 worker_connections(128);
 run_tests();
@@ -283,4 +283,78 @@ GET /postgres
 --- response_headers
 Content-Type: application/x-resty-dbd-stream
 X-Value:
+--- timeout: 10
+
+
+
+=== TEST 12: $postgres_query (simple value)
+little-endian systems only
+
+--- http_config
+    upstream database {
+        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
+    }
+--- config
+    location /postgres {
+        postgres_pass       database;
+        postgres_query      "select 'test' as echo";
+        add_header          "X-Query" $postgres_query;
+    }
+--- request
+GET /postgres
+--- error_code: 200
+--- response_headers
+Content-Type: application/x-resty-dbd-stream
+X-Query: select 'test' as echo
+--- timeout: 10
+
+
+
+=== TEST 13: $postgres_query (simple value)
+little-endian systems only
+
+--- http_config
+    upstream database {
+        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
+    }
+--- config
+    location /postgres {
+        postgres_pass       database;
+        postgres_query      "select '$request_method' as echo";
+        add_header          "X-Query" $postgres_query;
+    }
+--- request
+GET /postgres
+--- error_code: 200
+--- response_headers
+Content-Type: application/x-resty-dbd-stream
+X-Query: select 'GET' as echo
+--- timeout: 10
+
+
+
+=== TEST 14: variables used in non-ngx_postgres location
+little-endian systems only
+
+--- http_config
+--- config
+    location /etc {
+        root                /;
+        add_header          "X-Columns" $postgres_column_count;
+        add_header          "X-Rows" $postgres_row_count;
+        add_header          "X-Query" $postgres_query;
+        add_header          "X-Value" $postgres_value;
+        postgres_set        $pg 0 0 required;
+        add_header          "X-Custom" $pg;
+    }
+--- request
+GET /etc/passwd
+--- error_code: 200
+--- response_headers
+Content-Type: text/plain
+X-Columns:
+X-Rows:
+X-Value:
+X-Query:
+X-Custom:
 --- timeout: 10

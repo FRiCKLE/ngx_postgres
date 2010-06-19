@@ -329,38 +329,16 @@ ngx_postgres_process_response(ngx_http_request_t *r, PGresult *res)
     dd("entering");
 
     pglcf = ngx_http_get_module_loc_conf(r, ngx_postgres_module);
+    pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
 
-    pgctx = ngx_pcalloc(r->pool, sizeof(ngx_postgres_ctx_t));
-    if (pgctx == NULL) {
-        dd("returning NGX_ERROR");
-        return NGX_ERROR;
-    }
-
-    /*
-     * set by ngx_pcalloc():
-     *
-     *     pgctx->response = NULL
-     *     pgctx->var_value = { 0, NULL }
-     *     pgctx->variables = NULL
-     */
-
+    /* set $postgres_column_count */
     pgctx->var_cols = PQnfields(res);
-    pgctx->var_rows = PQntuples(res);
 
-    ngx_http_set_ctx(r, pgctx, ngx_postgres_module);
+    /* set $postgres_row_count */
+    pgctx->var_rows = PQntuples(res);
 
     if (pglcf->variables != NULL) {
         /* set custom variables */
-        pgctx->variables = ngx_array_create(r->pool, pglcf->variables->nelts,
-                                            sizeof(ngx_str_t));
-        if (pgctx->variables == NULL) {
-            dd("returning NGX_ERROR");
-            return NGX_ERROR;
-        }
-
-        /* skip ngx_array_push'ing */
-        pgctx->variables->nelts = pglcf->variables->nelts;
-
         pgvar = pglcf->variables->elts;
         store = pgctx->variables->elts;
 

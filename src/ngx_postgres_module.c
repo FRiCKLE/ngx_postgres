@@ -108,6 +108,10 @@ static ngx_http_variable_t ngx_postgres_module_variables[] = {
       ngx_postgres_variable_row_count, 0,
       NGX_HTTP_VAR_NOCACHEABLE|NGX_HTTP_VAR_NOHASH, 0 },
 
+    { ngx_string("postgres_query"), NULL,
+      ngx_postgres_variable_query, 0,
+      NGX_HTTP_VAR_NOCACHEABLE|NGX_HTTP_VAR_NOHASH, 0 },
+
     { ngx_string("postgres_value"), NULL,
       ngx_postgres_variable_value, 0,
       NGX_HTTP_VAR_NOCACHEABLE|NGX_HTTP_VAR_NOHASH, 0 },

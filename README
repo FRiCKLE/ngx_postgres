@@ -49,7 +49,7 @@ CONFIGURATION DIRECTIVES:
 
   postgres_get_value row column (context: http, server, location)
   ---------------------------------------------------------------
-  Return single value from the result-set in 'text/plain' format.
+  Return single value from the result-set in clear text.
   Row and column numbers start at 0.
 
   default: none
@@ -60,7 +60,7 @@ CONFIGURATION DIRECTIVES:
   Get single value from the result-set and keep it in $variable. When requirement level
   is set to "required" and value is either out-of-range, NULL or zero-length, then nginx
   returns 500 Internal Server Error. Such condition is silently ignored when requirement
-  level is set to "optional".
+  level is set to "optional" (default).
   Row and column numbers start at 0.
 
   default: none
@@ -91,6 +91,11 @@ CONFIGURATION VARIABLES:
   $postgres_row_count
   -------------------
   Number of rows in received result-set.
+
+
+  $postgres_query
+  ---------------
+  SQL query, as seen by PostgreSQL database.
 
 
   $postgres_value

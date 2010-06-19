@@ -39,6 +39,7 @@ ngx_int_t
 ngx_postgres_handler(ngx_http_request_t *r)
 {
     ngx_postgres_loc_conf_t   *pglcf;
+    ngx_postgres_ctx_t        *pgctx;
     ngx_http_core_loc_conf_t  *clcf;
     ngx_http_upstream_t       *u;
     ngx_connection_t          *c;
@@ -107,8 +108,8 @@ ngx_postgres_handler(ngx_http_request_t *r)
     if (pglcf->upstream_cv) {
         /* use complex value */
         if (ngx_http_complex_value(r, pglcf->upstream_cv, &host) != NGX_OK) {
-            dd("returning NGX_ERROR");
-            return NGX_ERROR;
+            dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
+            return NGX_HTTP_INTERNAL_SERVER_ERROR;
         }
 
         if (host.len == 0) {
@@ -134,6 +135,41 @@ ngx_postgres_handler(ngx_http_request_t *r)
             return NGX_ERROR;
         }
     }
+
+    pgctx = ngx_pcalloc(r->pool, sizeof(ngx_postgres_ctx_t));
+    if (pgctx == NULL) {
+        dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
+        return NGX_HTTP_INTERNAL_SERVER_ERROR;
+    }
+
+    /*
+     * set by ngx_pcalloc():
+     *
+     *     pgctx->response = NULL
+     *     pgctx->var_query = { 0, NULL }
+     *     pgctx->var_value = { 0, NULL }
+     *     pgctx->variables = NULL
+     */
+
+    pgctx->var_cols = NGX_ERROR;
+    pgctx->var_rows = NGX_ERROR;
+
+    if (pglcf->variables != NULL) {
+        pgctx->variables = ngx_array_create(r->pool, pglcf->variables->nelts,
+                                            sizeof(ngx_str_t));
+        if (pgctx->variables == NULL) {
+            dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
+            return NGX_HTTP_INTERNAL_SERVER_ERROR;
+        }
+
+        /* fake ngx_array_push'ing */
+        pgctx->variables->nelts = pglcf->variables->nelts;
+
+        ngx_memzero(pgctx->variables->elts,
+                    pgctx->variables->nelts * pgctx->variables->size);
+    }
+
+    ngx_http_set_ctx(r, pgctx, ngx_postgres_module);
 
     u->schema.len = sizeof("postgres://") - 1;
     u->schema.data = (u_char *) "postgres://";

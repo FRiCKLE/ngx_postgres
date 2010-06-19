@@ -40,7 +40,7 @@ ngx_postgres_variable_column_count(ngx_http_request_t *r,
 
     pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
 
-    if (pgctx == NULL) {
+    if ((pgctx == NULL) || (pgctx->var_cols == NGX_ERROR)) {
         v->not_found = 1;
         dd("returning NGX_OK");
         return NGX_OK;
@@ -71,7 +71,7 @@ ngx_postgres_variable_row_count(ngx_http_request_t *r,
 
     pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
 
-    if (pgctx == NULL) {
+    if ((pgctx == NULL) || (pgctx->var_rows == NGX_ERROR)) {
         v->not_found = 1;
         dd("returning NGX_OK");
         return NGX_OK;
@@ -87,6 +87,32 @@ ngx_postgres_variable_row_count(ngx_http_request_t *r,
     v->valid = 1;
     v->no_cacheable = 0;
     v->not_found = 0;
+
+    dd("returning NGX_OK");
+    return NGX_OK;
+}
+
+ngx_int_t
+ngx_postgres_variable_query(ngx_http_request_t *r,
+    ngx_http_variable_value_t *v, uintptr_t data)
+{
+    ngx_postgres_ctx_t  *pgctx;
+
+    dd("entering: \"$postgres_query\"");
+
+    pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
+
+    if ((pgctx == NULL) || (pgctx->var_query.len == 0)) {
+        v->not_found = 1;
+        dd("returning NGX_OK");
+        return NGX_OK;
+    }
+
+    v->valid = 1;
+    v->no_cacheable = 0;
+    v->not_found = 0;
+    v->len = pgctx->var_query.len;
+    v->data = pgctx->var_query.data;
 
     dd("returning NGX_OK");
     return NGX_OK;
