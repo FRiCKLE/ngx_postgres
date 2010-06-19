@@ -45,6 +45,7 @@ ngx_postgres_handler(ngx_http_request_t *r)
     ngx_connection_t          *c;
     ngx_str_t                  host;
     ngx_url_t                  url;
+    ngx_int_t                  rc;
 
     dd("entering");
 
@@ -76,6 +77,12 @@ ngx_postgres_handler(ngx_http_request_t *r)
 
         dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
         return NGX_HTTP_INTERNAL_SERVER_ERROR;
+    }
+
+    rc = ngx_http_discard_request_body(r);
+    if (rc != NGX_OK) {
+        dd("returning rc:%d", (int) rc);
+        return rc;
     }
 
 #if defined(nginx_version) \
