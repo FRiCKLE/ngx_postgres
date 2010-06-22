@@ -38,11 +38,6 @@
 extern ngx_module_t  ngx_postgres_module;
 
 
-typedef enum {
-    postgres_keepalive_overflow_ignore = 0,
-    postgres_keepalive_overflow_reject
-} ngx_postgres_keepalive_overflow_t;
-
 typedef struct {
     ngx_uint_t                          key;
     ngx_str_t                           sv;
@@ -112,7 +107,7 @@ typedef struct {
     ngx_queue_t                         cache;
     ngx_uint_t                          active_conns;
     ngx_uint_t                          max_cached;
-    ngx_postgres_keepalive_overflow_t   overflow;
+    ngx_uint_t                          reject;
 } ngx_postgres_upstream_srv_conf_t;
 
 typedef struct {
@@ -131,26 +126,12 @@ typedef struct {
 } ngx_postgres_loc_conf_t;
 
 typedef struct {
-    u_char                             *name;
-    uint32_t                            key;
-} ngx_postgres_http_method_t;
-
-typedef struct {
     ngx_chain_t                        *response;
     ngx_int_t                           var_cols;
     ngx_int_t                           var_rows;
     ngx_str_t                           var_query;
     ngx_array_t                        *variables;
 } ngx_postgres_ctx_t;
-
-
-#define NGX_POSTGRES_OUTPUT_NONE   0
-#define NGX_POSTGRES_OUTPUT_VALUE  1
-#define NGX_POSTGRES_OUTPUT_ROW    2
-#define NGX_POSTGRES_OUTPUT_RDS    3
-
-#define NGX_POSTGRES_OPTIONAL      0
-#define NGX_POSTGRES_REQUIRED      1
 
 
 ngx_int_t   ngx_postgres_add_variables(ngx_conf_t *);

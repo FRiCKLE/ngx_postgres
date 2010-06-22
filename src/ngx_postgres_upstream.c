@@ -296,9 +296,7 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
         }
     }
 
-    if ((pgscf->overflow == postgres_keepalive_overflow_reject)
-        && (pgscf->active_conns >= pgscf->max_cached))
-    {
+    if ((pgscf->reject) && (pgscf->active_conns >= pgscf->max_cached)) {
         ngx_log_error(NGX_LOG_INFO, pc->log, 0,
                       "postgres: keepalive connection pool is full,"
                       " rejecting request to upstream \"%V\"", &peer->name);
