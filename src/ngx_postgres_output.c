@@ -199,8 +199,8 @@ ngx_postgres_output_row(ngx_http_request_t *r, PGresult *res,
     }
 
     if (b->last != b->end) {
-        dd("returning NULL");
-        return NULL;
+        dd("returning NGX_ERROR");
+        return NGX_ERROR;
     }
 
     cl->next = NULL;
