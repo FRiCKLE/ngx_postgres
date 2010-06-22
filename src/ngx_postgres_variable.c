@@ -119,32 +119,6 @@ ngx_postgres_variable_query(ngx_http_request_t *r,
 }
 
 ngx_int_t
-ngx_postgres_variable_value(ngx_http_request_t *r,
-    ngx_http_variable_value_t *v, uintptr_t data)
-{
-    ngx_postgres_ctx_t  *pgctx;
-
-    dd("entering: \"$postgres_value\"");
-
-    pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
-
-    if ((pgctx == NULL) || (pgctx->var_value.len == 0)) {
-        v->not_found = 1;
-        dd("returning NGX_OK");
-        return NGX_OK;
-    }
-
-    v->valid = 1;
-    v->no_cacheable = 0;
-    v->not_found = 0;
-    v->len = pgctx->var_value.len;
-    v->data = pgctx->var_value.data;
-
-    dd("returning NGX_OK");
-    return NGX_OK;
-}
-
-ngx_int_t
 ngx_postgres_variable_get_custom(ngx_http_request_t *r,
     ngx_http_variable_value_t *v, uintptr_t data)
 {

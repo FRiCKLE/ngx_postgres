@@ -98,12 +98,6 @@ CONFIGURATION VARIABLES:
   SQL query, as seen by PostgreSQL database.
 
 
-  $postgres_value
-  ---------------
-  Single value from the received result-set (available only when
-  "postgres_get_value" directive is being used).
-
-
 EXAMPLE CONFIGURATION #1:
 -------------------------
 http {

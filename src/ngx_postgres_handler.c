@@ -154,7 +154,6 @@ ngx_postgres_handler(ngx_http_request_t *r)
      *
      *     pgctx->response = NULL
      *     pgctx->var_query = { 0, NULL }
-     *     pgctx->var_value = { 0, NULL }
      *     pgctx->variables = NULL
      */
 

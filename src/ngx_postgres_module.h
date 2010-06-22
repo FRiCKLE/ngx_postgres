@@ -129,7 +129,6 @@ typedef struct {
     ngx_int_t                           var_cols;
     ngx_int_t                           var_rows;
     ngx_str_t                           var_query;
-    ngx_str_t                           var_value;
     ngx_array_t                        *variables;
 } ngx_postgres_ctx_t;
 

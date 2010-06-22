@@ -5,7 +5,7 @@ use Test::Nginx::Socket;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 3 + 1 * 4 + 2 * 1 - 3 * 2);
+plan tests => repeat_each() * (blocks() * 3 + 1 * 3 + 1 * 1 - 3 * 2);
 
 worker_connections(128);
 run_tests();
@@ -238,56 +238,7 @@ X-Rows: 1
 
 
 
-=== TEST 10: $postgres_value (used with get_value)
-little-endian systems only
-
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
---- config
-    location /postgres {
-        postgres_pass       database;
-        postgres_query      "select 'test' as echo";
-        postgres_get_value  0 0;
-        add_header          "X-Value" $postgres_value;
-    }
---- request
-GET /postgres
---- error_code: 200
---- response_headers
-Content-Type: text/plain
-X-Value: test
---- response_body eval
-"test"
---- timeout: 10
-
-
-
-=== TEST 11: $postgres_value (used without get_value)
-little-endian systems only
-
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
---- config
-    location /postgres {
-        postgres_pass       database;
-        postgres_query      "select 'test' as echo";
-        add_header          "X-Value" $postgres_value;
-    }
---- request
-GET /postgres
---- error_code: 200
---- response_headers
-Content-Type: application/x-resty-dbd-stream
-X-Value:
---- timeout: 10
-
-
-
-=== TEST 12: $postgres_query (simple value)
+=== TEST 10: $postgres_query (simple value)
 little-endian systems only
 
 --- http_config
@@ -310,7 +261,7 @@ X-Query: select 'test' as echo
 
 
 
-=== TEST 13: $postgres_query (simple value)
+=== TEST 11: $postgres_query (simple value)
 little-endian systems only
 
 --- http_config
@@ -333,7 +284,7 @@ X-Query: select 'GET' as echo
 
 
 
-=== TEST 14: variables used in non-ngx_postgres location
+=== TEST 12: variables used in non-ngx_postgres location
 little-endian systems only
 
 --- http_config
@@ -343,7 +294,6 @@ little-endian systems only
         add_header          "X-Columns" $postgres_column_count;
         add_header          "X-Rows" $postgres_row_count;
         add_header          "X-Query" $postgres_query;
-        add_header          "X-Value" $postgres_value;
         postgres_set        $pg 0 0 required;
         add_header          "X-Custom" $pg;
     }
@@ -354,7 +304,6 @@ GET /etc/passwd
 Content-Type: text/plain
 X-Columns:
 X-Rows:
-X-Value:
 X-Query:
 X-Custom:
 --- timeout: 10
