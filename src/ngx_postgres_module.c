@@ -454,6 +454,7 @@ ngx_postgres_conf_keepalive(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     ngx_postgres_upstream_srv_conf_t  *pgscf = conf;
     ngx_conf_enum_t                   *e;
     ngx_uint_t                         i, j;
+    ngx_int_t                          n;
 
     dd("entering");
 
@@ -477,8 +478,8 @@ ngx_postgres_conf_keepalive(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
             value[i].len = value[i].len - (sizeof("max=") - 1);
             value[i].data = &value[i].data[sizeof("max=") - 1];
 
-            pgscf->max_cached = ngx_atoi(value[i].data, value[i].len);
-            if (pgscf->max_cached == NGX_ERROR) {
+            n = ngx_atoi(value[i].data, value[i].len);
+            if (n == NGX_ERROR) {
                 ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
                                    "postgres: invalid \"max\" value \"%V\""
                                    " in \"%V\" directive",
@@ -487,6 +488,8 @@ ngx_postgres_conf_keepalive(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
                 dd("returning NGX_CONF_ERROR");
                 return NGX_CONF_ERROR;
             }
+
+            pgscf->max_cached = (ngx_uint_t) n;
 
             continue;
         }
