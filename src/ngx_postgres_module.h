@@ -32,15 +32,11 @@
 #include <nginx.h>
 #include <ngx_core.h>
 #include <ngx_http.h>
+#include <libpq-fe.h>
 
 
 extern ngx_module_t  ngx_postgres_module;
 
-
-typedef enum {
-    postgres_keepalive_overflow_ignore = 0,
-    postgres_keepalive_overflow_reject
-} ngx_postgres_keepalive_overflow_t;
 
 typedef struct {
     ngx_uint_t                          key;
@@ -59,6 +55,15 @@ typedef struct {
     ngx_http_variable_t                *var;
     ngx_postgres_value_t                value;
 } ngx_postgres_variable_t;
+
+typedef ngx_int_t (*ngx_postgres_output_handler_pt) (ngx_http_request_t *,
+    PGresult *, ngx_postgres_value_t *);
+
+typedef struct {
+    ngx_str_t                           name;
+    ngx_uint_t                          args;
+    ngx_postgres_output_handler_pt      handler;
+} ngx_postgres_output_handler_enum_t;
 
 typedef struct {
 #if defined(nginx_version) && (nginx_version >= 8022)
@@ -102,7 +107,7 @@ typedef struct {
     ngx_queue_t                         cache;
     ngx_uint_t                          active_conns;
     ngx_uint_t                          max_cached;
-    ngx_postgres_keepalive_overflow_t   overflow;
+    ngx_uint_t                          reject;
 } ngx_postgres_upstream_srv_conf_t;
 
 typedef struct {
@@ -113,33 +118,20 @@ typedef struct {
     ngx_postgres_mixed_t               *default_query;
     ngx_uint_t                          methods_set;
     ngx_array_t                        *queries;
-    /* get_value */
-    ngx_int_t                           get_value[2];
+    /* output */
+    ngx_postgres_output_handler_pt      output_handler;
+    ngx_postgres_value_t               *output_value;
     /* custom variables */
     ngx_array_t                        *variables;
 } ngx_postgres_loc_conf_t;
 
 typedef struct {
-    u_char                             *name;
-    uint32_t                            key;
-} ngx_postgres_http_method_t;
-
-typedef struct {
     ngx_chain_t                        *response;
     ngx_int_t                           var_cols;
     ngx_int_t                           var_rows;
-    ngx_str_t                           var_value;
+    ngx_str_t                           var_query;
     ngx_array_t                        *variables;
 } ngx_postgres_ctx_t;
-
-
-#define NGX_POSTGRES_OUTPUT_NONE   0
-#define NGX_POSTGRES_OUTPUT_VALUE  1
-#define NGX_POSTGRES_OUTPUT_ROW    2
-#define NGX_POSTGRES_OUTPUT_RDS    3
-
-#define NGX_POSTGRES_OPTIONAL      0
-#define NGX_POSTGRES_REQUIRED      1
 
 
 ngx_int_t   ngx_postgres_add_variables(ngx_conf_t *);
@@ -150,7 +142,7 @@ char       *ngx_postgres_conf_server(ngx_conf_t *, ngx_command_t *, void *);
 char       *ngx_postgres_conf_keepalive(ngx_conf_t *, ngx_command_t *, void *);
 char       *ngx_postgres_conf_pass(ngx_conf_t *, ngx_command_t *, void *);
 char       *ngx_postgres_conf_query(ngx_conf_t *, ngx_command_t *, void *);
-char       *ngx_postgres_conf_get_value(ngx_conf_t *, ngx_command_t *, void *);
+char       *ngx_postgres_conf_output(ngx_conf_t *, ngx_command_t *, void *);
 char       *ngx_postgres_conf_set(ngx_conf_t *, ngx_command_t *, void *);
 
 ngx_http_upstream_srv_conf_t  *ngx_postgres_find_upstream(ngx_http_request_t *,

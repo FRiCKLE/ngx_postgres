@@ -94,6 +94,7 @@ ngx_postgres_upstream_init(ngx_conf_t *cf, ngx_http_upstream_srv_conf_t *uscf)
             peers->peer[n].host.data = ngx_palloc(cf->pool,
                                                   NGX_SOCKADDR_STRLEN);
             if (peers->peer[n].host.data == NULL) {
+                dd("returning NGX_ERROR");
                 return NGX_ERROR;
             }
 
@@ -101,6 +102,7 @@ ngx_postgres_upstream_init(ngx_conf_t *cf, ngx_http_upstream_srv_conf_t *uscf)
                                           peers->peer[n].host.data,
                                           NGX_SOCKADDR_STRLEN, 0);
             if (peers->peer[n].host.len == 0) {
+                dd("returning NGX_ERROR");
                 return NGX_ERROR;
             }
 
@@ -127,6 +129,7 @@ ngx_postgres_upstream_init_peer(ngx_http_request_t *r,
     ngx_postgres_upstream_peer_data_t  *pgdt;
     ngx_postgres_upstream_srv_conf_t   *pgscf;
     ngx_postgres_loc_conf_t            *pglcf;
+    ngx_postgres_ctx_t                 *pgctx;
     ngx_http_core_loc_conf_t           *clcf;
     ngx_http_upstream_t                *u;
     ngx_postgres_mixed_t               *query;
@@ -148,6 +151,7 @@ ngx_postgres_upstream_init_peer(ngx_http_request_t *r,
 
     pgscf = ngx_http_conf_upstream_srv_conf(uscf, ngx_postgres_module);
     pglcf = ngx_http_get_module_loc_conf(r, ngx_postgres_module);
+    pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
 
     pgdt->srv_conf = pgscf;
     pgdt->loc_conf = pglcf;
@@ -201,18 +205,18 @@ ngx_postgres_upstream_init_peer(ngx_http_request_t *r,
         }
 
         pgdt->query = sql;
-
-        dd("returning NGX_OK");
-        return NGX_OK;
     } else {
         /* simple value */
         dd("using simple value");
 
         pgdt->query = query->sv;
-
-        dd("returning NGX_OK");
-        return NGX_OK;
     }
+
+    /* set $postgres_query */ 
+    pgctx->var_query = pgdt->query;
+
+    dd("returning NGX_OK");
+    return NGX_OK;
 }
 
 size_t
@@ -292,9 +296,7 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
         }
     }
 
-    if ((pgscf->overflow == postgres_keepalive_overflow_reject)
-        && (pgscf->active_conns >= pgscf->max_cached))
-    {
+    if ((pgscf->reject) && (pgscf->active_conns >= pgscf->max_cached)) {
         ngx_log_error(NGX_LOG_INFO, pc->log, 0,
                       "postgres: keepalive connection pool is full,"
                       " rejecting request to upstream \"%V\"", &peer->name);

@@ -38,41 +38,4 @@ void       ngx_postgres_upstream_next(ngx_http_request_t *,
                ngx_http_upstream_t *, ngx_int_t);
 ngx_int_t  ngx_postgres_upstream_test_connect(ngx_connection_t *);
 
-
-#ifndef ngx_str5cmp
-
-#  if (NGX_HAVE_LITTLE_ENDIAN && NGX_HAVE_NONALIGNED)
-
-#    define ngx_str5cmp(m, c0, c1, c2, c3, c4)                                \
-    *(uint32_t *) m == ((c3 << 24) | (c2 << 16) | (c1 << 8) | c0)             \
-        && m[4] == c4
-
-#  else
-
-#    define ngx_str5cmp(m, c0, c1, c2, c3, c4)                                \
-    m[0] == c0 && m[1] == c1 && m[2] == c2 && m[3] == c3 && m[4] == c4
-
-#  endif
-
-#endif /* ngx_str5cmp */
-
-
-#ifndef ngx_str6cmp
-
-#  if (NGX_HAVE_LITTLE_ENDIAN && NGX_HAVE_NONALIGNED)
-
-#    define ngx_str6cmp(m, c0, c1, c2, c3, c4, c5)                            \
-    *(uint32_t *) m == ((c3 << 24) | (c2 << 16) | (c1 << 8) | c0)             \
-        && (((uint32_t *) m)[1] & 0xffff) == ((c5 << 8) | c4)
-
-#  else
-
-#    define ngx_str6cmp(m, c0, c1, c2, c3, c4, c5)                            \
-    m[0] == c0 && m[1] == c1 && m[2] == c2 && m[3] == c3                      \
-        && m[4] == c4 && m[5] == c5
-
-#  endif
-
-#endif /* ngx_str6cmp */
-
 #endif /* _NGX_POSTGRES_UTIL_H_ */

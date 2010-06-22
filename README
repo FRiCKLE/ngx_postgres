@@ -47,12 +47,19 @@ CONFIGURATION DIRECTIVES:
   default: none
 
 
-  postgres_get_value row column (context: http, server, location)
-  ---------------------------------------------------------------
-  Return single value from the result-set in 'text/plain' format.
+  postgres_output none|value|row|rds [row] [column] (context: http, server, location)
+  -----------------------------------------------------------------------------------
+  Set output format:
+  - rds   - return output in RDS format (with appropriate Content-Type),
+  - row   - return all values from a single row from the result-set in clear text,
+            values are separated by new line (with default Content-Type),
+  - value - return single value from the result-set in clear text (with default Content-Type),
+  - none  - don't return anything, this should be used only when extracting values
+            with "postgres_set" for use with other modules (Content-Type isn't set).
+
   Row and column numbers start at 0.
 
-  default: none
+  default: rds
 
 
   postgres_set $variable row column [optional|required] (context: http, server, location)
@@ -60,7 +67,7 @@ CONFIGURATION DIRECTIVES:
   Get single value from the result-set and keep it in $variable. When requirement level
   is set to "required" and value is either out-of-range, NULL or zero-length, then nginx
   returns 500 Internal Server Error. Such condition is silently ignored when requirement
-  level is set to "optional".
+  level is set to "optional" (default).
   Row and column numbers start at 0.
 
   default: none
@@ -93,10 +100,9 @@ CONFIGURATION VARIABLES:
   Number of rows in received result-set.
 
 
-  $postgres_value
+  $postgres_query
   ---------------
-  Single value from the received result-set (available only when
-  "postgres_get_value" directive is being used).
+  SQL query, as seen by PostgreSQL database.
 
 
 EXAMPLE CONFIGURATION #1:

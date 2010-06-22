@@ -5,7 +5,7 @@ use Test::Nginx::Socket;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 3 + 2 * 1 - 3 * 2);
+plan tests => repeat_each() * (blocks() * 3 + 1 * 3 + 1 * 1 - 3 * 2);
 
 worker_connections(128);
 run_tests();
@@ -238,7 +238,7 @@ X-Rows: 1
 
 
 
-=== TEST 10: $postgres_value (used with get_value)
+=== TEST 10: $postgres_query (simple value)
 little-endian systems only
 
 --- http_config
@@ -249,38 +249,61 @@ little-endian systems only
     location /postgres {
         postgres_pass       database;
         postgres_query      "select 'test' as echo";
-        postgres_get_value  0 0;
-        add_header          "X-Value" $postgres_value;
-    }
---- request
-GET /postgres
---- error_code: 200
---- response_headers
-Content-Type: text/plain
-X-Value: test
---- response_body eval
-"test"
---- timeout: 10
-
-
-
-=== TEST 11: $postgres_value (used without get_value)
-little-endian systems only
-
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
---- config
-    location /postgres {
-        postgres_pass       database;
-        postgres_query      "select 'test' as echo";
-        add_header          "X-Value" $postgres_value;
+        add_header          "X-Query" $postgres_query;
     }
 --- request
 GET /postgres
 --- error_code: 200
 --- response_headers
 Content-Type: application/x-resty-dbd-stream
-X-Value:
+X-Query: select 'test' as echo
+--- timeout: 10
+
+
+
+=== TEST 11: $postgres_query (simple value)
+little-endian systems only
+
+--- http_config
+    upstream database {
+        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
+    }
+--- config
+    location /postgres {
+        postgres_pass       database;
+        postgres_query      "select '$request_method' as echo";
+        add_header          "X-Query" $postgres_query;
+    }
+--- request
+GET /postgres
+--- error_code: 200
+--- response_headers
+Content-Type: application/x-resty-dbd-stream
+X-Query: select 'GET' as echo
+--- timeout: 10
+
+
+
+=== TEST 12: variables used in non-ngx_postgres location
+little-endian systems only
+
+--- http_config
+--- config
+    location /etc {
+        root                /;
+        add_header          "X-Columns" $postgres_column_count;
+        add_header          "X-Rows" $postgres_row_count;
+        add_header          "X-Query" $postgres_query;
+        postgres_set        $pg 0 0 required;
+        add_header          "X-Custom" $pg;
+    }
+--- request
+GET /etc/passwd
+--- error_code: 200
+--- response_headers
+Content-Type: text/plain
+X-Columns:
+X-Rows:
+X-Query:
+X-Custom:
 --- timeout: 10

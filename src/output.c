@@ -1,0 +1,1 @@
+/home/agentz/git/postgres-nginx-module/src/ngx_postgres_output.c
