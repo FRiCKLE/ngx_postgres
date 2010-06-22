@@ -32,6 +32,7 @@
 #include <nginx.h>
 #include <ngx_core.h>
 #include <ngx_http.h>
+#include <libpq-fe.h>
 
 
 extern ngx_module_t  ngx_postgres_module;
@@ -59,6 +60,15 @@ typedef struct {
     ngx_http_variable_t                *var;
     ngx_postgres_value_t                value;
 } ngx_postgres_variable_t;
+
+typedef ngx_int_t (*ngx_postgres_output_handler_pt) (ngx_http_request_t *,
+    PGresult *, ngx_postgres_value_t *);
+
+typedef struct {
+    ngx_str_t                           name;
+    ngx_uint_t                          args;
+    ngx_postgres_output_handler_pt      handler;
+} ngx_postgres_output_handler_enum_t;
 
 typedef struct {
 #if defined(nginx_version) && (nginx_version >= 8022)
@@ -113,8 +123,9 @@ typedef struct {
     ngx_postgres_mixed_t               *default_query;
     ngx_uint_t                          methods_set;
     ngx_array_t                        *queries;
-    /* get_value */
-    ngx_int_t                           get_value[2];
+    /* output */
+    ngx_postgres_output_handler_pt      output_handler;
+    ngx_postgres_value_t               *output_value;
     /* custom variables */
     ngx_array_t                        *variables;
 } ngx_postgres_loc_conf_t;
@@ -150,7 +161,7 @@ char       *ngx_postgres_conf_server(ngx_conf_t *, ngx_command_t *, void *);
 char       *ngx_postgres_conf_keepalive(ngx_conf_t *, ngx_command_t *, void *);
 char       *ngx_postgres_conf_pass(ngx_conf_t *, ngx_command_t *, void *);
 char       *ngx_postgres_conf_query(ngx_conf_t *, ngx_command_t *, void *);
-char       *ngx_postgres_conf_get_value(ngx_conf_t *, ngx_command_t *, void *);
+char       *ngx_postgres_conf_output(ngx_conf_t *, ngx_command_t *, void *);
 char       *ngx_postgres_conf_set(ngx_conf_t *, ngx_command_t *, void *);
 
 ngx_http_upstream_srv_conf_t  *ngx_postgres_find_upstream(ngx_http_request_t *,

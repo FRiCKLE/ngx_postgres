@@ -351,14 +351,13 @@ ngx_postgres_process_response(ngx_http_request_t *r, PGresult *res)
         }
     }
 
-    if (pglcf->get_value[0] != NGX_CONF_UNSET) {
-        dd("returning (single value)");
-        return ngx_postgres_output_value(r, res, pglcf->get_value[0],
-                                         pglcf->get_value[1]);
-    } else {
-        dd("returning (RDS)");
-        return ngx_postgres_output_rds(r, res);
+    if (pglcf->output_handler) {
+        dd("returning");
+        return pglcf->output_handler(r, res, pglcf->output_value);
     }
+
+    dd("returning NGX_DONE");
+    return NGX_DONE;
 }
 
 ngx_int_t

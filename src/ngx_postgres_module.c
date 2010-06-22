@@ -31,6 +31,7 @@
 #include "ngx_postgres_handler.h"
 #include "ngx_postgres_keepalive.h"
 #include "ngx_postgres_module.h"
+#include "ngx_postgres_output.h"
 #include "ngx_postgres_upstream.h"
 #include "ngx_postgres_util.h"
 #include "ngx_postgres_variable.h"
@@ -66,9 +67,9 @@ static ngx_command_t ngx_postgres_module_commands[] = {
       0,
       NULL },
 
-    { ngx_string("postgres_get_value"),
-      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE2,
-      ngx_postgres_conf_get_value,
+    { ngx_string("postgres_output"),
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE123,
+      ngx_postgres_conf_output,
       NGX_HTTP_LOC_CONF_OFFSET,
       0,
       NULL },
@@ -164,6 +165,14 @@ ngx_postgres_http_method_t ngx_postgres_http_methods[] = {
    { NULL, 0 }
 };
 
+ngx_postgres_output_handler_enum_t ngx_postgres_output_handlers[] = {
+    { ngx_string("none"),  0, NULL },
+    { ngx_string("value"), 2, ngx_postgres_output_value },
+    { ngx_string("row"),   1, ngx_postgres_output_row },
+    { ngx_string("rds"),   0, ngx_postgres_output_rds },
+    { ngx_null_string, 0, NULL }
+};
+
 ngx_conf_enum_t ngx_postgres_requirement_options[] = {
     { ngx_string("optional"), NGX_POSTGRES_OPTIONAL },
     { ngx_string("required"), NGX_POSTGRES_REQUIRED },
@@ -254,14 +263,14 @@ ngx_postgres_create_loc_conf(ngx_conf_t *cf)
      *     conf->default_query = NULL
      *     conf->methods_set = 0
      *     conf->queries = NULL
+     *     conf->output_value = NULL
      *     conf->variables = NULL
      */
 
     conf->upstream.connect_timeout = NGX_CONF_UNSET_MSEC;
     conf->upstream.read_timeout = NGX_CONF_UNSET_MSEC;
 
-    conf->get_value[0] = NGX_CONF_UNSET;
-    conf->get_value[1] = NGX_CONF_UNSET;
+    conf->output_handler = NGX_CONF_UNSET_PTR;
 
     /* the hardcoded values */
     conf->upstream.cyclic_temp_file = 0;
@@ -306,12 +315,16 @@ ngx_postgres_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
         conf->queries = prev->queries;
     }
 
-    if (conf->get_value[0] == NGX_CONF_UNSET) {
-        conf->get_value[0] = prev->get_value[0];
-    }
-
-    if (conf->get_value[1] == NGX_CONF_UNSET) {
-        conf->get_value[1] = prev->get_value[1];
+    if (conf->output_handler == NGX_CONF_UNSET_PTR) {
+        if (prev->output_handler == NGX_CONF_UNSET_PTR) {
+            /* default */
+            conf->output_handler = ngx_postgres_output_rds;
+            conf->output_value = NULL;
+        } else {
+            /* merge */
+            conf->output_handler = prev->output_handler;
+            conf->output_value = prev->output_value;
+        }
     }
 
     if (conf->variables == NULL) {
@@ -750,33 +763,79 @@ next:
 }
 
 char *
-ngx_postgres_conf_get_value(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+ngx_postgres_conf_output(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
-    ngx_str_t                *value = cf->args->elts;
-    ngx_postgres_loc_conf_t  *pglcf = conf;
+    ngx_str_t                           *value = cf->args->elts;
+    ngx_postgres_loc_conf_t             *pglcf = conf;
+    ngx_postgres_output_handler_enum_t  *e;
+    ngx_uint_t                           i;
 
     dd("entering");
 
-    if (pglcf->get_value[0] != NGX_CONF_UNSET) {
+    if (pglcf->output_handler != NGX_CONF_UNSET_PTR) {
         dd("returning");
         return "is duplicate";
     }
 
-    pglcf->get_value[0] = ngx_atoi(value[1].data, value[1].len);
-    if (pglcf->get_value[0] < 0) {
+    e = ngx_postgres_output_handlers;
+    for (i = 0; e[i].name.len; i++) {
+        if ((e[i].name.len == value[1].len)
+            && (ngx_strcasecmp(e[i].name.data, value[1].data) == 0))
+        {
+            pglcf->output_handler = e[i].handler;
+            break;
+        }
+    }
+
+    if (e[i].name.len == 0) {
         ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
-                           "postgres: invalid row number \"%V\""
-                           " in \"postgres_get_value\"", &value[1]);
+                           "postgres: invalid output format \"%V\""
+                           " in \"%V\" directive", &value[1], &cmd->name);
 
         dd("returning NGX_CONF_ERROR");
         return NGX_CONF_ERROR;
     }
 
-    pglcf->get_value[1] = ngx_atoi(value[2].data, value[2].len);
-    if (pglcf->get_value[1] < 0) {
+    if (e[i].args != cf->args->nelts - 2) {
+        ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
+                           "postgres: invalid number of arguments"
+                           " in \"%V\" directive", &cmd->name);
+
+        dd("returning NGX_CONF_ERROR");
+        return NGX_CONF_ERROR;
+    }
+
+    if (e[i].args == 0) {
+        dd("returning NGX_CONF_OK");
+        return NGX_CONF_OK;
+    }
+
+    pglcf->output_value = ngx_palloc(cf->pool, sizeof(ngx_postgres_value_t));
+    if (pglcf->output_value == NULL) {
+        dd("returning NGX_CONF_ERROR");
+        return NGX_CONF_ERROR;
+    }
+ 
+    pglcf->output_value->row = ngx_atoi(value[2].data, value[2].len);
+    if (pglcf->output_value->row == NGX_ERROR) {
+        ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
+                           "postgres: invalid row number \"%V\""
+                           " in \"%V\" directive", &value[2], &cmd->name);
+
+        dd("returning NGX_CONF_ERROR");
+        return NGX_CONF_ERROR;
+    }
+
+    if (e[i].args == 1) {
+        dd("returning NGX_CONF_OK");
+        return NGX_CONF_OK;
+    }
+
+    pglcf->output_value->column = ngx_atoi(value[3].data, value[3].len);
+    if (pglcf->output_value->column == NGX_ERROR) {
         ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
                            "postgres: invalid column number \"%V\""
-                           " in \"postgres_get_value\"", &value[2]);
+                           " in \"%V\" directive", &value[3], &cmd->name);
 
         dd("returning NGX_CONF_ERROR");
         return NGX_CONF_ERROR;
