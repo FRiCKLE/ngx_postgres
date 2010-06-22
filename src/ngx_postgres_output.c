@@ -469,11 +469,13 @@ ngx_postgres_output_chain(ngx_http_request_t *r, ngx_chain_t *cl)
             r->headers_out.content_type.data = (u_char *) rds_content_type;
             r->headers_out.content_type.len = rds_content_type_len;
             r->headers_out.content_type_len = rds_content_type_len;
+            r->headers_out.content_type_lowcase = NULL;
+
         } else {
             if (ngx_http_set_content_type(r) != NGX_OK) {
                 dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
                 return NGX_HTTP_INTERNAL_SERVER_ERROR;
-            } 
+            }
         }
 
         rc = ngx_http_send_header(r);
