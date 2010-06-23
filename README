@@ -90,14 +90,19 @@ CONFIGURATION DIRECTIVES:
 CONFIGURATION VARIABLES:
 ------------------------
 
-  $postgres_column_count
-  ----------------------
+  $postgres_columns
+  -----------------
   Number of columns in received result-set.
 
 
-  $postgres_row_count
-  -------------------
+  $postgres_rows
+  --------------
   Number of rows in received result-set.
+
+
+  $postgres_affected
+  ------------------
+  Number of rows affected by INSERT, UPDATE, DELETE, MOVE, FETCH or COPY SQL query.
 
 
   $postgres_query

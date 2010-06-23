@@ -324,6 +324,8 @@ ngx_postgres_process_response(ngx_http_request_t *r, PGresult *res)
     ngx_postgres_ctx_t       *pgctx;
     ngx_postgres_variable_t  *pgvar;
     ngx_str_t                *store;
+    char                     *affected;
+    size_t                    affected_len;
     ngx_uint_t                i;
 
     dd("entering");
@@ -336,6 +338,13 @@ ngx_postgres_process_response(ngx_http_request_t *r, PGresult *res)
 
     /* set $postgres_row_count */
     pgctx->var_rows = PQntuples(res);
+
+    /* set $postgres_affected */
+    affected = PQcmdTuples(res);
+    affected_len = ngx_strlen(affected);
+    if (affected_len) {
+        pgctx->var_affected = ngx_atoi((u_char *) affected, affected_len);
+    }
 
     if (pglcf->variables != NULL) {
         /* set custom variables */

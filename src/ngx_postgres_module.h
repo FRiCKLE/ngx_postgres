@@ -129,6 +129,7 @@ typedef struct {
     ngx_chain_t                        *response;
     ngx_int_t                           var_cols;
     ngx_int_t                           var_rows;
+    ngx_int_t                           var_affected;
     ngx_str_t                           var_query;
     ngx_array_t                        *variables;
 } ngx_postgres_ctx_t;

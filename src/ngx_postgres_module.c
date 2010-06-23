@@ -101,12 +101,16 @@ static ngx_command_t ngx_postgres_module_commands[] = {
 
 static ngx_http_variable_t ngx_postgres_module_variables[] = {
 
-    { ngx_string("postgres_column_count"), NULL,
-      ngx_postgres_variable_column_count, 0,
+    { ngx_string("postgres_columns"), NULL,
+      ngx_postgres_variable_columns, 0,
       NGX_HTTP_VAR_NOCACHEABLE|NGX_HTTP_VAR_NOHASH, 0 },
 
-    { ngx_string("postgres_row_count"), NULL,
-      ngx_postgres_variable_row_count, 0,
+    { ngx_string("postgres_rows"), NULL,
+      ngx_postgres_variable_rows, 0,
+      NGX_HTTP_VAR_NOCACHEABLE|NGX_HTTP_VAR_NOHASH, 0 },
+
+    { ngx_string("postgres_affected"), NULL,
+      ngx_postgres_variable_affected, 0,
       NGX_HTTP_VAR_NOCACHEABLE|NGX_HTTP_VAR_NOHASH, 0 },
 
     { ngx_string("postgres_query"), NULL,

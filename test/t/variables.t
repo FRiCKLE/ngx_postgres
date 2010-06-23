@@ -5,7 +5,7 @@ use Test::Nginx::Socket;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 3 + 1 * 3 + 1 * 1 - 3 * 2);
+plan tests => repeat_each() * (blocks() * 3 + 1 * 4 + 1 * 1 - 3 * 2);
 
 worker_connections(128);
 run_tests();
@@ -15,8 +15,6 @@ no_diff();
 __DATA__
 
 === TEST 1: sanity
-little-endian systems only
-
 --- http_config
     upstream database {
         postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
@@ -58,8 +56,6 @@ X-Test: test
 
 
 === TEST 2: out-of-range value (optional)
-little-endian systems only
-
 --- http_config
     upstream database {
         postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
@@ -76,14 +72,12 @@ GET /postgres
 --- error_code: 200
 --- response_headers
 Content-Type: application/x-resty-dbd-stream
-X-Test:
+! X-Test
 --- timeout: 10
 
 
 
 === TEST 3: NULL value (optional)
-little-endian systems only
-
 --- http_config
     upstream database {
         postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
@@ -100,14 +94,12 @@ GET /postgres
 --- error_code: 200
 --- response_headers
 Content-Type: application/x-resty-dbd-stream
-X-Test:
+! X-Test
 --- timeout: 10
 
 
 
 === TEST 4: zero-length value (optional)
-little-endian systems only
-
 --- http_config
     upstream database {
         postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
@@ -124,14 +116,12 @@ GET /postgres
 --- error_code: 200
 --- response_headers
 Content-Type: application/x-resty-dbd-stream
-X-Test:
+! X-Test
 --- timeout: 10
 
 
 
 === TEST 5: out-of-range value (required)
-little-endian systems only
-
 --- http_config
     upstream database {
         postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
@@ -151,8 +141,6 @@ GET /postgres
 
 
 === TEST 6: NULL value (required)
-little-endian systems only
-
 --- http_config
     upstream database {
         postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
@@ -172,8 +160,6 @@ GET /postgres
 
 
 === TEST 7: zero-length value (required)
-little-endian systems only
-
 --- http_config
     upstream database {
         postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
@@ -192,9 +178,7 @@ GET /postgres
 
 
 
-=== TEST 8: $postgres_column_count
-little-endian systems only
-
+=== TEST 8: $postgres_columns
 --- http_config
     upstream database {
         postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
@@ -203,7 +187,7 @@ little-endian systems only
     location /postgres {
         postgres_pass       database;
         postgres_query      "select 'a', 'b', 'c'";
-        add_header          "X-Columns" $postgres_column_count;
+        add_header          "X-Columns" $postgres_columns;
     }
 --- request
 GET /postgres
@@ -215,9 +199,7 @@ X-Columns: 3
 
 
 
-=== TEST 9: $postgres_row_count
-little-endian systems only
-
+=== TEST 9: $postgres_rows
 --- http_config
     upstream database {
         postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
@@ -226,7 +208,7 @@ little-endian systems only
     location /postgres {
         postgres_pass       database;
         postgres_query      "select 'a', 'b', 'c'";
-        add_header          "X-Rows" $postgres_row_count;
+        add_header          "X-Rows" $postgres_rows;
     }
 --- request
 GET /postgres
@@ -239,8 +221,6 @@ X-Rows: 1
 
 
 === TEST 10: $postgres_query (simple value)
-little-endian systems only
-
 --- http_config
     upstream database {
         postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
@@ -262,8 +242,6 @@ X-Query: select 'test' as echo
 
 
 === TEST 11: $postgres_query (simple value)
-little-endian systems only
-
 --- http_config
     upstream database {
         postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
@@ -285,14 +263,13 @@ X-Query: select 'GET' as echo
 
 
 === TEST 12: variables used in non-ngx_postgres location
-little-endian systems only
-
 --- http_config
 --- config
     location /etc {
         root                /;
-        add_header          "X-Columns" $postgres_column_count;
-        add_header          "X-Rows" $postgres_row_count;
+        add_header          "X-Columns" $postgres_columns;
+        add_header          "X-Rows" $postgres_rows;
+        add_header          "X-Affected" $postgres_affected;
         add_header          "X-Query" $postgres_query;
         postgres_set        $pg 0 0 required;
         add_header          "X-Custom" $pg;
@@ -302,8 +279,82 @@ GET /etc/passwd
 --- error_code: 200
 --- response_headers
 Content-Type: text/plain
-X-Columns:
-X-Rows:
-X-Query:
-X-Custom:
+! X-Columns
+! X-Rows
+! X-Affected
+! X-Query
+! X-Custom
+--- timeout: 10
+
+
+
+=== TEST 13: $postgres_affected (SELECT)
+--- http_config
+    upstream database {
+        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
+    }
+--- config
+    location /postgres {
+        postgres_pass       database;
+        postgres_query      "select '$request_method' as echo";
+        add_header          "X-Affected" $postgres_affected;
+    }
+--- request
+GET /postgres
+--- error_code: 200
+--- response_headers
+Content-Type: application/x-resty-dbd-stream
+! X-Affected
+--- timeout: 10
+
+
+
+=== TEST 14: $postgres_affected (UPDATE, no changes)
+db init:
+
+create table cats (id integer, name text);
+insert into cats (id) values (2);
+insert into cats (id, name) values (3, 'bob');
+--- http_config
+    upstream database {
+        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
+    }
+--- config
+    location /postgres {
+        postgres_pass       database;
+        postgres_query      "update cats set id=3 where name='noone'";
+        add_header          "X-Affected" $postgres_affected;
+    }
+--- request
+GET /postgres
+--- error_code: 200
+--- response_headers
+Content-Type: application/x-resty-dbd-stream
+X-Affected: 0
+--- timeout: 10
+
+
+
+=== TEST 15: $postgres_affected (UPDATE, one change)
+db init:
+
+create table cats (id integer, name text);
+insert into cats (id) values (2);
+insert into cats (id, name) values (3, 'bob');
+--- http_config
+    upstream database {
+        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
+    }
+--- config
+    location /postgres {
+        postgres_pass       database;
+        postgres_query      "update cats set id=3 where name='bob'";
+        add_header          "X-Affected" $postgres_affected;
+    }
+--- request
+GET /postgres
+--- error_code: 200
+--- response_headers
+Content-Type: application/x-resty-dbd-stream
+X-Affected: 1
 --- timeout: 10

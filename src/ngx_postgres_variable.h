@@ -34,9 +34,11 @@
 #include "ngx_postgres_module.h"
 
 
-ngx_int_t  ngx_postgres_variable_column_count(ngx_http_request_t *,
+ngx_int_t  ngx_postgres_variable_columns(ngx_http_request_t *,
                ngx_http_variable_value_t *, uintptr_t);
-ngx_int_t  ngx_postgres_variable_row_count(ngx_http_request_t *,
+ngx_int_t  ngx_postgres_variable_rows(ngx_http_request_t *,
+               ngx_http_variable_value_t *, uintptr_t);
+ngx_int_t  ngx_postgres_variable_affected(ngx_http_request_t *,
                ngx_http_variable_value_t *, uintptr_t);
 ngx_int_t  ngx_postgres_variable_query(ngx_http_request_t *,
                ngx_http_variable_value_t *, uintptr_t);

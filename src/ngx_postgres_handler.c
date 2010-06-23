@@ -159,6 +159,7 @@ ngx_postgres_handler(ngx_http_request_t *r)
 
     pgctx->var_cols = NGX_ERROR;
     pgctx->var_rows = NGX_ERROR;
+    pgctx->var_affected = NGX_ERROR;
 
     if (pglcf->variables != NULL) {
         pgctx->variables = ngx_array_create(r->pool, pglcf->variables->nelts,

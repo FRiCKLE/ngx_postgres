@@ -29,7 +29,7 @@ __DATA__
 GET /postgres
 --- error_code: 200
 --- response_headers
-Content-Type:
+! Content-Type
 --- response_body eval
 ""
 --- timeout: 10
@@ -292,7 +292,7 @@ Content-Type: text/plain
 GET /postgres
 --- error_code: 200
 --- response_headers
-Content-Type:
+! Content-Type
 --- response_body eval
 ""
 --- timeout: 10
