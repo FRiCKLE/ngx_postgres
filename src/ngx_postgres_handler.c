@@ -63,8 +63,8 @@ ngx_postgres_handler(ngx_http_request_t *r)
 
     pglcf = ngx_http_get_module_loc_conf(r, ngx_postgres_module);
 
-    if ((pglcf->default_query == NULL) && !(pglcf->methods_set & r->method)) {
-        if (pglcf->methods_set != 0) {
+    if ((pglcf->query.def == NULL) && !(pglcf->query.methods_set & r->method)) {
+        if (pglcf->query.methods_set != 0) {
             dd("returning NGX_HTTP_NOT_ALLOWED");
             return NGX_HTTP_NOT_ALLOWED;
         }
@@ -155,6 +155,7 @@ ngx_postgres_handler(ngx_http_request_t *r)
      *     pgctx->response = NULL
      *     pgctx->var_query = { 0, NULL }
      *     pgctx->variables = NULL
+     *     pgctx->status = 0
      */
 
     pgctx->var_cols = NGX_ERROR;

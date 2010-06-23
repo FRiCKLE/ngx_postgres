@@ -317,7 +317,7 @@ Content-Type: application/x-resty-dbd-stream
 
 
 
-=== TEST 9: inheritance (mixed, not inherited)
+=== TEST 9: inheritance (mixed, don't inherit)
 little-endian systems only
 
 --- http_config

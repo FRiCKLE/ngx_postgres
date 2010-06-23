@@ -45,6 +45,11 @@ typedef struct {
 } ngx_postgres_mixed_t;
 
 typedef struct {
+    ngx_uint_t                          key;
+    ngx_int_t                           status;
+} ngx_postgres_rewrite_t;
+
+typedef struct {
     ngx_int_t                           row;
     ngx_int_t                           column;
     ngx_uint_t                          required;
@@ -56,14 +61,32 @@ typedef struct {
     ngx_postgres_value_t                value;
 } ngx_postgres_variable_t;
 
-typedef ngx_int_t (*ngx_postgres_output_handler_pt) (ngx_http_request_t *,
-    PGresult *, ngx_postgres_value_t *);
+typedef struct {
+    ngx_uint_t                          methods_set;
+    ngx_array_t                        *methods; /* method-specific */
+    ngx_postgres_mixed_t               *def;     /* default */
+} ngx_postgres_query_conf_t;
+
+typedef struct ngx_postgres_rewrite_conf_s ngx_postgres_rewrite_conf_t;
+
+typedef ngx_int_t (*ngx_postgres_rewrite_handler_pt)
+    (ngx_http_request_t *, ngx_postgres_rewrite_conf_t *);
+
+struct ngx_postgres_rewrite_conf_s {
+    /* condition */
+    ngx_uint_t                          key;
+    ngx_postgres_rewrite_handler_pt     handler;
+    /* methods */
+    ngx_uint_t                          methods_set;
+    ngx_array_t                        *methods; /* method-specific */
+    ngx_postgres_rewrite_t             *def;     /* default */
+};
 
 typedef struct {
     ngx_str_t                           name;
-    ngx_uint_t                          args;
-    ngx_postgres_output_handler_pt      handler;
-} ngx_postgres_output_handler_enum_t;
+    ngx_uint_t                          param;
+    void                               *handler;
+} ngx_postgres_handler_enum_t;
 
 typedef struct {
 #if defined(nginx_version) && (nginx_version >= 8022)
@@ -110,14 +133,17 @@ typedef struct {
     ngx_uint_t                          reject;
 } ngx_postgres_upstream_srv_conf_t;
 
+typedef ngx_int_t (*ngx_postgres_output_handler_pt)
+    (ngx_http_request_t *, PGresult *, ngx_postgres_value_t *);
+
 typedef struct {
     /* upstream */
     ngx_http_upstream_conf_t            upstream;
     ngx_http_complex_value_t           *upstream_cv;
     /* queries */
-    ngx_postgres_mixed_t               *default_query;
-    ngx_uint_t                          methods_set;
-    ngx_array_t                        *queries;
+    ngx_postgres_query_conf_t           query;
+    /* rewrites */
+    ngx_array_t                        *rewrites;
     /* output */
     ngx_postgres_output_handler_pt      output_handler;
     ngx_postgres_value_t               *output_value;
@@ -132,6 +158,7 @@ typedef struct {
     ngx_int_t                           var_affected;
     ngx_str_t                           var_query;
     ngx_array_t                        *variables;
+    ngx_int_t                           status;
 } ngx_postgres_ctx_t;
 
 
@@ -143,6 +170,7 @@ char       *ngx_postgres_conf_server(ngx_conf_t *, ngx_command_t *, void *);
 char       *ngx_postgres_conf_keepalive(ngx_conf_t *, ngx_command_t *, void *);
 char       *ngx_postgres_conf_pass(ngx_conf_t *, ngx_command_t *, void *);
 char       *ngx_postgres_conf_query(ngx_conf_t *, ngx_command_t *, void *);
+char       *ngx_postgres_conf_rewrite(ngx_conf_t *, ngx_command_t *, void *);
 char       *ngx_postgres_conf_output(ngx_conf_t *, ngx_command_t *, void *);
 char       *ngx_postgres_conf_set(ngx_conf_t *, ngx_command_t *, void *);
 

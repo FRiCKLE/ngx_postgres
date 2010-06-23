@@ -5,7 +5,7 @@ use Test::Nginx::Socket;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 3 + 1 * 4 + 1 * 1 - 3 * 2);
+plan tests => repeat_each() * (blocks() * 3 + 1 * 4 + 1 * 1 - 4 * 2);
 
 worker_connections(128);
 run_tests();
@@ -357,4 +357,48 @@ GET /postgres
 --- response_headers
 Content-Type: application/x-resty-dbd-stream
 X-Affected: 1
+--- timeout: 10
+
+
+
+=== TEST 16: inheritance
+--- http_config
+    upstream database {
+        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
+    }
+--- config
+    postgres_set  $test 0 0 required;
+
+    location /postgres {
+        postgres_pass       database;
+        postgres_query      "select NULL as echo";
+        add_header          "X-Test" $test;
+    }
+--- request
+GET /postgres
+--- error_code: 500
+--- timeout: 10
+
+
+
+=== TEST 17: inheritance (mixed, don't inherit)
+--- http_config
+    upstream database {
+        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
+    }
+--- config
+    postgres_set  $test 0 0 required;
+
+    location /postgres {
+        postgres_pass       database;
+        postgres_query      "select NULL as echo";
+        postgres_set        $test2 2 2;
+        add_header          "X-Test" $test2;
+    }
+--- request
+GET /postgres
+--- error_code: 200
+--- response_headers
+Content-Type: application/x-resty-dbd-stream
+! X-Test
 --- timeout: 10

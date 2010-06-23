@@ -45,8 +45,10 @@ ngx_postgres_output_value(ngx_http_request_t *r, PGresult *res,
 
     dd("entering");
 
-    col_count = PQnfields(res);
-    row_count = PQntuples(res);
+    pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
+
+    col_count = pgctx->var_cols;
+    row_count = pgctx->var_rows;
 
     col = pgv->column;
 
@@ -111,7 +113,7 @@ ngx_postgres_output_value(ngx_http_request_t *r, PGresult *res,
 
     cl->next = NULL;
 
-    pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
+    /* set output response */
     pgctx->response = cl;
 
     dd("returning NGX_DONE");
@@ -131,8 +133,10 @@ ngx_postgres_output_row(ngx_http_request_t *r, PGresult *res,
 
     dd("entering");
 
-    col_count = PQnfields(res);
-    row_count = PQntuples(res);
+    pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
+
+    col_count = pgctx->var_cols;
+    row_count = pgctx->var_rows;
 
     if (pgv->row >= row_count) {
         clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
@@ -205,7 +209,7 @@ ngx_postgres_output_row(ngx_http_request_t *r, PGresult *res,
 
     cl->next = NULL;
 
-    pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
+    /* set output response */
     pgctx->response = cl;
 
     dd("returning NGX_DONE");
@@ -218,15 +222,19 @@ ngx_postgres_output_rds(ngx_http_request_t *r, PGresult *res,
 {
     ngx_postgres_ctx_t  *pgctx;
     ngx_chain_t         *first, *last;
-    ngx_int_t            col_count, row_count, row;
+    ngx_int_t            col_count, row_count, aff_count, row;
 
     dd("entering");
 
-    col_count = PQnfields(res);
-    row_count = PQntuples(res);
+    pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
+
+    col_count = pgctx->var_cols;
+    row_count = pgctx->var_rows;
+    aff_count = (pgctx->var_affected == NGX_ERROR) ? 0 : pgctx->var_affected;
 
     /* render header */
-    first = last = ngx_postgres_render_rds_header(r, r->pool, res, col_count);
+    first = last = ngx_postgres_render_rds_header(r, r->pool, res, col_count,
+                                                  aff_count);
     if (last == NULL) {
         dd("returning NGX_ERROR");
         return NGX_ERROR;
@@ -266,7 +274,7 @@ ngx_postgres_output_rds(ngx_http_request_t *r, PGresult *res,
 done:
     last->next = NULL;
 
-    pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
+    /* set output response */
     pgctx->response = first;
 
     dd("returning NGX_DONE");
@@ -275,27 +283,18 @@ done:
 
 ngx_chain_t *
 ngx_postgres_render_rds_header(ngx_http_request_t *r, ngx_pool_t *pool,
-    PGresult *res, ngx_int_t col_count)
+    PGresult *res, ngx_int_t col_count, ngx_int_t aff_count)
 {
     ngx_chain_t  *cl;
     ngx_buf_t    *b;
     size_t        size;
-    char         *errstr, *affected;
-    size_t        errstr_len, affected_len;
-    ngx_int_t     affected_int;
+    char         *errstr;
+    size_t        errstr_len;
 
     dd("entering");
 
     errstr = PQresultErrorMessage(res);
     errstr_len = ngx_strlen(errstr);
-
-    affected = PQcmdTuples(res);
-    affected_len = ngx_strlen(affected);
-    if (affected_len) {
-        affected_int = ngx_atoi((u_char *) affected, affected_len);
-    } else {
-        affected_int = 0;
-    }
 
     size = sizeof(uint8_t)        /* endian type */
          + sizeof(uint32_t)       /* format version */
@@ -350,7 +349,7 @@ ngx_postgres_render_rds_header(ngx_http_request_t *r, ngx_pool_t *pool,
         b->last = ngx_copy(b->last, (u_char *) errstr, errstr_len);
     }
 
-    *(uint64_t *) b->last = (uint64_t) affected_int;
+    *(uint64_t *) b->last = (uint64_t) aff_count;
     b->last += sizeof(uint64_t);
 
     *(uint64_t *) b->last = (uint64_t) PQoidValue(res);
@@ -542,6 +541,7 @@ ngx_postgres_output_chain(ngx_http_request_t *r, ngx_chain_t *cl)
 {
     ngx_http_upstream_t      *u = r->upstream;
     ngx_postgres_loc_conf_t  *pglcf;
+    ngx_postgres_ctx_t       *pgctx;
     ngx_int_t                 rc;
 
     dd("entering");
@@ -549,16 +549,16 @@ ngx_postgres_output_chain(ngx_http_request_t *r, ngx_chain_t *cl)
     if (!r->header_sent) {
         ngx_http_clear_content_length(r);
 
-        r->headers_out.status = NGX_HTTP_OK;
-
         pglcf = ngx_http_get_module_loc_conf(r, ngx_postgres_module);
+        pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
+
+        r->headers_out.status = pgctx->status ? pgctx->status : NGX_HTTP_OK;
 
         if (pglcf->output_handler == &ngx_postgres_output_rds) {
             r->headers_out.content_type.data = (u_char *) rds_content_type;
             r->headers_out.content_type.len = rds_content_type_len;
             r->headers_out.content_type_len = rds_content_type_len;
             r->headers_out.content_type_lowcase = NULL;
-
         } else if (pglcf->output_handler != NULL) {
             if (ngx_http_set_content_type(r) != NGX_OK) {
                 dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");

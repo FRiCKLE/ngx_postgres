@@ -37,12 +37,25 @@ CONFIGURATION DIRECTIVES:
   default: none
 
 
-  postgres_query [method .. method] query (context: http, server, location)
-  -------------------------------------------------------------------------
+  postgres_query [methods] query (context: http, server, location)
+  ----------------------------------------------------------------
   Set query string (it can include variables). When methods are specified
   then query is used only for them, otherwise it's used for all methods.
 
   You can use this directive more than once within same context.
+
+  default: none
+
+
+  postgres_rewrite [methods] condition status (context: http, server, location)
+  -----------------------------------------------------------------------------
+  Rewrite response status code when given condition is met (first one wins!):
+  - no_changes - no rows were affected by SQL query (by design this applies only to
+                 INSERT, UPDATE, DELETE, MOVE, FETCH and COPY SQL queries),
+  - changes    - at least one row was affected by SQL query (by design this applies
+                 only to INSERT, UPDATE, DELETE, MOVE, FETCH and COPY SQL queries),
+  - no_rows    - no rows were returned in the result-set,
+  - rows       - at least one row was returned in the result-set.
 
   default: none
 

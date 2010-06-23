@@ -35,6 +35,10 @@
 #include "ngx_postgres_upstream.h"
 #include "ngx_postgres_util.h"
 #include "ngx_postgres_variable.h"
+#include "ngx_postgres_rewrite.h"
+
+
+#define NGX_CONF_TAKE34  (NGX_CONF_TAKE3|NGX_CONF_TAKE4)
 
 
 static ngx_command_t ngx_postgres_module_commands[] = {
@@ -67,6 +71,13 @@ static ngx_command_t ngx_postgres_module_commands[] = {
       0,
       NULL },
 
+    { ngx_string("postgres_rewrite"),
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_2MORE,
+      ngx_postgres_conf_rewrite,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      0,
+      NULL },
+
     { ngx_string("postgres_output"),
       NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE123,
       ngx_postgres_conf_output,
@@ -75,8 +86,7 @@ static ngx_command_t ngx_postgres_module_commands[] = {
       NULL },
 
     { ngx_string("postgres_set"),
-      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF
-          |NGX_CONF_TAKE3|NGX_CONF_TAKE4,
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE34,
       ngx_postgres_conf_set,
       NGX_HTTP_LOC_CONF_OFFSET,
       0,
@@ -187,7 +197,15 @@ ngx_conf_enum_t ngx_postgres_requirement_options[] = {
     { ngx_null_string, 0 }
 };
 
-ngx_postgres_output_handler_enum_t ngx_postgres_output_handlers[] = {
+ngx_postgres_handler_enum_t ngx_postgres_rewrite_handlers[] = {
+    { ngx_string("no_changes"), 0, ngx_postgres_rewrite_changes },
+    { ngx_string("changes"),    1, ngx_postgres_rewrite_changes },
+    { ngx_string("no_rows"),    2, ngx_postgres_rewrite_rows }, 
+    { ngx_string("rows"),       3, ngx_postgres_rewrite_rows },
+    { ngx_null_string, 0, NULL }
+};
+
+ngx_postgres_handler_enum_t ngx_postgres_output_handlers[] = {
     { ngx_string("none"),  0, NULL },
     { ngx_string("value"), 2, ngx_postgres_output_value },
     { ngx_string("row"),   1, ngx_postgres_output_row },
@@ -276,17 +294,18 @@ ngx_postgres_create_loc_conf(ngx_conf_t *cf)
      *
      *     conf->upstream.* = 0 / NULL
      *     conf->upstream_cv = NULL
-     *     conf->default_query = NULL
-     *     conf->methods_set = 0
-     *     conf->queries = NULL
+     *     conf->query.methods_set = 0
+     *     conf->query.methods = NULL
+     *     conf->query.def = NULL
      *     conf->output_value = NULL
-     *     conf->variables = NULL
      */
 
     conf->upstream.connect_timeout = NGX_CONF_UNSET_MSEC;
     conf->upstream.read_timeout = NGX_CONF_UNSET_MSEC;
 
+    conf->rewrites = NGX_CONF_UNSET_PTR;
     conf->output_handler = NGX_CONF_UNSET_PTR;
+    conf->variables = NGX_CONF_UNSET_PTR;
 
     /* the hardcoded values */
     conf->upstream.cyclic_temp_file = 0;
@@ -325,11 +344,13 @@ ngx_postgres_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
         conf->upstream_cv = prev->upstream_cv;
     }
 
-    if ((conf->default_query == NULL) && (conf->queries == NULL)) {
-        conf->default_query = prev->default_query;
-        conf->methods_set = prev->methods_set;
-        conf->queries = prev->queries;
+    if ((conf->query.def == NULL) && (conf->query.methods == NULL)) {
+        conf->query.methods_set = prev->query.methods_set;
+        conf->query.methods = prev->query.methods;
+        conf->query.def = prev->query.def;
     }
+
+    ngx_conf_merge_ptr_value(conf->rewrites, prev->rewrites, NULL);
 
     if (conf->output_handler == NGX_CONF_UNSET_PTR) {
         if (prev->output_handler == NGX_CONF_UNSET_PTR) {
@@ -343,9 +364,7 @@ ngx_postgres_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
         }
     }
 
-    if (conf->variables == NULL) {
-        conf->variables = prev->variables;
-    }
+    ngx_conf_merge_ptr_value(conf->variables, prev->variables, NULL);
 
     dd("returning NGX_CONF_OK");
     return NGX_CONF_OK;
@@ -654,7 +673,7 @@ ngx_postgres_conf_query(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     ngx_postgres_loc_conf_t           *pglcf = conf;
     ngx_http_compile_complex_value_t   ccv;
     ngx_postgres_mixed_t              *query;
-    ngx_conf_bitmask_t                *e;
+    ngx_conf_bitmask_t                *b;
     ngx_uint_t                         methods, i, j;
 
     dd("entering");
@@ -672,20 +691,19 @@ ngx_postgres_conf_query(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         /* default query */
         dd("default query");
 
-        if (pglcf->default_query != NULL) {
+        if (pglcf->query.def != NULL) {
             dd("returning");
             return "is duplicate";
         }
 
-        pglcf->default_query = ngx_palloc(cf->pool,
-                                          sizeof(ngx_postgres_mixed_t));
-        if (pglcf->default_query == NULL) {
+        pglcf->query.def = ngx_palloc(cf->pool, sizeof(ngx_postgres_mixed_t));
+        if (pglcf->query.def == NULL) {
             dd("returning NGX_CONF_ERROR");
             return NGX_CONF_ERROR;
         }
 
         methods = 0xFFFF;
-        query = pglcf->default_query;
+        query = pglcf->query.def;
     } else {
         /* method-specific query */
         dd("method-specific query");
@@ -693,12 +711,12 @@ ngx_postgres_conf_query(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         methods = 0;
 
         for (i = 1; i < cf->args->nelts - 1; i++) {
-            e = ngx_postgres_http_methods;
-            for (j = 0; e[j].name.len; j++) {
-                if ((e[j].name.len == value[i].len)
-                    && (ngx_strcasecmp(e[j].name.data, value[i].data) == 0))
+            b = ngx_postgres_http_methods;
+            for (j = 0; b[j].name.len; j++) {
+                if ((b[j].name.len == value[i].len)
+                    && (ngx_strcasecmp(b[j].name.data, value[i].data) == 0))
                 {
-                    if (pglcf->methods_set & e[j].mask) {
+                    if (pglcf->query.methods_set & b[j].mask) {
                         ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
                                            "postgres: method \"%V\" is"
                                            " duplicate in \"%V\" directive",
@@ -708,12 +726,12 @@ ngx_postgres_conf_query(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
                         return NGX_CONF_ERROR;
                     }
 
-                    methods |= e[j].mask;
+                    methods |= b[j].mask;
                     break;
                 }
             }
 
-            if (e[j].name.len == 0) {
+            if (b[j].name.len == 0) {
                 ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
                                    "postgres: invalid method \"%V\""
                                    " in \"%V\" directive",
@@ -724,22 +742,22 @@ ngx_postgres_conf_query(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
             }
         }
 
-        if (pglcf->queries == NULL) {
-            pglcf->queries = ngx_array_create(cf->pool, 4,
-                                              sizeof(ngx_postgres_mixed_t));
-            if (pglcf->queries == NULL) {
+        if (pglcf->query.methods == NULL) {
+            pglcf->query.methods = ngx_array_create(cf->pool, 4,
+                                       sizeof(ngx_postgres_mixed_t));
+            if (pglcf->query.methods == NULL) {
                 dd("returning NGX_CONF_ERROR");
                 return NGX_CONF_ERROR;
             }
         }
 
-        query = ngx_array_push(pglcf->queries);
+        query = ngx_array_push(pglcf->query.methods);
         if (query == NULL) {
             dd("returning NGX_CONF_ERROR");
             return NGX_CONF_ERROR;
         }
 
-        pglcf->methods_set |= methods;
+        pglcf->query.methods_set |= methods;
     }
 
     if (ngx_http_script_variables_count(&sql)) {
@@ -778,12 +796,169 @@ ngx_postgres_conf_query(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 }
 
 char *
+ngx_postgres_conf_rewrite(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+{
+    ngx_str_t                    *value = cf->args->elts;
+    ngx_str_t                     what = value[cf->args->nelts - 2];
+    ngx_str_t                     to = value[cf->args->nelts - 1];
+    ngx_postgres_loc_conf_t      *pglcf = conf;
+    ngx_postgres_rewrite_conf_t  *pgrcf;
+    ngx_postgres_rewrite_t       *rewrite;
+    ngx_postgres_handler_enum_t  *e;
+    ngx_conf_bitmask_t           *b;
+    ngx_uint_t                    methods, i, j;
+
+    dd("entering");
+
+    e = ngx_postgres_rewrite_handlers;
+    for (i = 0; e[i].name.len; i++) {
+        if ((e[i].name.len == what.len)
+            && (ngx_strcasecmp(e[i].name.data, what.data) == 0))
+        {
+            break;
+        }
+    }
+
+    if (e[i].name.len == 0) {
+        ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
+                           "postgres: invalid condition \"%V\""
+                           " in \"%V\" directive", &what, &cmd->name);
+
+        dd("returning NGX_CONF_ERROR");
+        return NGX_CONF_ERROR;
+    }
+
+    if (pglcf->rewrites == NGX_CONF_UNSET_PTR) {
+        pglcf->rewrites = ngx_array_create(cf->pool, 2,
+                                           sizeof(ngx_postgres_rewrite_conf_t));
+        if (pglcf->rewrites == NULL) {
+            dd("returning NGX_CONF_ERROR");
+            return NGX_CONF_ERROR;
+        }
+    } else {
+        pgrcf = pglcf->rewrites->elts;
+        for (j = 0; j < pglcf->rewrites->nelts; j++) {
+            if (pgrcf[j].key == e[i].param) {
+                pgrcf = &pgrcf[j];
+                goto found;
+            }
+        }
+    }
+
+    pgrcf = ngx_array_push(pglcf->rewrites);
+    if (pgrcf == NULL) {
+        dd("returning NGX_CONF_ERROR");
+        return NGX_CONF_ERROR;
+    }
+
+    ngx_memzero(pgrcf, sizeof(ngx_postgres_rewrite_conf_t));
+
+    pgrcf->key = e[i].param;
+    pgrcf->handler = e[i].handler;
+
+found:
+    if (cf->args->nelts == 3) {
+        /* default rewrite */
+        dd("default rewrite");
+
+        if (pgrcf->def != NULL) {
+            dd("returning");
+            return "is duplicate";
+        }
+
+        pgrcf->def = ngx_palloc(cf->pool, sizeof(ngx_postgres_rewrite_t));
+        if (pgrcf->def == NULL) {
+            dd("returning NGX_CONF_ERROR");
+            return NGX_CONF_ERROR;
+        }
+
+        methods = 0xFFFF;
+        rewrite = pgrcf->def;
+    } else {
+        /* method-specific rewrite */
+        dd("method-specific rewrite");
+
+        methods = 0;
+
+        for (i = 1; i < cf->args->nelts - 2; i++) {
+            b = ngx_postgres_http_methods;
+            for (j = 0; b[j].name.len; j++) {
+                if ((b[j].name.len == value[i].len)
+                    && (ngx_strcasecmp(b[j].name.data, value[i].data) == 0))
+                {
+                    if (pgrcf->methods_set & b[j].mask) {
+                        ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
+                                           "postgres: method \"%V\" for"
+                                           " condition \"%V\" is duplicate"
+                                           " in \"%V\" directive",
+                                           &value[i], &what, &cmd->name);
+
+                        dd("returning NGX_CONF_ERROR");
+                        return NGX_CONF_ERROR;
+                    }
+
+                    methods |= b[j].mask;
+                    break;
+                }
+            }
+
+            if (b[j].name.len == 0) {
+                ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
+                                   "postgres: invalid method \"%V\" for"
+                                   " condition \"%V\" in \"%V\" directive",
+                                   &value[i], &what, &cmd->name);
+
+                dd("returning NGX_CONF_ERROR");
+                return NGX_CONF_ERROR;
+            }
+        }
+
+        if (pgrcf->methods == NULL) {
+            pgrcf->methods = ngx_array_create(cf->pool, 4,
+                                              sizeof(ngx_postgres_rewrite_t));
+            if (pgrcf->methods == NULL) {
+                dd("returning NGX_CONF_ERROR");
+                return NGX_CONF_ERROR;
+            }
+        }
+
+        rewrite = ngx_array_push(pgrcf->methods);
+        if (rewrite == NULL) {
+            dd("returning NGX_CONF_ERROR");
+            return NGX_CONF_ERROR;
+        }
+
+        pgrcf->methods_set |= methods;
+    }
+
+    rewrite->key = methods;
+    rewrite->status = ngx_atoi(to.data, to.len);
+    if ((rewrite->status == NGX_ERROR)
+        || (rewrite->status < NGX_HTTP_OK)
+        || (rewrite->status > NGX_HTTP_INSUFFICIENT_STORAGE)
+        || ((rewrite->status >= NGX_HTTP_SPECIAL_RESPONSE)
+            && (rewrite->status < NGX_HTTP_BAD_REQUEST)))
+    {
+        ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
+                           "postgres: invalid status value \"%V\" for"
+                           " condition \"%V\" in \"%V\" directive",
+                           &to, &what, &cmd->name);
+
+        dd("returning NGX_CONF_ERROR");
+        return NGX_CONF_ERROR;
+    }
+
+    dd("returning NGX_CONF_OK");
+    return NGX_CONF_OK;
+}
+
+char *
 ngx_postgres_conf_output(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
-    ngx_str_t                           *value = cf->args->elts;
-    ngx_postgres_loc_conf_t             *pglcf = conf;
-    ngx_postgres_output_handler_enum_t  *e;
-    ngx_uint_t                           i;
+    ngx_str_t                    *value = cf->args->elts;
+    ngx_postgres_loc_conf_t      *pglcf = conf;
+    ngx_postgres_handler_enum_t  *e;
+    ngx_uint_t                    i;
 
     dd("entering");
 
@@ -811,7 +986,7 @@ ngx_postgres_conf_output(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         return NGX_CONF_ERROR;
     }
 
-    if (e[i].args != cf->args->nelts - 2) {
+    if (e[i].param != cf->args->nelts - 2) {
         ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
                            "postgres: invalid number of arguments"
                            " in \"%V\" directive", &cmd->name);
@@ -820,7 +995,7 @@ ngx_postgres_conf_output(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         return NGX_CONF_ERROR;
     }
 
-    if (e[i].args == 0) {
+    if (e[i].param == 0) {
         dd("returning NGX_CONF_OK");
         return NGX_CONF_OK;
     }
@@ -841,7 +1016,7 @@ ngx_postgres_conf_output(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         return NGX_CONF_ERROR;
     }
 
-    if (e[i].args == 1) {
+    if (e[i].param == 1) {
         dd("returning NGX_CONF_OK");
         return NGX_CONF_OK;
     }
@@ -884,7 +1059,7 @@ ngx_postgres_conf_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     value[1].len--;
     value[1].data++;
 
-    if (pglcf->variables == NULL) {
+    if (pglcf->variables == NGX_CONF_UNSET_PTR) {
         pglcf->variables = ngx_array_create(cf->pool, 4,
                                             sizeof(ngx_postgres_variable_t));
         if (pglcf->variables == NULL) {

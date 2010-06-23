@@ -251,7 +251,7 @@ Content-Type: application/x-resty-dbd-stream
 
 
 
-=== TEST 10: inheritance (inherit)
+=== TEST 10: inheritance
 --- http_config
     upstream database {
         postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
@@ -275,7 +275,7 @@ Content-Type: text/plain
 
 
 
-=== TEST 11: inheritance (don't inherit)
+=== TEST 11: inheritance (mixed, don't inherit)
 --- http_config
     upstream database {
         postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;

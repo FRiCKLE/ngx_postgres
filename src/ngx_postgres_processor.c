@@ -320,23 +320,25 @@ ngx_postgres_upstream_get_result(ngx_http_request_t *r, ngx_connection_t *pgxc,
 ngx_int_t
 ngx_postgres_process_response(ngx_http_request_t *r, PGresult *res)
 {
-    ngx_postgres_loc_conf_t  *pglcf;
-    ngx_postgres_ctx_t       *pgctx;
-    ngx_postgres_variable_t  *pgvar;
-    ngx_str_t                *store;
-    char                     *affected;
-    size_t                    affected_len;
-    ngx_uint_t                i;
+    ngx_postgres_loc_conf_t      *pglcf;
+    ngx_postgres_ctx_t           *pgctx;
+    ngx_postgres_rewrite_conf_t  *pgrcf;
+    ngx_postgres_variable_t      *pgvar;
+    ngx_str_t                    *store;
+    char                         *affected;
+    size_t                        affected_len;
+    ngx_uint_t                    i;
+    ngx_int_t                     rc;
 
     dd("entering");
 
     pglcf = ngx_http_get_module_loc_conf(r, ngx_postgres_module);
     pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
 
-    /* set $postgres_column_count */
+    /* set $postgres_columns */
     pgctx->var_cols = PQnfields(res);
 
-    /* set $postgres_row_count */
+    /* set $postgres_rows */
     pgctx->var_rows = PQntuples(res);
 
     /* set $postgres_affected */
@@ -346,7 +348,24 @@ ngx_postgres_process_response(ngx_http_request_t *r, PGresult *res)
         pgctx->var_affected = ngx_atoi((u_char *) affected, affected_len);
     }
 
-    if (pglcf->variables != NULL) {
+    if (pglcf->rewrites) {
+        /* process rewrites */
+        pgrcf = pglcf->rewrites->elts;
+        for (i = 0; i < pglcf->rewrites->nelts; i++) {
+            rc = pgrcf[i].handler(r, &pgrcf[i]);
+            if (rc != NGX_DECLINED) {
+                if (rc >= NGX_HTTP_SPECIAL_RESPONSE) {
+                    dd("returning rc:%d", (int) rc);
+                    return rc;
+                }
+
+                pgctx->status = rc;
+                break;
+            }
+        }
+    }
+
+    if (pglcf->variables) {
         /* set custom variables */
         pgvar = pglcf->variables->elts;
         store = pgctx->variables->elts;
@@ -361,6 +380,7 @@ ngx_postgres_process_response(ngx_http_request_t *r, PGresult *res)
     }
 
     if (pglcf->output_handler) {
+        /* generate output */
         dd("returning");
         return pglcf->output_handler(r, res, pglcf->output_value);
     }

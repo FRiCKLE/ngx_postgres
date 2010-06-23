@@ -160,19 +160,19 @@ ngx_postgres_upstream_init_peer(ngx_http_request_t *r,
     u->peer.get = ngx_postgres_upstream_get_peer;
     u->peer.free = ngx_postgres_upstream_free_peer;
 
-    if (pglcf->methods_set & r->method) {
+    if (pglcf->query.methods_set & r->method) {
         /* method-specific query */
         dd("using method-specific query");
 
-        query = pglcf->queries->elts;
-        for (i = 0; i < pglcf->queries->nelts; i++) {
+        query = pglcf->query.methods->elts;
+        for (i = 0; i < pglcf->query.methods->nelts; i++) {
             if (query[i].key & r->method) {
                 query = &query[i];
                 break;
             }
         }
 
-        if (i == pglcf->queries->nelts) {
+        if (i == pglcf->query.methods->nelts) {
             dd("returning NGX_ERROR");
             return NGX_ERROR;
         }
@@ -180,7 +180,7 @@ ngx_postgres_upstream_init_peer(ngx_http_request_t *r,
         /* default query */
         dd("using default query");
 
-        query = pglcf->default_query;
+        query = pglcf->query.def;
     }
 
     if (query->cv) {
