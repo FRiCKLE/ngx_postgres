@@ -175,9 +175,9 @@ http {
             eval_subrequest_in_memory  off;
 
             eval $backend {
-                postgres_pass       database;
-                postgres_query      "SELECT * FROM backends LIMIT 1";
-                postgres_get_value  0 0;
+                postgres_pass    database;
+                postgres_query   "SELECT * FROM backends LIMIT 1";
+                postgres_output  value 0 0;
             }
 
             proxy_pass  $backend;
