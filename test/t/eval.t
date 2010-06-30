@@ -47,3 +47,4 @@ Content-Type: text/plain
 --- response_body eval
 "it works!"
 --- timeout: 10
+--- skip_nginx: 3: >= 0.8.42
