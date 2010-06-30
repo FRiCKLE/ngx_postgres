@@ -55,7 +55,7 @@ ngx_postgres_output_value(ngx_http_request_t *r, PGresult *res,
         col = pgv->column;
     } else {
         /* get column by name */
-        col = PQfnumber(res, pgv->col_name);
+        col = PQfnumber(res, (char const *) pgv->col_name);
         if (col == NGX_ERROR) {
             if (pgv->required) {
                 clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
