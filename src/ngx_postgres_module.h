@@ -52,6 +52,7 @@ typedef struct {
 typedef struct {
     ngx_int_t                           row;
     ngx_int_t                           column;
+    char                               *col_name;
     ngx_uint_t                          required;
 } ngx_postgres_value_t;
 

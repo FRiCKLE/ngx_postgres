@@ -5,7 +5,7 @@ use Test::Nginx::Socket;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 3 - 3 * 2);
+plan tests => repeat_each() * (blocks() * 3 - 4 * 2);
 
 worker_connections(128);
 run_tests();
@@ -295,4 +295,48 @@ GET /postgres
 ! Content-Type
 --- response_body eval
 ""
+--- timeout: 10
+
+
+
+=== TEST 12: value - column by name (existing)
+--- http_config
+    upstream database {
+        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
+    }
+--- config
+    default_type  text/plain;
+
+    location /postgres {
+        postgres_pass       database;
+        postgres_query      "select 'test' as echo";
+        postgres_output     value 0 "echo";
+    }
+--- request
+GET /postgres
+--- error_code: 200
+--- response_headers
+Content-Type: text/plain
+--- response_body eval
+"test"
+--- timeout: 10
+
+
+
+=== TEST 13: value - column by name (not existing)
+--- http_config
+    upstream database {
+        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
+    }
+--- config
+    default_type  text/plain;
+
+    location /postgres {
+        postgres_pass       database;
+        postgres_query      "select 'test' as echo";
+        postgres_output     value 0 "test";
+    }
+--- request
+GET /postgres
+--- error_code: 500
 --- timeout: 10

@@ -1023,12 +1023,15 @@ ngx_postgres_conf_output(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
     pglcf->output_value->column = ngx_atoi(value[3].data, value[3].len);
     if (pglcf->output_value->column == NGX_ERROR) {
-        ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
-                           "postgres: invalid column number \"%V\""
-                           " in \"%V\" directive", &value[3], &cmd->name);
+        /* get column by name */
+        pglcf->output_value->col_name = ngx_pnalloc(cf->pool, value[3].len + 1);
+        if (pglcf->output_value->col_name == NULL) {
+            dd("returning NGX_CONF_ERROR");
+            return NGX_CONF_ERROR;
+        }
 
-        dd("returning NGX_CONF_ERROR");
-        return NGX_CONF_ERROR;
+        (void) ngx_cpystrn(pglcf->output_value->col_name,
+                           value[3].data, value[3].len + 1);
     }
 
     dd("returning NGX_CONF_OK");
@@ -1116,12 +1119,15 @@ ngx_postgres_conf_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
     pgvar->value.column = ngx_atoi(value[3].data, value[3].len);
     if (pgvar->value.column == NGX_ERROR) {
-        ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
-                           "postgres: invalid column number \"%V\""
-                           " in \"%V\" directive", &value[3], &cmd->name);
+        /* get column by name */
+        pgvar->value.col_name = ngx_pnalloc(cf->pool, value[3].len + 1);
+        if (pgvar->value.col_name == NULL) {
+            dd("returning NGX_CONF_ERROR");
+            return NGX_CONF_ERROR;
+        }
 
-        dd("returning NGX_CONF_ERROR");
-        return NGX_CONF_ERROR;
+        (void) ngx_cpystrn(pgvar->value.col_name,
+                           value[3].data, value[3].len + 1);
     }
 
     if (cf->args->nelts == 4) {
@@ -1196,4 +1202,3 @@ ngx_postgres_find_upstream(ngx_http_request_t *r, ngx_url_t *url)
     dd("returning NULL");
     return NULL;
 }
-

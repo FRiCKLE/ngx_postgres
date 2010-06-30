@@ -5,7 +5,7 @@ use Test::Nginx::Socket;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 3 + 1 * 4 + 1 * 1 - 4 * 2);
+plan tests => repeat_each() * (blocks() * 3 + 1 * 4 + 1 * 1 - 5 * 2);
 
 worker_connections(128);
 run_tests();
@@ -401,4 +401,67 @@ GET /postgres
 --- response_headers
 Content-Type: application/x-resty-dbd-stream
 ! X-Test
+--- timeout: 10
+
+
+
+=== TEST 18: column by name (existing)
+--- http_config
+    upstream database {
+        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
+    }
+--- config
+    location /postgres {
+        postgres_pass       database;
+        postgres_query      "select 'test' as echo";
+        postgres_set        $test 0 "echo";
+        add_header          "X-Test" $test;
+    }
+--- request
+GET /postgres
+--- error_code: 200
+--- response_headers
+Content-Type: application/x-resty-dbd-stream
+X-Test: test
+--- timeout: 10
+
+
+
+=== TEST 19: column by name (not existing, optional)
+--- http_config
+    upstream database {
+        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
+    }
+--- config
+    location /postgres {
+        postgres_pass       database;
+        postgres_query      "select 'test' as echo";
+        postgres_set        $test 0 "test" optional;
+        add_header          "X-Test" $test;
+    }
+--- request
+GET /postgres
+--- error_code: 200
+--- response_headers
+Content-Type: application/x-resty-dbd-stream
+! X-Test
+--- timeout: 10
+
+
+
+=== TEST 20: column by name (not existing, required)
+--- http_config
+    upstream database {
+        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
+    }
+--- config
+    location /postgres {
+        postgres_pass       database;
+        postgres_query      "select 'test' as echo";
+        postgres_set        $test 0 "test" required;
+        add_header          "X-Test" $test;
+    }
+--- request
+GET /postgres
+--- error_code: 500
 --- timeout: 10

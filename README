@@ -70,7 +70,7 @@ CONFIGURATION DIRECTIVES:
   - none  - don't return anything, this should be used only when extracting values
             with "postgres_set" for use with other modules (Content-Type isn't set).
 
-  Row and column numbers start at 0.
+  Row and column numbers start at 0. Column name can be used instead of column number.
 
   default: rds
 
@@ -81,7 +81,8 @@ CONFIGURATION DIRECTIVES:
   is set to "required" and value is either out-of-range, NULL or zero-length, then nginx
   returns 500 Internal Server Error. Such condition is silently ignored when requirement
   level is set to "optional" (default).
-  Row and column numbers start at 0.
+
+  Row and column numbers start at 0. Column name can be used instead of column number.
 
   default: none
 

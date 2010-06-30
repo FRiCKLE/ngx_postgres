@@ -193,7 +193,7 @@ ngx_postgres_variable_set_custom(ngx_http_request_t *r, PGresult *res,
 {
     ngx_http_core_loc_conf_t  *clcf;
     ngx_postgres_value_t      *pgv;
-    ngx_int_t                  col_count, row_count, len;
+    ngx_int_t                  col_count, row_count, col, len;
     ngx_str_t                  value = ngx_null_string;
 
     dd("entering: \"$%.*s\"", (int) pgvar->var->name.len,
@@ -204,7 +204,30 @@ ngx_postgres_variable_set_custom(ngx_http_request_t *r, PGresult *res,
 
     pgv = &pgvar->value;
 
-    if ((pgv->row >= row_count) || (pgv->column >= col_count)) {
+    if (pgv->column != NGX_ERROR) {
+        /* get column by number */
+        col = pgv->column;
+    } else {
+        /* get column by name */
+        col = PQfnumber(res, pgv->col_name);
+        if (col == NGX_ERROR) {
+            if (pgv->required) {
+                clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
+
+                ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
+                              "postgres: \"postgres_set\" for variable \"$%V\""
+                              " requires value from column \"%s\" that wasn't"
+                              " found in the received result-set in location"
+                              " \"%V\"",
+                              &pgvar->var->name, pgv->col_name, &clcf->name);
+            }
+
+            dd("returning empty value");
+            return value;
+        }
+    }
+
+    if ((pgv->row >= row_count) || (col >= col_count)) {
         if (pgv->required) {
             clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
 
@@ -219,7 +242,7 @@ ngx_postgres_variable_set_custom(ngx_http_request_t *r, PGresult *res,
         return value;
     }
 
-    if (PQgetisnull(res, pgv->row, pgv->column)) {
+    if (PQgetisnull(res, pgv->row, col)) {
         if (pgv->required) {
             clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
 
@@ -233,7 +256,7 @@ ngx_postgres_variable_set_custom(ngx_http_request_t *r, PGresult *res,
         return value;
     }
 
-    len = PQgetlength(res, pgv->row, pgv->column);
+    len = PQgetlength(res, pgv->row, col);
     if (len == 0) {
         if (pgv->required) {
             clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
@@ -254,7 +277,7 @@ ngx_postgres_variable_set_custom(ngx_http_request_t *r, PGresult *res,
         return value;
     }
 
-    ngx_memcpy(value.data, PQgetvalue(res, pgv->row, pgv->column), len);
+    ngx_memcpy(value.data, PQgetvalue(res, pgv->row, col), len);
     value.len = len;
 
     dd("returning non-empty value");
