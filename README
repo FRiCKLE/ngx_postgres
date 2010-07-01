@@ -186,5 +186,91 @@ http {
     }
 }
 
-Pass request to the backend that was selected from the database
-(traffic router).
+Pass request to the backend selected from the database ("traffic router").
+
+Required modules (other than ngx_postgres):
+- nginx-eval-module (agentzh's fork).
+
+
+EXAMPLE CONFIGURATION #4:
+-------------------------
+http {
+    upstream database {
+        postgres_server        127.0.0.1 dbname=test
+                               user=monty password=some_pass;
+    }
+
+    server {
+        location = /auth {
+            internal;
+
+            set_quote_sql_str  $user $remote_user;
+            set_quote_sql_str  $pass $remote_passwd;
+
+            postgres_pass      database;
+            postgres_query     "SELECT login FROM users WHERE login=$user AND pass=$pass";
+            postgres_rewrite   no_rows 403;
+            postgres_output    none;
+        }
+
+        location / {
+            auth_request       /auth;
+            root               /files;
+        }
+    }
+}
+
+Restrict access to local files by authenticating against PostgreSQL database.
+
+Required modules (other than ngx_postgres):
+- ngx_http_auth_request_module,
+- ngx_coolkit,
+- ngx_set_misc.
+
+
+EXAMPLE CONFIGURATION #5:
+-------------------------
+http {
+    upstream database {
+        postgres_server       127.0.0.1 dbname=test
+                              user=monty password=some_pass;
+    }
+
+    server {
+        set $random  123;
+
+        location = /numbers/ {
+            postgres_pass     database;
+            rds_json          on;
+
+            postgres_query    HEAD GET  "SELECT * FROM numbers";
+
+            postgres_query    POST      "INSERT INTO numbers VALUES('$random') RETURNING *";
+            postgres_rewrite  POST      changes 201;
+
+            postgres_query    DELETE    "DELETE FROM numbers";
+            postgres_rewrite  DELETE    no_changes 204;
+            postgres_rewrite  DELETE    changes 204;
+        }
+
+        location ~ /numbers/(?<num>\d+) {
+            postgres_pass     database;
+            rds_json          on;
+
+            postgres_query    HEAD GET  "SELECT * FROM numbers WHERE number='$num'";
+            postgres_rewrite  HEAD GET  no_rows 410;
+
+            postgres_query    PUT       "UPDATE numbers SET number='$num' WHERE number='$num' RETURNING *";
+            postgres_rewrite  PUT       no_changes 410;
+
+            postgres_query    DELETE    "DELETE FROM numbers WHERE number='$num'";
+            postgres_rewrite  DELETE    no_changes 410;
+            postgres_rewrite  DELETE    changes 204;
+        }
+    }
+}
+
+Simple RESTful webservice returning JSON responses and appropriate HTTP status codes.
+
+Required modules (other than ngx_postgres):
+- ngx_rds_json.
