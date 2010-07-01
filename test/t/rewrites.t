@@ -14,7 +14,7 @@ no_diff();
 
 __DATA__
 
-=== TEST 1: no changes (INSERT)
+=== TEST 1: no changes (SELECT)
 db init:
 
 create table cats (id integer, name text);
@@ -54,12 +54,12 @@ insert into cats (id, name) values (3, 'bob');
     location /postgres {
         postgres_pass       database;
         postgres_query      "update cats set id=3 where name='noone'";
-        postgres_rewrite    no_changes 202;
+        postgres_rewrite    no_changes 206;
         postgres_rewrite    changes 500;
     }
 --- request
 GET /postgres
---- error_code: 202
+--- error_code: 206
 --- response_headers
 Content-Type: application/x-resty-dbd-stream
 --- timeout: 10
@@ -81,11 +81,11 @@ insert into cats (id, name) values (3, 'bob');
         postgres_pass       database;
         postgres_query      "update cats set id=3 where name='bob'";
         postgres_rewrite    no_changes 500;
-        postgres_rewrite    changes 202;
+        postgres_rewrite    changes 206;
     }
 --- request
 GET /postgres
---- error_code: 202
+--- error_code: 206
 --- response_headers
 Content-Type: application/x-resty-dbd-stream
 --- timeout: 10
@@ -109,11 +109,11 @@ insert into cats (id, name) values (3, 'bob');
         postgres_rewrite    no_changes 500;
         postgres_rewrite    changes 500;
         postgres_rewrite    no_rows 410;
-        postgres_rewrite    rows 202;
+        postgres_rewrite    rows 206;
     }
 --- request
 GET /postgres
---- error_code: 202
+--- error_code: 206
 --- response_headers
 Content-Type: application/x-resty-dbd-stream
 --- timeout: 10
@@ -137,7 +137,7 @@ insert into cats (id, name) values (3, 'bob');
         postgres_rewrite    no_changes 500;
         postgres_rewrite    changes 500;
         postgres_rewrite    no_rows 410;
-        postgres_rewrite    rows 202;
+        postgres_rewrite    rows 206;
     }
 --- request
 GET /postgres
@@ -162,7 +162,7 @@ insert into cats (id, name) values (3, 'bob');
     postgres_rewrite  no_changes 500;
     postgres_rewrite  changes 500;
     postgres_rewrite  no_rows 410;
-    postgres_rewrite  rows 202;
+    postgres_rewrite  rows 206;
 
     location /postgres {
         postgres_pass       database;
@@ -170,7 +170,7 @@ insert into cats (id, name) values (3, 'bob');
     }
 --- request
 GET /postgres
---- error_code: 202
+--- error_code: 206
 --- response_headers
 Content-Type: application/x-resty-dbd-stream
 --- timeout: 10
@@ -191,7 +191,7 @@ insert into cats (id, name) values (3, 'bob');
     postgres_rewrite  no_changes 500;
     postgres_rewrite  changes 500;
     postgres_rewrite  no_rows 410;
-    postgres_rewrite  rows 202;
+    postgres_rewrite  rows 206;
 
     location /postgres {
         postgres_pass       database;
@@ -225,12 +225,12 @@ insert into cats (id, name) values (3, 'bob');
         postgres_rewrite    changes 500;
         postgres_rewrite    no_rows 410;
         postgres_rewrite    POST PUT rows 201;
-        postgres_rewrite    HEAD GET rows 202;
+        postgres_rewrite    HEAD GET rows 206;
         postgres_rewrite    rows 206;
     }
 --- request
 GET /postgres
---- error_code: 202
+--- error_code: 206
 --- response_headers
 Content-Type: application/x-resty-dbd-stream
 --- timeout: 10
@@ -291,3 +291,30 @@ GET /postgres
 --- response_headers
 Content-Type: application/x-resty-dbd-stream
 --- timeout: 10
+
+
+
+=== TEST 11: no changes (UPDATE) with 202 response
+db init:
+
+create table cats (id integer, name text);
+insert into cats (id) values (2);
+insert into cats (id, name) values (3, 'bob');
+--- http_config
+    upstream database {
+        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
+    }
+--- config
+    location /postgres {
+        postgres_pass       database;
+        postgres_query      "update cats set id=3 where name='noone'";
+        postgres_rewrite    no_changes 202;
+        postgres_rewrite    changes 500;
+    }
+--- request
+GET /postgres
+--- error_code: 202
+--- response_headers
+Content-Type: application/x-resty-dbd-stream
+--- timeout: 10
+--- skip_nginx: 2: < 0.8.41
