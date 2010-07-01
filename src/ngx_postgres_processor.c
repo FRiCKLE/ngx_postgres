@@ -355,8 +355,9 @@ ngx_postgres_process_response(ngx_http_request_t *r, PGresult *res)
             rc = pgrcf[i].handler(r, &pgrcf[i]);
             if (rc != NGX_DECLINED) {
                 if (rc >= NGX_HTTP_SPECIAL_RESPONSE) {
-                    dd("returning rc:%d", (int) rc);
-                    return rc;
+                    dd("returning NGX_DONE, status %d", (int) rc);
+                    pgctx->status = rc;
+                    return NGX_DONE;
                 }
 
                 pgctx->status = rc;
@@ -373,8 +374,9 @@ ngx_postgres_process_response(ngx_http_request_t *r, PGresult *res)
         for (i = 0; i < pglcf->variables->nelts; i++) {
             store[i] = ngx_postgres_variable_set_custom(r, res, &pgvar[i]);
             if ((store[i].len == 0) && (pgvar[i].value.required)) {
-                dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
-                return NGX_HTTP_INTERNAL_SERVER_ERROR;
+                dd("returning NGX_DONE, status NGX_HTTP_INTERNAL_SERVER_ERROR");
+                pgctx->status = NGX_HTTP_INTERNAL_SERVER_ERROR;
+                return NGX_DONE;
             }
         }
     }
@@ -440,15 +442,20 @@ ngx_int_t
 ngx_postgres_upstream_done(ngx_http_request_t *r, ngx_http_upstream_t *u,
     ngx_postgres_upstream_peer_data_t *pgdt)
 {
+    ngx_postgres_ctx_t  *pgctx;
+
     dd("entering");
 
-    /* needed for keepalive */
-    u->header_sent = 1;
-    u->length = 0;
-    r->headers_out.status = NGX_HTTP_OK;
+    /* flag for keepalive */
     u->headers_in.status_n = NGX_HTTP_OK;
 
-    ngx_postgres_upstream_finalize_request(r, u, NGX_OK);
+    pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
+
+    if (pgctx->status >= NGX_HTTP_SPECIAL_RESPONSE) {
+        ngx_postgres_upstream_finalize_request(r, u, pgctx->status);
+    } else {
+        ngx_postgres_upstream_finalize_request(r, u, NGX_OK);
+    }
 
     dd("returning NGX_DONE");
     return NGX_DONE;

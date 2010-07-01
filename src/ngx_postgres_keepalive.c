@@ -154,7 +154,6 @@ ngx_postgres_keepalive_free_peer(ngx_peer_connection_t *pc,
     ngx_queue_t                     *q;
     ngx_connection_t                *c;
     ngx_http_upstream_t             *u;
-    ngx_uint_t                       status;
 
     dd("entering");
 
@@ -166,12 +165,9 @@ ngx_postgres_keepalive_free_peer(ngx_peer_connection_t *pc,
     }
 
     u = pgp->upstream;
-    status = u->headers_in.status_n;
 
     if ((!pgp->failed) && (pc->connection != NULL)
-        && ((status == NGX_HTTP_NOT_FOUND)
-            || ((status == NGX_HTTP_OK) && (u->header_sent)
-                && (u->length == 0))))
+        && (u->headers_in.status_n == NGX_HTTP_OK))
     {
         c = pc->connection;
 

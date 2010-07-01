@@ -67,8 +67,9 @@ ngx_postgres_output_value(ngx_http_request_t *r, PGresult *res,
                               pgv->col_name, &clcf->name);
             }
 
-            dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
-            return NGX_HTTP_INTERNAL_SERVER_ERROR;
+            dd("returning NGX_DONE, status NGX_HTTP_INTERNAL_SERVER_ERROR");
+            pgctx->status = NGX_HTTP_INTERNAL_SERVER_ERROR;
+            return NGX_DONE;
         }
     }
 
@@ -80,8 +81,9 @@ ngx_postgres_output_value(ngx_http_request_t *r, PGresult *res,
                       " of range of the received result-set (rows:%d cols:%d)"
                       " in location \"%V\"", row_count, col_count, &clcf->name);
 
-        dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
-        return NGX_HTTP_INTERNAL_SERVER_ERROR;
+        dd("returning NGX_DONE, status NGX_HTTP_INTERNAL_SERVER_ERROR");
+        pgctx->status = NGX_HTTP_INTERNAL_SERVER_ERROR;
+        return NGX_DONE;
     }
 
     if (PQgetisnull(res, pgv->row, col)) {
@@ -91,8 +93,9 @@ ngx_postgres_output_value(ngx_http_request_t *r, PGresult *res,
                       "postgres: \"postgres_output value\" received NULL value"
                       " in location \"%V\"", &clcf->name);
 
-        dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
-        return NGX_HTTP_INTERNAL_SERVER_ERROR;
+        dd("returning NGX_DONE, status NGX_HTTP_INTERNAL_SERVER_ERROR");
+        pgctx->status = NGX_HTTP_INTERNAL_SERVER_ERROR;
+        return NGX_DONE;
     }
 
     size = PQgetlength(res, pgv->row, col); 
@@ -103,8 +106,9 @@ ngx_postgres_output_value(ngx_http_request_t *r, PGresult *res,
                       "postgres: \"postgres_output value\" received empty value"
                       " in location \"%V\"", &clcf->name);
 
-        dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
-        return NGX_HTTP_INTERNAL_SERVER_ERROR;
+        dd("returning NGX_DONE, status NGX_HTTP_INTERNAL_SERVER_ERROR");
+        pgctx->status = NGX_HTTP_INTERNAL_SERVER_ERROR;
+        return NGX_DONE;
     }
 
     b = ngx_create_temp_buf(r->pool, size);
@@ -166,8 +170,9 @@ ngx_postgres_output_row(ngx_http_request_t *r, PGresult *res,
                       " of range of the received result-set (rows:%d cols:%d)"
                       " in location \"%V\"", row_count, col_count, &clcf->name);
 
-        dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
-        return NGX_HTTP_INTERNAL_SERVER_ERROR;
+        dd("returning NGX_DONE, status NGX_HTTP_INTERNAL_SERVER_ERROR");
+        pgctx->status = NGX_HTTP_INTERNAL_SERVER_ERROR;
+        return NGX_DONE;
     }
 
     /* pre-calculate total length up-front for single buffer allocation */
@@ -181,8 +186,9 @@ ngx_postgres_output_row(ngx_http_request_t *r, PGresult *res,
                           "postgres: \"postgres_output row\" received NULL"
                           " value in location \"%V\"", &clcf->name);
 
-            dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
-            return NGX_HTTP_INTERNAL_SERVER_ERROR;
+            dd("returning NGX_DONE, status NGX_HTTP_INTERNAL_SERVER_ERROR");
+            pgctx->status = NGX_HTTP_INTERNAL_SERVER_ERROR;
+            return NGX_DONE;
         }
 
         size += PQgetlength(res, pgv->row, col);  /* field string data */
