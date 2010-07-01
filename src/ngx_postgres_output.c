@@ -559,10 +559,11 @@ ngx_postgres_render_rds_row_terminator(ngx_http_request_t *r, ngx_pool_t *pool)
 ngx_int_t
 ngx_postgres_output_chain(ngx_http_request_t *r, ngx_chain_t *cl)
 {
-    ngx_http_upstream_t      *u = r->upstream;
-    ngx_postgres_loc_conf_t  *pglcf;
-    ngx_postgres_ctx_t       *pgctx;
-    ngx_int_t                 rc;
+    ngx_http_upstream_t       *u = r->upstream;
+    ngx_http_core_loc_conf_t  *clcf;
+    ngx_postgres_loc_conf_t   *pglcf;
+    ngx_postgres_ctx_t        *pgctx;
+    ngx_int_t                  rc;
 
     dd("entering");
 
@@ -575,16 +576,19 @@ ngx_postgres_output_chain(ngx_http_request_t *r, ngx_chain_t *cl)
         r->headers_out.status = pgctx->status ? pgctx->status : NGX_HTTP_OK;
 
         if (pglcf->output_handler == &ngx_postgres_output_rds) {
+            /* RDS for output rds */
             r->headers_out.content_type.data = (u_char *) rds_content_type;
             r->headers_out.content_type.len = rds_content_type_len;
             r->headers_out.content_type_len = rds_content_type_len;
-            r->headers_out.content_type_lowcase = NULL;
         } else if (pglcf->output_handler != NULL) {
-            if (ngx_http_set_content_type(r) != NGX_OK) {
-                dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
-                return NGX_HTTP_INTERNAL_SERVER_ERROR;
-            }
+            /* default type for output value|row */
+            clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
+
+            r->headers_out.content_type = clcf->default_type;
+            r->headers_out.content_type_len = clcf->default_type.len;
         }
+
+        r->headers_out.content_type_lowcase = NULL;
 
         rc = ngx_http_send_header(r);
         if (rc == NGX_ERROR || rc > NGX_OK || r->header_only) {

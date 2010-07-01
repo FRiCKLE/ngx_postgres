@@ -340,3 +340,27 @@ Content-Type: text/plain
 GET /postgres
 --- error_code: 500
 --- timeout: 10
+
+
+
+=== TEST 14: value - sanity (request with known extension)
+--- http_config
+    upstream database {
+        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
+    }
+--- config
+    default_type  text/plain;
+
+    location /postgres {
+        postgres_pass       database;
+        postgres_query      "select 'test', 'test' as echo";
+        postgres_output     value 0 0;
+    }
+--- request
+GET /postgres.jpg
+--- error_code: 200
+--- response_headers
+Content-Type: text/plain
+--- response_body eval
+"test"
+--- timeout: 10
