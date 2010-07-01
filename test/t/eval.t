@@ -47,4 +47,33 @@ Content-Type: text/plain
 --- response_body eval
 "it works!"
 --- timeout: 10
+--- skip_nginx2: 3: < 0.8.25 or >= 0.8.42
+
+
+
+=== TEST 2: sanity (simple case)
+--- http_config
+    upstream database {
+        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
+    }
+--- config
+    location /eval {
+        eval_subrequest_in_memory  off;
+
+        eval $echo {
+            postgres_pass    database;
+            postgres_query   "select 'test' as echo";
+            postgres_output  value 0 0;
+        }
+
+        echo -n  $echo;
+    }
+--- request
+GET /eval
+--- error_code: 200
+--- response_headers
+Content-Type: text/plain
+--- response_body eval
+"test"
+--- timeout: 10
 --- skip_nginx: 3: >= 0.8.42
