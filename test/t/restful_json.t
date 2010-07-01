@@ -48,18 +48,18 @@ our $config = <<'_EOC_';
         postgres_rewrite    DELETE    changes 204;
     }
 
-    location ~ /numbers/(?<num>\d+) {
+    location ~ /numbers/(\d+) {
         auth_request        /auth;
         postgres_pass       database;
         rds_json            on;
 
-        postgres_query      HEAD GET  "SELECT * FROM numbers WHERE number='$num'";
+        postgres_query      HEAD GET  "SELECT * FROM numbers WHERE number='$1'";
         postgres_rewrite    HEAD GET  no_rows 410;
 
-        postgres_query      PUT       "UPDATE numbers SET number='$num' WHERE number='$num' RETURNING *";
+        postgres_query      PUT       "UPDATE numbers SET number='$1' WHERE number='$1' RETURNING *";
         postgres_rewrite    PUT       no_changes 410;
 
-        postgres_query      DELETE    "DELETE FROM numbers WHERE number='$num'";
+        postgres_query      DELETE    "DELETE FROM numbers WHERE number='$1'";
         postgres_rewrite    DELETE    no_changes 410;
         postgres_rewrite    DELETE    changes 204;
     }
