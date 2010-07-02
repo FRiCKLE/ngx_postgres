@@ -138,20 +138,19 @@ ngx_postgres_upstream_init_peer(ngx_http_request_t *r,
 
     dd("entering");
 
+    pgscf = ngx_http_conf_upstream_srv_conf(uscf, ngx_postgres_module);
+    pglcf = ngx_http_get_module_loc_conf(r, ngx_postgres_module);
+    pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
+
     pgdt = ngx_pcalloc(r->pool, sizeof(ngx_postgres_upstream_peer_data_t));
     if (pgdt == NULL) {
-        dd("returning NGX_ERROR");
-        return NGX_ERROR;
+        goto failed;
     }
 
     u = r->upstream;
 
     pgdt->upstream = u;
     pgdt->request = r;
-
-    pgscf = ngx_http_conf_upstream_srv_conf(uscf, ngx_postgres_module);
-    pglcf = ngx_http_get_module_loc_conf(r, ngx_postgres_module);
-    pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
 
     pgdt->srv_conf = pgscf;
     pgdt->loc_conf = pglcf;
@@ -173,8 +172,7 @@ ngx_postgres_upstream_init_peer(ngx_http_request_t *r,
         }
 
         if (i == pglcf->query.methods->nelts) {
-            dd("returning NGX_ERROR");
-            return NGX_ERROR;
+            goto failed;
         }
     } else {
         /* default query */
@@ -188,8 +186,7 @@ ngx_postgres_upstream_init_peer(ngx_http_request_t *r,
         dd("using complex value");
 
         if (ngx_http_complex_value(r, query->cv, &sql) != NGX_OK) {
-            dd("returning NGX_ERROR");
-            return NGX_ERROR;
+            goto failed;
         }
 
         if (sql.len == 0) {
@@ -200,8 +197,7 @@ ngx_postgres_upstream_init_peer(ngx_http_request_t *r,
                           " in location \"%V\"", &query->cv->value,
                           &clcf->name);
 
-            dd("returning NGX_ERROR");
-            return NGX_ERROR;
+            goto failed;
         }
 
         pgdt->query = sql;
@@ -217,6 +213,17 @@ ngx_postgres_upstream_init_peer(ngx_http_request_t *r,
 
     dd("returning NGX_OK");
     return NGX_OK;
+
+failed:
+#if defined(nginx_version) && (nginx_version >= 8017)
+    dd("returning NGX_ERROR");
+    return NGX_ERROR;
+#else
+    r->upstream->peer.data = NULL;
+
+    dd("returning NGX_OK (NGX_ERROR)");
+    return NGX_OK;
+#endif
 }
 
 size_t
@@ -237,6 +244,9 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
 {
     ngx_postgres_upstream_peer_data_t  *pgdt = data;
     ngx_postgres_upstream_srv_conf_t   *pgscf;
+#if defined(nginx_version) && (nginx_version < 8017)
+    ngx_postgres_ctx_t                 *pgctx;
+#endif
     ngx_postgres_upstream_peers_t      *peers;
     ngx_postgres_upstream_peer_t       *peer;
     ngx_connection_t                   *pgxc = NULL;
@@ -247,6 +257,14 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
     size_t                              len;
 
     dd("entering");
+
+#if defined(nginx_version) && (nginx_version < 8017)
+    if (data == NULL) {
+        goto failed;
+    }
+
+    pgctx = ngx_http_get_module_ctx(pgdt->request, ngx_postgres_module);
+#endif
 
     pgscf = pgdt->srv_conf;
 
@@ -301,10 +319,14 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
                       "postgres: keepalive connection pool is full,"
                       " rejecting request to upstream \"%V\"", &peer->name);
 
-        /* a bit hack-ish way to return 503 Service Unavailable (setup part) */
+        /* a bit hack-ish way to return error response (setup part) */
         pc->connection = ngx_get_connection(0, pc->log);
 
-        dd("returning NGX_AGAIN");
+#if defined(nginx_version) && (nginx_version < 8017)
+        pgctx->status = NGX_HTTP_SERVICE_UNAVAILABLE;
+#endif
+
+        dd("returning NGX_AGAIN (NGX_HTTP_SERVICE_UNAVAILABLE)");
         return NGX_AGAIN;
     }
 
@@ -318,8 +340,12 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
 
     connstring = ngx_palloc(pgdt->request->pool, len);
     if (connstring == NULL) {
+#if defined(nginx_version) && (nginx_version >= 8017)
         dd("returning NGX_ERROR");
         return NGX_ERROR;
+#else
+        goto failed;
+#endif
     }
 
     /* TODO add unix sockets */
@@ -346,8 +372,13 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
         PQfinish(pgdt->pgconn);
         pgdt->pgconn = NULL;
 
+#if defined(nginx_version) && (nginx_version >= 8017)
         dd("returning NGX_DECLINED");
         return NGX_DECLINED;
+#else
+        pgctx->status = NGX_HTTP_BAD_GATEWAY;
+        goto failed;
+#endif
     }
 
 #if defined(DDEBUG) && (DDEBUG > 1)
@@ -423,8 +454,18 @@ invalid:
     ngx_postgres_upstream_free_connection(pc->log, pc->connection,
                                           pgdt->pgconn, pgscf);
 
+#if defined(nginx_version) && (nginx_version >= 8017)
     dd("returning NGX_ERROR");
     return NGX_ERROR;
+#else
+
+failed:
+    /* a bit hack-ish way to return error response (setup part) */
+    pc->connection = ngx_get_connection(0, pc->log);
+    
+    dd("returning NGX_AGAIN (NGX_ERROR)");
+    return NGX_AGAIN;
+#endif
 }
 
 void
@@ -432,9 +473,18 @@ ngx_postgres_upstream_free_peer(ngx_peer_connection_t *pc,
     void *data, ngx_uint_t state)
 {
     ngx_postgres_upstream_peer_data_t  *pgdt = data;
-    ngx_postgres_upstream_srv_conf_t   *pgscf = pgdt->srv_conf;
+    ngx_postgres_upstream_srv_conf_t   *pgscf;
 
     dd("entering");
+
+#if defined(nginx_version) && (nginx_version < 8017)
+    if (data == NULL) {
+        dd("returning");
+        return;
+    }
+#endif
+
+    pgscf = pgdt->srv_conf;
 
     if (pgscf->max_cached) {
         ngx_postgres_keepalive_free_peer(pc, pgdt, pgscf, state);

@@ -209,7 +209,7 @@ ngx_postgres_handler(ngx_http_request_t *r)
     u->write_event_handler = ngx_postgres_wev_handler;
     u->read_event_handler = ngx_postgres_rev_handler;
 
-    /* a bit hack-ish way to return 503 Service Unavailable (clean-up part) */
+    /* a bit hack-ish way to return error response (clean-up part) */
     if ((u->peer.connection) && (u->peer.connection->fd == 0)) {
         c = u->peer.connection;
         u->peer.connection = NULL;
@@ -221,7 +221,11 @@ ngx_postgres_handler(ngx_http_request_t *r)
         ngx_free_connection(c);
 
         ngx_postgres_upstream_finalize_request(r, u,
+#if defined(nginx_version) && (nginx_version >= 8017)
                                                NGX_HTTP_SERVICE_UNAVAILABLE);
+#else
+            pgctx->status ? pgctx->status : NGX_HTTP_INTERNAL_SERVER_ERROR);
+#endif
     }
 
     dd("returning NGX_DONE");
