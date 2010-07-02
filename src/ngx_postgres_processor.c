@@ -209,14 +209,13 @@ ngx_postgres_upstream_send_query(ngx_http_request_t *r, ngx_connection_t *pgxc,
 
     dd("entering");
 
-    query = ngx_palloc(r->pool, pgdt->query.len + 1);
+    query = ngx_pnalloc(r->pool, pgdt->query.len + 1);
     if (query == NULL) {
         dd("returning NGX_ERROR");
         return NGX_ERROR;
     }
 
-    (void) ngx_snprintf(query, pgdt->query.len, "%V", &pgdt->query);
-    query[pgdt->query.len] = '\0';
+    (void) ngx_cpystrn(query, pgdt->query.data, pgdt->query.len + 1);
 
     dd("sending query: %s", query);
 

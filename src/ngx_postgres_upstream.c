@@ -91,8 +91,8 @@ ngx_postgres_upstream_init(ngx_conf_t *cf, ngx_http_upstream_srv_conf_t *uscf)
             peers->peer[n].user = server[i].user;
             peers->peer[n].password = server[i].password;
 
-            peers->peer[n].host.data = ngx_palloc(cf->pool,
-                                                  NGX_SOCKADDR_STRLEN);
+            peers->peer[n].host.data = ngx_pnalloc(cf->pool,
+                                                   NGX_SOCKADDR_STRLEN);
             if (peers->peer[n].host.data == NULL) {
                 dd("returning NGX_ERROR");
                 return NGX_ERROR;
@@ -338,7 +338,7 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
         + sizeof("password=") + peer->password.len
         + sizeof("sslmode=disable");
 
-    connstring = ngx_palloc(pgdt->request->pool, len);
+    connstring = ngx_pnalloc(pgdt->request->pool, len);
     if (connstring == NULL) {
 #if defined(nginx_version) && (nginx_version >= 8017)
         dd("returning NGX_ERROR");
