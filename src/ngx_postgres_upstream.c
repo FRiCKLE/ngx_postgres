@@ -138,10 +138,6 @@ ngx_postgres_upstream_init_peer(ngx_http_request_t *r,
 
     dd("entering");
 
-    pgscf = ngx_http_conf_upstream_srv_conf(uscf, ngx_postgres_module);
-    pglcf = ngx_http_get_module_loc_conf(r, ngx_postgres_module);
-    pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
-
     pgdt = ngx_pcalloc(r->pool, sizeof(ngx_postgres_upstream_peer_data_t));
     if (pgdt == NULL) {
         goto failed;
@@ -151,6 +147,10 @@ ngx_postgres_upstream_init_peer(ngx_http_request_t *r,
 
     pgdt->upstream = u;
     pgdt->request = r;
+
+    pgscf = ngx_http_conf_upstream_srv_conf(uscf, ngx_postgres_module);
+    pglcf = ngx_http_get_module_loc_conf(r, ngx_postgres_module);
+    pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
 
     pgdt->srv_conf = pgscf;
     pgdt->loc_conf = pglcf;
