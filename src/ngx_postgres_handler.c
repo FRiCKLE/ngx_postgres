@@ -347,11 +347,8 @@ ngx_postgres_finalize_request(ngx_http_request_t *r, ngx_int_t rc)
 
     if (rc == NGX_OK) {
         pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
-        if (pgctx != NULL) {
-            ngx_postgres_output_chain(r, pgctx->response);
-        } else {
-            ngx_postgres_output_chain(r, NULL);
-        }
+
+        ngx_postgres_output_chain(r, pgctx->response);
     }
 
     dd("returning");
