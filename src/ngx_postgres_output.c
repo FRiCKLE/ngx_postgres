@@ -281,7 +281,7 @@ ngx_postgres_output_rds(ngx_http_request_t *r, PGresult *res,
     /* render rows */
     for (row = 0; row < row_count; row++) {
         last->next = ngx_postgres_render_rds_row(r, r->pool, res, col_count,
-                                                 row);
+                                                 row, (row == row_count - 1));
         if (last->next == NULL) {
             dd("returning NGX_ERROR");
             return NGX_ERROR;
@@ -289,13 +289,15 @@ ngx_postgres_output_rds(ngx_http_request_t *r, PGresult *res,
         last = last->next;
     }
 
-    /* render row terminator */
-    last->next = ngx_postgres_render_rds_row_terminator(r, r->pool);
-    if (last->next == NULL) {
-        dd("returning NGX_ERROR");
-        return NGX_ERROR;
+    /* render row terminator (for empty result-set only) */
+    if (row == 0) {
+        last->next = ngx_postgres_render_rds_row_terminator(r, r->pool);
+        if (last->next == NULL) {
+            dd("returning NGX_ERROR");
+            return NGX_ERROR;
+        }
+        last = last->next;
     }
-    last = last->next;
 
 done:
     last->next = NULL;
@@ -464,7 +466,7 @@ ngx_postgres_render_rds_columns(ngx_http_request_t *r, ngx_pool_t *pool,
 
 ngx_chain_t *
 ngx_postgres_render_rds_row(ngx_http_request_t *r, ngx_pool_t *pool,
-    PGresult *res, ngx_int_t col_count, ngx_int_t row)
+    PGresult *res, ngx_int_t col_count, ngx_int_t row, ngx_int_t last_row)
 {
     ngx_chain_t  *cl;
     ngx_buf_t    *b;
@@ -477,6 +479,10 @@ ngx_postgres_render_rds_row(ngx_http_request_t *r, ngx_pool_t *pool,
     size = sizeof(uint8_t)                 /* row number */
          + (col_count * sizeof(uint32_t))  /* field string length */
          ;
+
+    if (last_row) {
+        size += sizeof(uint8_t);
+    }
 
     for (col = 0; col < col_count; col++) {
         size += PQgetlength(res, row, col);  /* field string data */
@@ -514,6 +520,11 @@ ngx_postgres_render_rds_row(ngx_http_request_t *r, ngx_pool_t *pool,
                 b->last = ngx_copy(b->last, PQgetvalue(res, row, col), size);
             }
         }
+    }
+
+    if (last_row) {
+        b->last_buf = 1;
+        *b->last++ = (uint8_t) 0; /* row terminator */
     }
 
     if (b->last != b->end) {
