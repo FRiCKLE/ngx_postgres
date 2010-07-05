@@ -51,7 +51,7 @@ CONFIGURATION DIRECTIVES:
   Set query string (it can include variables). When methods are specified
   then query is used only for them, otherwise it's used for all methods.
 
-  You can use this directive more than once within same context.
+  This directive can be used more than once within same context.
 
   default: none
 
@@ -65,6 +65,8 @@ CONFIGURATION DIRECTIVES:
                  only to INSERT, UPDATE, DELETE, MOVE, FETCH and COPY SQL queries),
   - no_rows    - no rows were returned in the result-set,
   - rows       - at least one row was returned in the result-set.
+
+  This directive can be used more than once within same context.
 
   default: none
 
@@ -92,6 +94,8 @@ CONFIGURATION DIRECTIVES:
   level is set to "optional" (default).
 
   Row and column numbers start at 0. Column name can be used instead of column number.
+
+  This directive can be used more than once within same context.
 
   default: none
 
