@@ -606,7 +606,7 @@ ngx_postgres_conf_pass(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
     if (value[1].len == 0) {
         ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
-                           "postgres: empty value in \"%V\" directive",
+                           "postgres: empty upstream in \"%V\" directive",
                            &cmd->name);
 
         dd("returning NGX_CONF_ERROR");
@@ -680,7 +680,7 @@ ngx_postgres_conf_query(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
     if (sql.len == 0) {
         ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
-                           "postgres: empty value in \"%V\" directive",
+                           "postgres: empty query in \"%V\" directive",
                            &cmd->name);
 
         dd("returning NGX_CONF_ERROR");
@@ -1021,6 +1021,15 @@ ngx_postgres_conf_output(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         return NGX_CONF_OK;
     }
 
+    if (value[3].len == 0) {
+        ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
+                           "postgres: empty column in \"%V\" directive",
+                           &cmd->name);
+
+        dd("returning NGX_CONF_ERROR");
+        return NGX_CONF_ERROR;
+    }
+
     pglcf->output_value->column = ngx_atoi(value[3].data, value[3].len);
     if (pglcf->output_value->column == NGX_ERROR) {
         /* get column by name */
@@ -1050,6 +1059,15 @@ ngx_postgres_conf_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
     dd("entering");
 
+    if (value[1].len < 2) {
+        ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
+                           "postgres: empty variable name in \"%V\" directive",
+                           &cmd->name);
+
+        dd("returning NGX_CONF_ERROR");
+        return NGX_CONF_ERROR;
+    }
+
     if (value[1].data[0] != '$') {
         ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
                            "postgres: invalid variable name \"%V\""
@@ -1061,6 +1079,15 @@ ngx_postgres_conf_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
     value[1].len--;
     value[1].data++;
+
+    if (value[3].len == 0) {
+        ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
+                           "postgres: empty column in \"%V\" directive",
+                           &cmd->name);
+
+        dd("returning NGX_CONF_ERROR");
+        return NGX_CONF_ERROR;
+    }
 
     if (pglcf->variables == NGX_CONF_UNSET_PTR) {
         pglcf->variables = ngx_array_create(cf->pool, 4,
