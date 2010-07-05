@@ -1,3 +1,40 @@
+2010-07-05    VERSION 0.4
+    * Optimize generation of RDS output.
+
+2010-07-02
+    * Fix serious bug that under certain conditions (query evaluated
+      to empty string, failed connection to the database, etc) would
+      lead to segmentation fault on versions older than nginx-0.8.17
+      (including nginx-0.7.x).
+
+2010-06-30
+    * When returning row or value, use Content-Type specified by
+      "default_type" directive instead of "text/plain".
+
+    * Allow column to be specified by its name instead of its number
+      (in "postgres_output" and "postgres_set" directives).
+
+2010-06-23
+    * Add "postgres_rewrite" directive.
+
+    * Add "$postgres_affected" variable.
+
+2010-06-22
+    * Fix issue that would stop gzip filter from processing
+      responses in RDS format.
+      Found by Qing Lin (kindy), fixed by Yichun Zhang (agentzh).
+
+2010-06-21
+    * Add "postgres_output" directive.
+
+2010-06-18
+    * Add "$postgres_query" variable.
+
+2010-06-16
+    * Add "postgres_set" directive.
+
+    * Add "$postgres_columns" and "$postgres_rows" variables.
+
 2010-06-13    VERSION 0.3
     * Allow configuration of method-specific queries.
 
