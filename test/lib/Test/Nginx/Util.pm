@@ -432,7 +432,7 @@ sub run_test ($) {
                 or (($opx eq "or") and (eval "$NginxVersion $opa $vera"
                                         or eval "$NginxVersion $opb $verb"))
                 or (($opx eq "and") and (eval "$NginxVersion $opa $vera"
-                                         and eval "$NginxVersion $opb $verb")))
+                                        and eval "$NginxVersion $opb $verb")))
             {
                 $should_skip = 1;
             }
