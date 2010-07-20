@@ -225,8 +225,8 @@ http {
         location = /auth {
             internal;
 
-            set_quote_sql_str  $user $remote_user;
-            set_quote_sql_str  $pass $remote_passwd;
+            postgres_escape    $user $remote_user;
+            postgres_escape    $pass $remote_passwd;
 
             postgres_pass      database;
             postgres_query     "SELECT login FROM users WHERE login=$user AND pass=$pass";
@@ -245,8 +245,7 @@ Restrict access to local files by authenticating against PostgreSQL database.
 
 Required modules (other than ngx_postgres):
 - ngx_http_auth_request_module,
-- ngx_coolkit,
-- ngx_set_misc.
+- ngx_coolkit.
 
 
 EXAMPLE CONFIGURATION #5:
