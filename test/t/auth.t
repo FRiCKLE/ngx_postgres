@@ -26,8 +26,8 @@ __DATA__
 --- config
     location = /auth {
         internal;
-        set_quote_sql_str   $user $remote_user;
-        set_quote_sql_str   $pass $remote_passwd;
+        postgres_escape     $user $remote_user;
+        postgres_escape     $pass $remote_passwd;
         postgres_pass       database;
         postgres_query      "select login from users where login=$user and pass=$pass";
         postgres_rewrite    no_rows 403;
@@ -58,8 +58,8 @@ Content-Type: text/plain
 --- config
     location = /auth {
         internal;
-        set_quote_sql_str   $user $remote_user;
-        set_quote_sql_str   $pass $remote_passwd;
+        postgres_escape     $user $remote_user;
+        postgres_escape     $pass $remote_passwd;
         postgres_pass       database;
         postgres_query      "select login from users where login=$user and pass=$pass";
         postgres_rewrite    no_rows 403;
@@ -88,8 +88,8 @@ Content-Type: text/html
 --- config
     location = /auth {
         internal;
-        set_quote_sql_str   $user $remote_user;
-        set_quote_sql_str   $pass $remote_passwd;
+        postgres_escape     $user $remote_user;
+        postgres_escape     $pass $remote_passwd;
         postgres_pass       database;
         postgres_query      "select login from users where login=$user and pass=$pass";
         postgres_rewrite    no_rows 403;

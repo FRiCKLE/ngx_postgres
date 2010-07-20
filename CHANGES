@@ -1,3 +1,6 @@
+2010-07-20
+    * Add "postgres_escape" directive.
+
 2010-07-05    VERSION 0.4
     * Optimize generation of RDS output.
 

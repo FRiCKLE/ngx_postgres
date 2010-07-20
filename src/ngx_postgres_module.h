@@ -39,6 +39,11 @@ extern ngx_module_t  ngx_postgres_module;
 
 
 typedef struct {
+    ngx_int_t                           idx;
+    ngx_http_variable_t                *var;
+} ngx_postgres_escape_t;
+
+typedef struct {
     ngx_uint_t                          key;
     ngx_str_t                           sv;
     ngx_http_complex_value_t           *cv;
@@ -174,6 +179,7 @@ char       *ngx_postgres_conf_query(ngx_conf_t *, ngx_command_t *, void *);
 char       *ngx_postgres_conf_rewrite(ngx_conf_t *, ngx_command_t *, void *);
 char       *ngx_postgres_conf_output(ngx_conf_t *, ngx_command_t *, void *);
 char       *ngx_postgres_conf_set(ngx_conf_t *, ngx_command_t *, void *);
+char       *ngx_postgres_conf_escape(ngx_conf_t *, ngx_command_t *, void *);
 
 ngx_http_upstream_srv_conf_t  *ngx_postgres_find_upstream(ngx_http_request_t *,
                                    ngx_url_t *);

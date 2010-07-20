@@ -100,6 +100,14 @@ CONFIGURATION DIRECTIVES:
   default: none
 
 
+  postgres_escape $escaped $unescaped (context: http, server, location)
+  ---------------------------------------------------------------------
+  Escape and quote $unescaped variable. Result is stored in $escaped
+  variable which can be safely used in SQL queries.
+
+  default: none
+
+
   postgres_connect_timeout timeout (context: http, server, location)
   ------------------------------------------------------------------
   Set timeout for connecting to the database (in milliseconds).
