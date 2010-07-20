@@ -42,7 +42,7 @@ ngx_postgres_variable_columns(ngx_http_request_t *r,
 
     if ((pgctx == NULL) || (pgctx->var_cols == NGX_ERROR)) {
         v->not_found = 1;
-        dd("returning NGX_OK");
+        dd("returning NGX_OK (not_found)");
         return NGX_OK;
     }
 
@@ -73,7 +73,7 @@ ngx_postgres_variable_rows(ngx_http_request_t *r,
 
     if ((pgctx == NULL) || (pgctx->var_rows == NGX_ERROR)) {
         v->not_found = 1;
-        dd("returning NGX_OK");
+        dd("returning NGX_OK (not_found)");
         return NGX_OK;
     }
 
@@ -104,7 +104,7 @@ ngx_postgres_variable_affected(ngx_http_request_t *r,
 
     if ((pgctx == NULL) || (pgctx->var_affected == NGX_ERROR)) {
         v->not_found = 1;
-        dd("returning NGX_OK");
+        dd("returning NGX_OK (not_found)");
         return NGX_OK;
     }
 
@@ -135,7 +135,7 @@ ngx_postgres_variable_query(ngx_http_request_t *r,
 
     if ((pgctx == NULL) || (pgctx->var_query.len == 0)) {
         v->not_found = 1;
-        dd("returning NGX_OK");
+        dd("returning NGX_OK (not_found)");
         return NGX_OK;
     }
 
@@ -164,7 +164,7 @@ ngx_postgres_variable_get_custom(ngx_http_request_t *r,
 
     if ((pgctx == NULL) || (pgctx->variables == NULL)) {
         v->not_found = 1;
-        dd("returning NGX_OK");
+        dd("returning NGX_OK (not_found)");
         return NGX_OK;
     }
 
@@ -173,7 +173,7 @@ ngx_postgres_variable_get_custom(ngx_http_request_t *r,
     /* idx is always valid */
     if (store[pgvar->idx].len == 0) {
         v->not_found = 1;
-        dd("returning NGX_OK");
+        dd("returning NGX_OK (not_found)");
         return NGX_OK;
     }
 
