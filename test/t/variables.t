@@ -7,6 +7,13 @@ repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 3 + 1 * 4 + 1 * 1 - 5 * 2);
 
+our $http_config = <<'_EOC_';
+    upstream database {
+        postgres_server     127.0.0.1:5432 dbname=ngx_test
+                            user=ngx_test password=ngx_test;
+    }
+_EOC_
+
 worker_connections(128);
 run_tests();
 
@@ -15,10 +22,7 @@ no_diff();
 __DATA__
 
 === TEST 1: sanity
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -56,10 +60,7 @@ X-Test: test
 
 
 === TEST 2: out-of-range value (optional)
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -78,10 +79,7 @@ Content-Type: application/x-resty-dbd-stream
 
 
 === TEST 3: NULL value (optional)
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -100,10 +98,7 @@ Content-Type: application/x-resty-dbd-stream
 
 
 === TEST 4: zero-length value (optional)
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -122,10 +117,7 @@ Content-Type: application/x-resty-dbd-stream
 
 
 === TEST 5: out-of-range value (required)
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -141,10 +133,7 @@ GET /postgres
 
 
 === TEST 6: NULL value (required)
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -160,10 +149,7 @@ GET /postgres
 
 
 === TEST 7: zero-length value (required)
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -179,10 +165,7 @@ GET /postgres
 
 
 === TEST 8: $postgres_columns
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -200,10 +183,7 @@ X-Columns: 3
 
 
 === TEST 9: $postgres_rows
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -221,10 +201,7 @@ X-Rows: 1
 
 
 === TEST 10: $postgres_query (simple value)
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -242,10 +219,7 @@ X-Query: select 'test' as echo
 
 
 === TEST 11: $postgres_query (simple value)
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -289,10 +263,7 @@ Content-Type: text/plain
 
 
 === TEST 13: $postgres_affected (SELECT)
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -310,15 +281,7 @@ Content-Type: application/x-resty-dbd-stream
 
 
 === TEST 14: $postgres_affected (UPDATE, no changes)
-db init:
-
-create table cats (id integer, name text);
-insert into cats (id) values (2);
-insert into cats (id, name) values (3, 'bob');
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -336,15 +299,7 @@ X-Affected: 0
 
 
 === TEST 15: $postgres_affected (UPDATE, one change)
-db init:
-
-create table cats (id integer, name text);
-insert into cats (id) values (2);
-insert into cats (id, name) values (3, 'bob');
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -362,10 +317,7 @@ X-Affected: 1
 
 
 === TEST 16: inheritance
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     postgres_set  $test 0 0 required;
 
@@ -382,10 +334,7 @@ GET /postgres
 
 
 === TEST 17: inheritance (mixed, don't inherit)
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     postgres_set  $test 0 0 required;
 
@@ -406,10 +355,7 @@ Content-Type: application/x-resty-dbd-stream
 
 
 === TEST 18: column by name (existing)
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -428,10 +374,7 @@ X-Test: test
 
 
 === TEST 19: column by name (not existing, optional)
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -450,10 +393,7 @@ Content-Type: application/x-resty-dbd-stream
 
 
 === TEST 20: column by name (not existing, required)
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;

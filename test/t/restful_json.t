@@ -7,14 +7,10 @@ repeat_each(1);
 
 plan tests => repeat_each() * (blocks() * 3);
 
-# db init:
-# create table numbers (number integer);
-# create table users (login text, pass text);
-# insert into users (login, pass) values ('monty', 'some_pass');
-
 our $http_config = <<'_EOC_';
     upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
+        postgres_server     127.0.0.1:5432 dbname=ngx_test
+                            user=ngx_test password=ngx_test;
     }
 _EOC_
 
@@ -65,6 +61,10 @@ our $config = <<'_EOC_';
     }
 _EOC_
 
+our $request_headers = <<'_EOC_';
+Authorization: Basic bmd4X3Rlc3Q6bmd4X3Rlc3Q=
+_EOC_
+
 worker_connections(128);
 no_shuffle();
 run_tests();
@@ -76,8 +76,7 @@ __DATA__
 === TEST 1: clean collection
 --- http_config eval: $::http_config
 --- config eval: $::config
---- more_headers
-Authorization: Basic bW9udHk6c29tZV9wYXNz
+--- more_headers eval: $::request_headers
 --- request
 DELETE /numbers/
 --- error_code: 204
@@ -92,8 +91,7 @@ DELETE /numbers/
 === TEST 2: list empty collection
 --- http_config eval: $::http_config
 --- config eval: $::config
---- more_headers
-Authorization: Basic bW9udHk6c29tZV9wYXNz
+--- more_headers eval: $::request_headers
 --- request
 GET /numbers/
 --- error_code: 200
@@ -108,8 +106,7 @@ Content-Type: application/json
 === TEST 3: insert resource into collection
 --- http_config eval: $::http_config
 --- config eval: $::config
---- more_headers
-Authorization: Basic bW9udHk6c29tZV9wYXNz
+--- more_headers eval: $::request_headers
 --- request
 POST /numbers/
 --- error_code: 201
@@ -124,8 +121,7 @@ Content-Type: application/json
 === TEST 4: list collection
 --- http_config eval: $::http_config
 --- config eval: $::config
---- more_headers
-Authorization: Basic bW9udHk6c29tZV9wYXNz
+--- more_headers eval: $::request_headers
 --- request
 GET /numbers/
 --- error_code: 200
@@ -140,8 +136,7 @@ Content-Type: application/json
 === TEST 5: get resource
 --- http_config eval: $::http_config
 --- config eval: $::config
---- more_headers
-Authorization: Basic bW9udHk6c29tZV9wYXNz
+--- more_headers eval: $::request_headers
 --- request
 GET /numbers/123
 --- error_code: 200
@@ -157,7 +152,7 @@ Content-Type: application/json
 --- http_config eval: $::http_config
 --- config eval: $::config
 --- more_headers
-Authorization: Basic bW9udHk6c29tZV9wYXNz
+Authorization: Basic bmd4X3Rlc3Q6bmd4X3Rlc3Q=
 Content-Length: 0
 --- request
 PUT /numbers/123
@@ -173,8 +168,7 @@ Content-Type: application/json
 === TEST 7: remove resource
 --- http_config eval: $::http_config
 --- config eval: $::config
---- more_headers
-Authorization: Basic bW9udHk6c29tZV9wYXNz
+--- more_headers eval: $::request_headers
 --- request
 DELETE /numbers/123
 --- error_code: 204
@@ -190,7 +184,7 @@ DELETE /numbers/123
 --- http_config eval: $::http_config
 --- config eval: $::config
 --- more_headers
-Authorization: Basic bW9udHk6c29tZV9wYXNz
+Authorization: Basic bmd4X3Rlc3Q6bmd4X3Rlc3Q=
 Content-Length: 0
 --- request
 PUT /numbers/123
@@ -205,8 +199,7 @@ Content-Type: text/html
 === TEST 9: get non-existing resource
 --- http_config eval: $::http_config
 --- config eval: $::config
---- more_headers
-Authorization: Basic bW9udHk6c29tZV9wYXNz
+--- more_headers eval: $::request_headers
 --- request
 GET /numbers/123
 --- error_code: 410
@@ -220,8 +213,7 @@ Content-Type: text/html
 === TEST 10: remove non-existing resource
 --- http_config eval: $::http_config
 --- config eval: $::config
---- more_headers
-Authorization: Basic bW9udHk6c29tZV9wYXNz
+--- more_headers eval: $::request_headers
 --- request
 DELETE /numbers/123
 --- error_code: 410
@@ -235,8 +227,7 @@ Content-Type: text/html
 === TEST 11: list empty collection (done)
 --- http_config eval: $::http_config
 --- config eval: $::config
---- more_headers
-Authorization: Basic bW9udHk6c29tZV9wYXNz
+--- more_headers eval: $::request_headers
 --- request
 GET /numbers/
 --- error_code: 200

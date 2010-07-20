@@ -7,6 +7,13 @@ repeat_each(2);
 
 plan tests => repeat_each() * blocks();
 
+our $http_config = <<'_EOC_';
+    upstream database {
+        postgres_server     127.0.0.1:5432 dbname=ngx_test
+                            user=ngx_test password=ngx_test;
+    }
+_EOC_
+
 worker_connections(128);
 run_tests();
 
@@ -15,13 +22,7 @@ no_diff();
 __DATA__
 
 === TEST 1: bad query
-little-endian systems only
-
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test
-                            user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -35,12 +36,10 @@ GET /postgres
 
 
 === TEST 2: wrong credentials
-little-endian systems only
-
 --- http_config
     upstream database {
-        postgres_server     127.0.0.1 dbname=test
-                            user=monty password=wrong_pass;
+        postgres_server     127.0.0.1:5432 dbname=ngx_test
+                            user=ngx_test password=wrong_pass;
     }
 --- config
     location /postgres {
@@ -55,12 +54,10 @@ GET /postgres
 
 
 === TEST 3: no database
-little-endian systems only
-
 --- http_config
     upstream database {
-        postgres_server     127.0.0.1:1 dbname=test
-                            user=monty password=some_pass;
+        postgres_server     127.0.0.1:1 dbname=ngx_test
+                            user=ngx_test password=ngx_test;
     }
 --- config
     location /postgres {
@@ -75,13 +72,7 @@ GET /postgres
 
 
 === TEST 4: multiple queries
-little-endian systems only
-
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test
-                            user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -95,13 +86,7 @@ GET /postgres
 
 
 === TEST 5: missing query
-little-endian systems only
-
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test
-                            user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -114,13 +99,7 @@ GET /postgres
 
 
 === TEST 6: empty query
-little-endian systems only
-
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test
-                            user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         set $query          "";
@@ -135,13 +114,7 @@ GET /postgres
 
 
 === TEST 7: empty pass
-little-endian systems only
-
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test
-                            user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         set $database       "";
@@ -156,13 +129,7 @@ GET /postgres
 
 
 === TEST 8: non-existing table
-little-endian systems only
-
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test
-                            user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;

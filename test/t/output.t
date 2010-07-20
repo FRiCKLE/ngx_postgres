@@ -7,6 +7,13 @@ repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 3 - 4 * 2);
 
+our $http_config = <<'_EOC_';
+    upstream database {
+        postgres_server     127.0.0.1:5432 dbname=ngx_test
+                            user=ngx_test password=ngx_test;
+    }
+_EOC_
+
 worker_connections(128);
 run_tests();
 
@@ -15,10 +22,7 @@ no_diff();
 __DATA__
 
 === TEST 1: none - sanity
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -37,10 +41,7 @@ GET /postgres
 
 
 === TEST 2: value - sanity
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     default_type  text/plain;
 
@@ -61,10 +62,7 @@ Content-Type: text/plain
 
 
 === TEST 3: value - sanity (with different default_type)
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     default_type  text/html;
 
@@ -85,10 +83,7 @@ Content-Type: text/html
 
 
 === TEST 4: value - value outside of the result-set
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     default_type  text/plain;
 
@@ -105,10 +100,7 @@ GET /postgres
 
 
 === TEST 5: value - NULL value
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     default_type  text/plain;
 
@@ -125,10 +117,7 @@ GET /postgres
 
 
 === TEST 6: value - empty value
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     default_type  text/plain;
 
@@ -145,10 +134,7 @@ GET /postgres
 
 
 === TEST 7: row - sanity
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     default_type  text/plain;
 
@@ -175,10 +161,7 @@ Content-Type: text/plain
 
 
 === TEST 8: rds - sanity (configured)
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -214,10 +197,7 @@ Content-Type: application/x-resty-dbd-stream
 
 
 === TEST 9: rds - sanity (default)
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -252,10 +232,7 @@ Content-Type: application/x-resty-dbd-stream
 
 
 === TEST 10: inheritance
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     default_type     text/plain;
     postgres_output  value 0 3;
@@ -276,10 +253,7 @@ Content-Type: text/plain
 
 
 === TEST 11: inheritance (mixed, don't inherit)
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     postgres_output  row 0;
 
@@ -300,10 +274,7 @@ GET /postgres
 
 
 === TEST 12: value - column by name (existing)
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     default_type  text/plain;
 
@@ -324,10 +295,7 @@ Content-Type: text/plain
 
 
 === TEST 13: value - column by name (not existing)
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     default_type  text/plain;
 
@@ -344,10 +312,7 @@ GET /postgres
 
 
 === TEST 14: value - sanity (request with known extension)
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     default_type  text/plain;
 

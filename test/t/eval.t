@@ -7,6 +7,13 @@ repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 3);
 
+our $http_config = <<'_EOC_';
+    upstream database {
+        postgres_server     127.0.0.1:5432 dbname=ngx_test
+                            user=ngx_test password=ngx_test;
+    }
+_EOC_
+
 worker_connections(128);
 run_tests();
 
@@ -17,7 +24,8 @@ __DATA__
 === TEST 1: sanity
 --- http_config
     upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
+        postgres_server     127.0.0.1:5432 dbname=ngx_test
+                            user=ngx_test password=ngx_test;
     }
 
     server {
@@ -52,10 +60,7 @@ Content-Type: text/plain
 
 
 === TEST 2: sanity (simple case)
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /eval {
         eval_subrequest_in_memory  off;

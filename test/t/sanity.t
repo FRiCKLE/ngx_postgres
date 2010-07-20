@@ -7,6 +7,13 @@ repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 3);
 
+our $http_config = <<'_EOC_';
+    upstream database {
+        postgres_server     127.0.0.1:5432 dbname=ngx_test
+                            user=ngx_test password=ngx_test;
+    }
+_EOC_
+
 worker_connections(128);
 run_tests();
 
@@ -15,17 +22,10 @@ no_diff();
 __DATA__
 
 === TEST 1: sanity
-little-endian systems only
-
-db init:
-
-create table cats (id integer, name text);
-insert into cats (id) values (2);
-insert into cats (id, name) values (3, 'bob');
-
 --- http_config
     upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
+        postgres_server     127.0.0.1:5432 dbname=ngx_test
+                            user=ngx_test password=ngx_test;
         postgres_keepalive  off;
     }
 --- config
@@ -73,18 +73,7 @@ Content-Type: application/x-resty-dbd-stream
 
 
 === TEST 2: keep-alive
-little-endian systems only
-
-db init:
-
-create table cats (id integer, name text);
-insert into cats (id) values (2);
-insert into cats (id, name) values (3, 'bob');
-
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -130,18 +119,7 @@ Content-Type: application/x-resty-dbd-stream
 
 
 === TEST 3: update
-little-endian systems only
-
-db init:
-
-create table cats (id integer, name text);
-insert into cats (id) values (2);
-insert into cats (id, name) values (3, 'bob');
-
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -168,18 +146,7 @@ Content-Type: application/x-resty-dbd-stream
 
 
 === TEST 4: select empty result
-little-endian systems only
-
-db init:
-
-create table cats (id integer, name text);
-insert into cats (id) values (2);
-insert into cats (id, name) values (3, 'bob');
-
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -215,18 +182,7 @@ Content-Type: application/x-resty-dbd-stream
 
 
 === TEST 5: variables in postgres_pass
-little-endian systems only
-
-db init:
-
-create table cats (id integer, name text);
-insert into cats (id) values (2);
-insert into cats (id, name) values (3, 'bob');
-
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         set                 $backend  database;
@@ -254,18 +210,7 @@ Content-Type: application/x-resty-dbd-stream
 
 
 === TEST 6: HEAD request
-little-endian systems only
-
-db init:
-
-create table cats (id integer, name text);
-insert into cats (id) values (2);
-insert into cats (id, name) values (3, 'bob');
-
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;

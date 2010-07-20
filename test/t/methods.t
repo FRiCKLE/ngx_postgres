@@ -7,6 +7,13 @@ repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 3 - 2 * 2);
 
+our $http_config = <<'_EOC_';
+    upstream database {
+        postgres_server     127.0.0.1:5432 dbname=ngx_test
+                            user=ngx_test password=ngx_test;
+    }
+_EOC_
+
 worker_connections(128);
 run_tests();
 
@@ -15,12 +22,7 @@ no_diff();
 __DATA__
 
 === TEST 1: default query
-little-endian systems only
-
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -55,12 +57,7 @@ Content-Type: application/x-resty-dbd-stream
 
 
 === TEST 2: method-specific query
-little-endian systems only
-
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -95,12 +92,7 @@ Content-Type: application/x-resty-dbd-stream
 
 
 === TEST 3: method-specific complex query (check 1)
-little-endian systems only
-
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -135,12 +127,7 @@ Content-Type: application/x-resty-dbd-stream
 
 
 === TEST 4: method-specific complex query (check 2)
-little-endian systems only
-
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -175,12 +162,7 @@ Content-Type: application/x-resty-dbd-stream
 
 
 === TEST 5: method-specific complex query (using not allowed method)
-little-endian systems only
-
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -194,12 +176,7 @@ HEAD /postgres
 
 
 === TEST 6: method-specific query and default query (using defined method)
-little-endian systems only
-
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -235,12 +212,7 @@ Content-Type: application/x-resty-dbd-stream
 
 
 === TEST 7: method-specific query and default query (using other method)
-little-endian systems only
-
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
@@ -276,12 +248,7 @@ Content-Type: application/x-resty-dbd-stream
 
 
 === TEST 8: inheritance
-little-endian systems only
-
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     postgres_query      "select 'default' as echo";
     postgres_query      LOCK GET UNLOCK "select '$request_method' as echo";
@@ -318,12 +285,7 @@ Content-Type: application/x-resty-dbd-stream
 
 
 === TEST 9: inheritance (mixed, don't inherit)
-little-endian systems only
-
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     postgres_query      "select 'default' as echo";
 
@@ -339,12 +301,7 @@ HEAD /postgres
 
 
 === TEST 10: HTTP PATCH request method
-little-endian systems only
-
---- http_config
-    upstream database {
-        postgres_server     127.0.0.1 dbname=test user=monty password=some_pass;
-    }
+--- http_config eval: $::http_config
 --- config
     location /postgres {
         postgres_pass       database;
