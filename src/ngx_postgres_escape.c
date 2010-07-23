@@ -45,6 +45,10 @@ ngx_postgres_escape_string(ngx_http_request_t *r,
 
     src = ngx_http_get_indexed_variable(r, pgesc->idx);
 
+    v->valid = 1;
+    v->no_cacheable = 0;
+    v->not_found = 0;
+
     if ((src == NULL) || (src->not_found)) {
         v->data = (u_char *) "NULL";
         v->len = sizeof("NULL") - 1;
@@ -52,6 +56,13 @@ ngx_postgres_escape_string(ngx_http_request_t *r,
         return NGX_OK;
     }
 
+    if (src->len == 0) {
+        v->data = "''";
+        v->len = 2;
+        dd("returning NGX_OK (empty)");
+        return NGX_OK;
+    }
+        
     v->data = ngx_pnalloc(r->pool, 2 * src->len + 2);
     if (v->data == NULL) {
         dd("returning NGX_ERROR");
@@ -63,10 +74,6 @@ ngx_postgres_escape_string(ngx_http_request_t *r,
     v->len = PQescapeString((char *) p, (const char *) src->data, src->len);
     p[v->len] = '\'';
     v->len += 2;
-
-    v->valid = 1;
-    v->no_cacheable = 0;
-    v->not_found = 0;
 
     dd("returning NGX_OK");
     return NGX_OK;

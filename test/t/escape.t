@@ -85,7 +85,7 @@ NULL
 
 
 
-=== TEST 5: empty sting
+=== TEST 5: empty string
 --- config
     location /test {
         set $empty          "";
