@@ -110,16 +110,16 @@ CONFIGURATION DIRECTIVES:
 
   postgres_connect_timeout timeout (context: http, server, location)
   ------------------------------------------------------------------
-  Set timeout for connecting to the database (in milliseconds).
+  Set timeout for connecting to the database (in seconds).
 
-  default: 10000ms (10s)
+  default: 10
 
 
   postgres_result_timeout timeout (context: http, server, location)
   -----------------------------------------------------------------
-  Set timeout for receiving result from the database (in milliseconds).
+  Set timeout for receiving result from the database (in seconds).
 
-  default: 30000ms (30s)
+  default: 30
 
 
 CONFIGURATION VARIABLES:
