@@ -128,7 +128,11 @@ ngx_postgres_upstream_finalize_request(ngx_http_request_t *r,
             }
         }
 
+# if defined(nginx_version) && (nginx_version >= 8047)
+        ngx_http_file_cache_free(r->cache, u->pipe->temp_file);
+# else
         ngx_http_file_cache_free(r, u->pipe->temp_file);
+# endif
     }
 
 #endif
