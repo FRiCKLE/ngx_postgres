@@ -5,7 +5,7 @@ use lib 'inc';
 
 use Test::Base -Base;
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 use Encode;
 use Data::Dumper;
@@ -42,6 +42,8 @@ use Test::Nginx::Util qw(
     log_level
     no_shuffle
     no_root_location
+    server_root
+    html_dir
 );
 
 #use Smart::Comments::JSON '###';
@@ -58,7 +60,7 @@ our @EXPORT = qw( plan run_tests run_test
     master_process_enabled
     no_long_string workers master_on
     log_level no_shuffle no_root_location
-    server_addr
+    server_addr server_root html_dir
 );
 
 sub send_request ($$$$);
@@ -708,6 +710,12 @@ The following sections are supported:
 =item error_code
 
 =item raw_request
+
+=item user_files
+
+=item skip_nginx
+
+=item skip_nginx2
 
 Both string scalar and string arrays are supported as values.
 
