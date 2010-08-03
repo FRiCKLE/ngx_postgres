@@ -118,3 +118,20 @@ Content-Type: text/plain
 --- response_body
 '你好'
 --- timeout: 10
+
+
+
+=== TEST 7: user arg
+--- config
+    location /test {
+        postgres_escape     $escaped $arg_say;
+        echo                $escaped;
+    }
+--- request
+GET /test?say=he'llo!
+--- error_code: 200
+--- response_headers
+Content-Type: text/plain
+--- response_body
+'he''llo!'
+--- timeout: 10
