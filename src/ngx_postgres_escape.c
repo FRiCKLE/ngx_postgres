@@ -57,12 +57,12 @@ ngx_postgres_escape_string(ngx_http_request_t *r,
     }
 
     if (src->len == 0) {
-        v->data = "''";
+        v->data = (u_char *) "''";
         v->len = 2;
         dd("returning NGX_OK (empty)");
         return NGX_OK;
     }
-        
+
     v->data = ngx_pnalloc(r->pool, 2 * src->len + 2);
     if (v->data == NULL) {
         dd("returning NGX_ERROR");
