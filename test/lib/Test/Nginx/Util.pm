@@ -44,7 +44,7 @@ if ($Profiling || $UseValgrind) {
 our $NginxBinary            = $ENV{TEST_NGINX_BINARY} || 'nginx';
 our $Workers                = 1;
 our $WorkerConnections      = 64;
-our $LogLevel               = 'debug';
+our $LogLevel               = $ENV{TEST_NGINX_LOG_LEVEL} || 'debug';
 our $MasterProcessEnabled   = 'off';
 our $DaemonEnabled          = 'on';
 our $ServerPort             = $ENV{TEST_NGINX_PORT} || $ENV{TEST_NGINX_SERVER_PORT} || 1984;
@@ -363,7 +363,7 @@ sub get_pid_from_pidfile ($) {
     my $pid = do { local $/; <$in> };
     #warn "Pid: $pid\n";
     close $in;
-    $pid;
+    return $pid;
 }
 
 sub trim ($) {
@@ -628,6 +628,18 @@ start_nginx:
         }
     }
 
+    if (my $total_errlog = $ENV{TEST_NGINX_ERROR_LOG}) {
+        my $errlog = "$LogDir/error.log";
+        if (-s $errlog) {
+            open my $out, ">>$total_errlog" or
+                die "Failed to append test case title to $total_errlog: $!\n";
+            print $out "\n=== $0 $name\n";
+            close $out;
+            system("cat $errlog >> $total_errlog") == 0 or
+                die "Failed to append $errlog to $total_errlog. Abort.\n";
+        }
+    }
+
     if ($Profiling || $UseValgrind) {
         #warn "Found quit...";
         if (-f $PidFile) {
@@ -661,9 +673,12 @@ start_nginx:
 }
 
 END {
-    if ($UseValgrind) {
+    if ($UseValgrind || !$ENV{TEST_NGINX_NO_CLEAN}) {
         if (-f $PidFile) {
             my $pid = get_pid_from_pidfile('');
+            if (!$pid) {
+                die "No pid found.";
+            }
             if (system("ps $pid > /dev/null") == 0) {
                 if (kill(SIGQUIT, $pid) == 0) { # send quit signal
                     #warn("$name - Failed to send quit signal to the nginx process with PID $pid");
