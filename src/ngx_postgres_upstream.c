@@ -226,19 +226,6 @@ failed:
 #endif
 }
 
-size_t
-int_strlen(ngx_uint_t n)
-{
-    size_t s = 1;
-
-    while (n >= 10) {
-        n /= 10;
-        s++;
-    }
-
-    return s;
-}
-
 ngx_int_t
 ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
 {
@@ -332,7 +319,7 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
 
     /* sizeof("...") - 1 + 1 (for spaces and '\0' omitted */
     len = sizeof("hostaddr=") + peer->host.len
-        + sizeof("port=") + int_strlen(peer->port)
+        + sizeof("port=") + sizeof("65535") - 1
         + sizeof("dbname=") + peer->dbname.len
         + sizeof("user=") + peer->user.len
         + sizeof("password=") + peer->password.len
