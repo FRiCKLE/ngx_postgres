@@ -1,5 +1,5 @@
 .svn
-test/t/servroot/
+t/servroot/
 *~
 *.swp
 src/ddebug.h
