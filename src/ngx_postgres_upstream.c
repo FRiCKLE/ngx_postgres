@@ -240,7 +240,7 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
     int                                 fd;
     ngx_event_t                        *rev, *wev;
     ngx_int_t                           rc;
-    u_char                             *connstring;
+    u_char                             *connstring, *last;
     size_t                              len;
 
     dd("entering");
@@ -336,13 +336,12 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
     }
 
     /* TODO add unix sockets */
-    (void) ngx_snprintf(connstring, len - 1,
+    last = ngx_snprintf(connstring, len - 1,
                         "hostaddr=%V port=%d dbname=%V user=%V password=%V"
                         " sslmode=disable",
                         &peer->host, peer->port, &peer->dbname, &peer->user,
                         &peer->password);
-
-    connstring[len - 1] = '\0';
+    *last = '\0';
 
     dd("PostgreSQL connection string: %s", connstring);
 
