@@ -88,8 +88,11 @@ GET /init
 --- config
     location = /init {
         postgres_pass   database;
-        postgres_query  "DROP TABLE IF EXISTS numbers";
+        postgres_query  "DROP TABLE numbers";
+        error_page 500  = /ignore;
     }
+
+    location /ignore { echo "ignore"; }
 --- request
 GET /init
 --- error_code: 200
@@ -116,8 +119,11 @@ GET /init
 --- config
     location = /init {
         postgres_pass   database;
-        postgres_query  "DROP TABLE IF EXISTS users";
+        postgres_query  "DROP TABLE users";
+        error_page 500  = /ignore;
     }
+
+    location /ignore { echo "ignore"; }
 --- request
 GET /init
 --- error_code: 200
