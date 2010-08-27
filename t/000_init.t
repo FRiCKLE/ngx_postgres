@@ -29,8 +29,11 @@ __DATA__
 --- config
     location = /init {
         postgres_pass   database;
-        postgres_query  "DROP TABLE IF EXISTS cats";
+        postgres_query  "DROP TABLE cats";
+        error_page 500  = /ignore;
     }
+
+    location /ignore { echo "ignore"; }
 --- request
 GET /init
 --- error_code: 200
