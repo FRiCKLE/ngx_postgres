@@ -117,6 +117,7 @@ Content-Type: application/json
 --- response_body chop
 [{"number":123}]
 --- timeout: 10
+--- skip_slave: 3: CentOS
 
 
 
@@ -132,6 +133,7 @@ Content-Type: application/json
 --- response_body chop
 [{"number":123}]
 --- timeout: 10
+--- skip_slave: 3: CentOS
 
 
 
@@ -147,6 +149,7 @@ Content-Type: application/json
 --- response_body chop
 [{"number":123}]
 --- timeout: 10
+--- skip_slave: 3: CentOS
 
 
 
@@ -164,6 +167,7 @@ Content-Type: application/json
 --- response_body chop
 [{"number":123}]
 --- timeout: 10
+--- skip_slave: 3: CentOS
 
 
 
@@ -179,6 +183,7 @@ DELETE /numbers/123
 --- response_body eval
 ""
 --- timeout: 10
+--- skip_slave: 3: CentOS
 
 
 
@@ -195,6 +200,7 @@ PUT /numbers/123
 Content-Type: text/html
 --- response_body_like: 410 Gone
 --- timeout: 10
+--- skip_slave: 3: CentOS
 
 
 
