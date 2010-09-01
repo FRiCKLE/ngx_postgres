@@ -65,11 +65,8 @@ our $request_headers = <<'_EOC_';
 Authorization: Basic bmd4X3Rlc3Q6bmd4X3Rlc3Q=
 _EOC_
 
-worker_connections(128);
 no_shuffle();
 run_tests();
-
-no_diff();
 
 __DATA__
 

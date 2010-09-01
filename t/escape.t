@@ -7,10 +7,7 @@ repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 3);
 
-worker_connections(128);
 run_tests();
-
-no_diff();
 
 __DATA__
 
