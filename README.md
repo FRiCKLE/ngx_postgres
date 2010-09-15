@@ -1,6 +1,5 @@
 About
 =====
-
 `ngx_postgres` is an upstream module that allows `nginx` to communicate directly with `PostgreSQL` database.
 
 Response is generated in `rds` format, so it's compatible with `ngx_rds_json` and `ngx_drizzle` modules.
@@ -8,7 +7,6 @@ Response is generated in `rds` format, so it's compatible with `ngx_rds_json` an
 
 Status
 ======
-
 This module is production-ready and it's compatible with following nginx releases:
 
 - 0.7.x (tested with 0.7.60 to 0.7.67),
@@ -17,10 +15,8 @@ This module is production-ready and it's compatible with following nginx release
 
 Configuration directives
 ========================
-
 postgres_server
 ---------------
-
 **syntax**: `postgres_server ip[:port] dbname=dbname user=user password=pass`
 **default**: `none`
 **context**: `upstream`
@@ -30,7 +26,6 @@ Set details about the database server.
 
 postgres_keepalive
 ------------------
-
 **syntax**: `postgres_keepalive off | max=count [mode=single|multi] [overflow=ignore|reject]`
 **default**: `max=10 mode=single overflow=ignore`
 **context**: `upstream`
@@ -44,7 +39,6 @@ Configure keepalive parameters:
 
 postgres_pass
 -------------
-
 **syntax**: `postgres_pass upstream`
 **default**: `none`
 **context**: `location`
@@ -54,7 +48,6 @@ Set name of an upstream block that will be used for the database connections (it
 
 postgres_query
 --------------
-
 **syntax**: `postgres_query [methods] query`
 **default**: `none`
 **context**: `http`, `server`, `location`
@@ -66,7 +59,6 @@ This directive can be used more than once within same context.
 
 postgres_rewrite
 ----------------
-
 **syntax**: `postgres_rewrite [methods] condition status_code`
 **default**: `none`
 **context**: `http`, `server`, `location`
@@ -85,7 +77,6 @@ This directive can be used more than once within same context.
 
 postgres_output
 ---------------
-
 **syntax**: `postgres_output none|value|row|rds [row] [column]`
 **default**: `rds`
 **context**: `http`, `server`, `location`
@@ -102,7 +93,6 @@ Row and column numbers start at 0. Column name can be used instead of column num
 
 postgres_set
 ------------
-
 **syntax**: `postgres_set $variable row column [optional|required]`
 **default**: `none`
 **context**: `http`, `server`, `location`
@@ -116,7 +106,6 @@ This directive can be used more than once within same context.
 
 postgres_escape
 ---------------
-
 **syntax**: `postgres_escape $escaped $unescaped`
 **default**: `none`
 **context**: `http`, `server`, `location`
@@ -126,7 +115,6 @@ Escape and quote `$unescaped` variable. Result is stored in `$escaped` variable 
 
 postgres_connect_timeout
 ------------------------
-
 **syntax**: `postgres_connect_timeout timeout`
 **default**: `10s`
 **context**: `http`, `server`, `location`
@@ -136,7 +124,6 @@ Set timeout for connecting to the database.
 
 postgres_result_timeout
 -----------------------
-
 **syntax**: `postgres_result_timeout timeout`
 **default**: `30s`
 **context**: `http`, `server`, `location`
@@ -146,37 +133,30 @@ Set timeout for receiving result from the database.
 
 Configuration variables
 =======================
-
 $postgres_columns
 -----------------
-
 Number of columns in received result-set.
 
 
 $postgres_rows
 --------------
-
 Number of rows in received result-set.
 
 
 $postgres_affected
 ------------------
-
 Number of rows affected by `INSERT`, `UPDATE`, `DELETE`, `MOVE`, `FETCH` or `COPY` SQL query.
 
 
 $postgres_query
 ---------------
-
 SQL query, as seen by `PostgreSQL` database.
 
 
 Sample configurations
 =====================
-
 Sample configuration #1
 -----------------------
-
 Return content of table `cats` (in `rds` format).
 
     http {
@@ -196,7 +176,6 @@ Return content of table `cats` (in `rds` format).
 
 Sample configuration #2
 -----------------------
-
 Return only those rows from table `sites` that match `host` filter which is evaluated for each request based on its `$http_host` variable.
 
     http {
@@ -216,7 +195,6 @@ Return only those rows from table `sites` that match `host` filter which is eval
 
 Sample configuration #3
 -----------------------
-
 Pass request to the backend selected from the database (traffic router).
 
     http {
@@ -246,7 +224,6 @@ Required modules (other than `ngx_postgres`):
 
 Sample configuration #4
 -----------------------
-
 Restrict access to local files by authenticating against `PostgreSQL` database.
 
     http {
@@ -282,7 +259,6 @@ Required modules (other than `ngx_postgres`):
 
 Sample configuration #5
 -----------------------
-
 Simple RESTful webservice returning JSON responses with appropriate HTTP status codes.
 
     http {
@@ -331,7 +307,6 @@ Required modules (other than `ngx_postgres`):
 
 Testing
 =======
-
 `ngx_postgres` comes with complete test suite based on [Test::Nginx](http://github.com/agentzh/test-nginx).
 
 You can test core functionality using:
@@ -353,7 +328,6 @@ using:
 
 License
 =======
-
     Copyright (c) 2010, FRiCKLE Piotr Sikora <info@frickle.com>
     Copyright (c) 2009-2010, Xiaozhe Wang <chaoslawful@gmail.com>
     Copyright (c) 2009-2010, Yichun Zhang <agentzh@gmail.com>
@@ -386,7 +360,6 @@ This software includes also parts of the code from `nginx` (copyrighted by **Igo
 
 See also
 ========
-
 - [ngx_rds_json](http://github.com/agentzh/rds-json-nginx-module),
 - [ngx_drizzle](http://github.com/chaoslawful/drizzle-nginx-module),
 - [ngx_lua](http://github.com/chaoslawful/lua-nginx-module),
