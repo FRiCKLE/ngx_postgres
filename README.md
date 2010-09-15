@@ -17,18 +17,18 @@ Configuration directives
 ========================
 postgres_server
 ---------------
-**syntax**: `postgres_server ip[:port] dbname=dbname user=user password=pass`
-**default**: `none`
-**context**: `upstream`
+* **syntax**: `postgres_server ip[:port] dbname=dbname user=user password=pass`
+* **default**: `none`
+* **context**: `upstream`
 
 Set details about the database server.
 
 
 postgres_keepalive
 ------------------
-**syntax**: `postgres_keepalive off | max=count [mode=single|multi] [overflow=ignore|reject]`
-**default**: `max=10 mode=single overflow=ignore`
-**context**: `upstream`
+* **syntax**: `postgres_keepalive off | max=count [mode=single|multi] [overflow=ignore|reject]`
+* **default**: `max=10 mode=single overflow=ignore`
+* **context**: `upstream`
 
 Configure keepalive parameters:
 
@@ -39,18 +39,18 @@ Configure keepalive parameters:
 
 postgres_pass
 -------------
-**syntax**: `postgres_pass upstream`
-**default**: `none`
-**context**: `location`
+* **syntax**: `postgres_pass upstream`
+* **default**: `none`
+* **context**: `location`
 
 Set name of an upstream block that will be used for the database connections (it can include variables).
 
 
 postgres_query
 --------------
-**syntax**: `postgres_query [methods] query`
-**default**: `none`
-**context**: `http`, `server`, `location`
+* **syntax**: `postgres_query [methods] query`
+* **default**: `none`
+* **context**: `http`, `server`, `location`
 
 Set query string (it can include variables). When methods are specified then query is used only for them, otherwise it's used for all methods.
 
@@ -59,9 +59,9 @@ This directive can be used more than once within same context.
 
 postgres_rewrite
 ----------------
-**syntax**: `postgres_rewrite [methods] condition status_code`
-**default**: `none`
-**context**: `http`, `server`, `location`
+* **syntax**: `postgres_rewrite [methods] condition status_code`
+* **default**: `none`
+* **context**: `http`, `server`, `location`
 
 Rewrite response `status_code` when given condition is met (first one wins!):
 
@@ -77,9 +77,9 @@ This directive can be used more than once within same context.
 
 postgres_output
 ---------------
-**syntax**: `postgres_output none|value|row|rds [row] [column]`
-**default**: `rds`
-**context**: `http`, `server`, `location`
+* **syntax**: `postgres_output none|value|row|rds [row] [column]`
+* **default**: `rds`
+* **context**: `http`, `server`, `location`
 
 Set output format:
 
@@ -93,9 +93,9 @@ Row and column numbers start at 0. Column name can be used instead of column num
 
 postgres_set
 ------------
-**syntax**: `postgres_set $variable row column [optional|required]`
-**default**: `none`
-**context**: `http`, `server`, `location`
+* **syntax**: `postgres_set $variable row column [optional|required]`
+* **default**: `none`
+* **context**: `http`, `server`, `location`
 
 Get single value from the result-set and keep it in $variable. When requirement level is set to `required` and value is either out-of-range, `NULL` or zero-length, then nginx returns `500 Internal Server Error` response. Such condition is silently ignored when requirement level is set to `optional` (default).
 
@@ -106,27 +106,27 @@ This directive can be used more than once within same context.
 
 postgres_escape
 ---------------
-**syntax**: `postgres_escape $escaped $unescaped`
-**default**: `none`
-**context**: `http`, `server`, `location`
+* **syntax**: `postgres_escape $escaped $unescaped`
+* **default**: `none`
+* **context**: `http`, `server`, `location`
 
 Escape and quote `$unescaped` variable. Result is stored in `$escaped` variable which can be safely used in SQL queries.
 
 
 postgres_connect_timeout
 ------------------------
-**syntax**: `postgres_connect_timeout timeout`
-**default**: `10s`
-**context**: `http`, `server`, `location`
+* **syntax**: `postgres_connect_timeout timeout`
+* **default**: `10s`
+* **context**: `http`, `server`, `location`
 
 Set timeout for connecting to the database.
 
 
 postgres_result_timeout
 -----------------------
-**syntax**: `postgres_result_timeout timeout`
-**default**: `30s`
-**context**: `http`, `server`, `location`
+* **syntax**: `postgres_result_timeout timeout`
+* **default**: `30s`
+* **context**: `http`, `server`, `location`
 
 Set timeout for receiving result from the database.
 
