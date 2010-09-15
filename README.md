@@ -21,9 +21,9 @@ Configuration directives
 postgres_server
 ---------------
 
-**syntax**: `postgres_server ip[:port] dbname=dbname user=user password=pass` 
-**default**: `none` 
-**context**: `upstream` 
+**syntax**: `postgres_server ip[:port] dbname=dbname user=user password=pass`
+**default**: `none`
+**context**: `upstream`
 
 Set details about the database server.
 
@@ -32,9 +32,7 @@ postgres_keepalive
 ------------------
 
 **syntax**: `postgres_keepalive off | max=count [mode=single|multi] [overflow=ignore|reject]`
-
 **default**: `max=10 mode=single overflow=ignore`
-
 **context**: `upstream`
 
 Configure keepalive parameters:
