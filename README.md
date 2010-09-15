@@ -219,6 +219,7 @@ Pass request to the backend selected from the database (traffic router).
     }
 
 Required modules (other than `ngx_postgres`):
+
 - [nginx-eval-module (agentzh's fork)](http://github.com/agentzh/nginx-eval-module),
 
 
@@ -253,6 +254,7 @@ Restrict access to local files by authenticating against `PostgreSQL` database.
     }
 
 Required modules (other than `ngx_postgres`):
+
 - [ngx_http_auth_request_module](http://mdounin.ru/hg/ngx_http_auth_request_module/),
 - [ngx_coolkit](http://github.com/FRiCKLE/ngx_coolkit).
 
@@ -302,6 +304,7 @@ Simple RESTful webservice returning JSON responses with appropriate HTTP status 
     }
 
 Required modules (other than `ngx_postgres`):
+
 - [ngx_rds_json](http://github.com/agentzh/rds-json-nginx-module).
 
 
