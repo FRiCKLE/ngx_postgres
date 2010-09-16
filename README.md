@@ -1,13 +1,16 @@
 About
 =====
-`ngx_postgres` is an upstream module that allows `nginx` to communicate directly with `PostgreSQL` database.
+`ngx_postgres` is an upstream module that allows `nginx` to communicate directly
+with `PostgreSQL` database.
 
-Response is generated in `rds` format, so it's compatible with `ngx_rds_json` and `ngx_drizzle` modules.
+Response is generated in `rds` format, so it's compatible with `ngx_rds_json`
+and `ngx_drizzle` modules.
 
 
 Status
 ======
-This module is production-ready and it's compatible with following nginx releases:
+This module is production-ready and it's compatible with following nginx
+releases:
 
 - 0.7.x (tested with 0.7.60 to 0.7.67),
 - 0.8.x (tested with 0.8.0 to 0.8.50).
@@ -32,9 +35,11 @@ postgres_keepalive
 
 Configure keepalive parameters:
 
-- `max` - maximum number of keepalive connections (per worker process),
-- `mode` - backend matching mode,
-- `overflow` - either `ignore` the fact that keepalive connection pool is full and allow request, but close connection afterwards or `reject` request with `503 Service Unavailable` response.
+- `max`      - maximum number of keepalive connections (per worker process),
+- `mode`     - backend matching mode,
+- `overflow` - either `ignore` the fact that keepalive connection pool is full
+               and allow request, but close connection afterwards or `reject`
+               request with `503 Service Unavailable` response.
 
 
 postgres_pass
@@ -43,7 +48,8 @@ postgres_pass
 * **default**: `none`
 * **context**: `location`
 
-Set name of an upstream block that will be used for the database connections (it can include variables).
+Set name of an upstream block that will be used for the database connections
+(it can include variables).
 
 
 postgres_query
@@ -52,7 +58,8 @@ postgres_query
 * **default**: `none`
 * **context**: `http`, `server`, `location`
 
-Set query string (it can include variables). When methods are specified then query is used only for them, otherwise it's used for all methods.
+Set query string (it can include variables). When methods are specified then
+query is used only for them, otherwise it's used for all methods.
 
 This directive can be used more than once within same context.
 
@@ -66,11 +73,12 @@ postgres_rewrite
 Rewrite response `status_code` when given condition is met (first one wins!):
 
 - `no_changes` - no rows were affected by the query,
-- `changes` - at least one row was affected by the query,
-- `no_rows` - no rows were returned in the result-set,
-- `rows` - at least one row was returned in the result-set.
+- `changes`    - at least one row was affected by the query,
+- `no_rows`    - no rows were returned in the result-set,
+- `rows`       - at least one row was returned in the result-set.
 
-By design both `no_changes` and `changes` apply only to `INSERT`, `UPDATE`, `DELETE`, `MOVE`, `FETCH` and `COPY` SQL queries.
+By design both `no_changes` and `changes` apply only to `INSERT`,
+`UPDATE`, `DELETE`, `MOVE`, `FETCH` and `COPY` SQL queries.
 
 This directive can be used more than once within same context.
 
@@ -84,11 +92,17 @@ postgres_output
 Set output format:
 
 - `rds`   - return output in `rds` format (with appropriate `Content-Type`),
-- `row`   - return all values from a single row from the result-set in clear text, values are separated by new line (with default `Content-Type`),
-- `value` - return single value from the result-set in clear text (with default `Content-Type`),
-- `none`  - don't return anything, this should be used only when extracting values with `postgres_set` for use with other modules (`Content-Type` isn't set).
+- `row`   - return all values from a single row from the result-set
+            in clear text, values are separated by new line
+            (with default `Content-Type`),
+- `value` - return single value from the result-set in clear text
+            (with default `Content-Type`),
+- `none`  - don't return anything, this should be used only when extracting
+            values with `postgres_set` for use with other modules
+            (`Content-Type` isn't set at all).
 
-Row and column numbers start at 0. Column name can be used instead of column number.
+Row and column numbers start at 0. Column name can be used instead of column
+number.
 
 
 postgres_set
@@ -97,9 +111,15 @@ postgres_set
 * **default**: `none`
 * **context**: `http`, `server`, `location`
 
-Get single value from the result-set and keep it in $variable. When requirement level is set to `required` and value is either out-of-range, `NULL` or zero-length, then nginx returns `500 Internal Server Error` response. Such condition is silently ignored when requirement level is set to `optional` (default).
+Get single value from the result-set and keep it in $variable.
 
-Row and column numbers start at 0. Column name can be used instead of column number.
+When requirement level is set to `required` and value is either out-of-range,
+`NULL` or zero-length, then nginx returns `500 Internal Server Error` response.
+Such condition is silently ignored when requirement level is set to `optional`
+(default).
+
+Row and column numbers start at 0. Column name can be used instead of column
+number.
 
 This directive can be used more than once within same context.
 
@@ -110,7 +130,8 @@ postgres_escape
 * **default**: `none`
 * **context**: `http`, `server`, `location`
 
-Escape and quote `$unescaped` variable. Result is stored in `$escaped` variable which can be safely used in SQL queries.
+Escape and quote `$unescaped` variable. Result is stored in `$escaped` variable
+which can be safely used in SQL queries.
 
 
 postgres_connect_timeout
@@ -145,7 +166,8 @@ Number of rows in received result-set.
 
 $postgres_affected
 ------------------
-Number of rows affected by `INSERT`, `UPDATE`, `DELETE`, `MOVE`, `FETCH` or `COPY` SQL query.
+Number of rows affected by `INSERT`, `UPDATE`, `DELETE`, `MOVE`, `FETCH`
+or `COPY` SQL query.
 
 
 $postgres_query
@@ -176,7 +198,8 @@ Return content of table `cats` (in `rds` format).
 
 Sample configuration #2
 -----------------------
-Return only those rows from table `sites` that match `host` filter which is evaluated for each request based on its `$http_host` variable.
+Return only those rows from table `sites` that match `host` filter which
+is evaluated for each request based on its `$http_host` variable.
 
     http {
         upstream database {
@@ -261,7 +284,8 @@ Required modules (other than `ngx_postgres`):
 
 Sample configuration #5
 -----------------------
-Simple RESTful webservice returning JSON responses with appropriate HTTP status codes.
+Simple RESTful webservice returning JSON responses with appropriate HTTP status
+codes.
 
     http {
         upstream database {
@@ -313,6 +337,7 @@ Testing
 `ngx_postgres` comes with complete test suite based on [Test::Nginx](http://github.com/agentzh/test-nginx).
 
 You can test core functionality using:
+
 `$ TEST_NGINX_IGNORE_MISSING_DIRECTIVES=1 prove`
 
 You can also test interoperability with following modules:
@@ -326,6 +351,7 @@ You can also test interoperability with following modules:
 - [ngx_rds_json](http://github.com/agentzh/rds-json-nginx-module).
 
 using:
+
 `$ prove`
 
 
@@ -358,7 +384,11 @@ License
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-This software includes also parts of the code from `nginx` (copyrighted by **Igor Sysoev** under BSD license) and from `ngx_http_upstream_keepalive` module (copyrighted by **Maxim Dounin** under BSD license).
+This software includes also parts of the code from:
+
+- `nginx` (copyrighted by **Igor Sysoev** under BSD license),
+- `ngx_http_upstream_keepalive` module (copyrighted by **Maxim Dounin**
+  under BSD license).
 
 
 See also
