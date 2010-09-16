@@ -38,8 +38,8 @@ Configure keepalive parameters:
 - `max`      - maximum number of keepalive connections (per worker process),
 - `mode`     - backend matching mode,
 - `overflow` - either `ignore` the fact that keepalive connection pool is full
-               and allow request, but close connection afterwards or `reject`
-               request with `503 Service Unavailable` response.
+  and allow request, but close connection afterwards or `reject` request with
+  `503 Service Unavailable` response.
 
 
 postgres_pass
@@ -93,13 +93,11 @@ Set output format:
 
 - `rds`   - return output in `rds` format (with appropriate `Content-Type`),
 - `row`   - return all values from a single row from the result-set
-            in clear text, values are separated by new line
-            (with default `Content-Type`),
+  in clear text, values are separated by new line (with default `Content-Type`),
 - `value` - return single value from the result-set in clear text
-            (with default `Content-Type`),
+  (with default `Content-Type`),
 - `none`  - don't return anything, this should be used only when extracting
-            values with `postgres_set` for use with other modules
-            (`Content-Type` isn't set at all).
+  values with `postgres_set` for use with other modules (without `Content-Type`).
 
 Row and column numbers start at 0. Column name can be used instead of column
 number.
