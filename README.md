@@ -334,7 +334,7 @@ Testing
 =======
 `ngx_postgres` comes with complete test suite based on [Test::Nginx](http://github.com/agentzh/test-nginx).
 
-You can test core functionality using:
+You can test core functionality by running:
 
 `$ TEST_NGINX_IGNORE_MISSING_DIRECTIVES=1 prove`
 
@@ -348,7 +348,7 @@ You can also test interoperability with following modules:
 - [nginx-eval-module (agentzh's fork)](http://github.com/agentzh/nginx-eval-module),
 - [ngx_rds_json](http://github.com/agentzh/rds-json-nginx-module).
 
-using:
+by running:
 
 `$ prove`
 
