@@ -814,7 +814,7 @@ ngx_postgres_conf_rewrite(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     ngx_postgres_rewrite_t       *rewrite;
     ngx_postgres_handler_enum_t  *e;
     ngx_conf_bitmask_t           *b;
-    ngx_uint_t                    methods, i, j;
+    ngx_uint_t                    methods, keep_body, i, j;
 
     dd("entering");
 
@@ -939,6 +939,14 @@ found:
         pgrcf->methods_set |= methods;
     }
 
+    if (to.data[0] == '=') {
+        keep_body = 1;
+        to.data++;
+        to.len--;
+    } else {
+        keep_body = 0;
+    }
+
     rewrite->key = methods;
     rewrite->status = ngx_atoi(to.data, to.len);
     if ((rewrite->status == NGX_ERROR)
@@ -954,6 +962,10 @@ found:
 
         dd("returning NGX_CONF_ERROR");
         return NGX_CONF_ERROR;
+    }
+
+    if (keep_body) {
+        rewrite->status = -rewrite->status;
     }
 
     dd("returning NGX_CONF_OK");

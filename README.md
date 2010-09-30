@@ -66,7 +66,7 @@ This directive can be used more than once within same context.
 
 postgres_rewrite
 ----------------
-* **syntax**: `postgres_rewrite [methods] condition status_code`
+* **syntax**: `postgres_rewrite [methods] condition [=]status_code`
 * **default**: `none`
 * **context**: `http`, `server`, `location`
 
@@ -76,6 +76,9 @@ Rewrite response `status_code` when given condition is met (first one wins!):
 - `changes`    - at least one row was affected by the query,
 - `no_rows`    - no rows were returned in the result-set,
 - `rows`       - at least one row was returned in the result-set.
+
+When `status_code` is prefixed with `=` sign then original response body is
+send to the client instead of the default error page for given `status_code`.
 
 By design both `no_changes` and `changes` apply only to `INSERT`,
 `UPDATE`, `DELETE`, `MOVE`, `FETCH` and `COPY` SQL queries.
