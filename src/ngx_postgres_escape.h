@@ -31,7 +31,6 @@
 #include <ngx_http.h>
 
 
-ngx_int_t  ngx_postgres_escape_string(ngx_http_request_t *,
-               ngx_http_variable_value_t *, uintptr_t);
+void       ngx_postgres_escape_string(ngx_http_script_engine_t *);
 
 #endif /* _NGX_POSTGRES_ESCAPE_H_ */

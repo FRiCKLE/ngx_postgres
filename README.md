@@ -127,12 +127,16 @@ This directive can be used more than once within same context.
 
 postgres_escape
 ---------------
-* **syntax**: `postgres_escape $escaped $unescaped`
+* **syntax**: `postgres_escape $escaped [[=]$unescaped]`
 * **default**: `none`
 * **context**: `http`, `server`, `location`
 
-Escape and quote `$unescaped` variable. Result is stored in `$escaped` variable
+Escape and quote `$unescaped` string. Result is stored in `$escaped` variable
 which can be safely used in SQL queries.
+
+Because nginx cannot tell the difference between empty and non-existing strings,
+all empty strings are by default escaped to `NULL` value. This behavior can be
+disabled by prefixing `$unescaped` string with `=` sign.
 
 
 postgres_connect_timeout

@@ -94,7 +94,7 @@ static ngx_command_t ngx_postgres_module_commands[] = {
       NULL },
 
     { ngx_string("postgres_escape"),
-      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE2,
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE12,
       ngx_postgres_conf_escape,
       NGX_HTTP_LOC_CONF_OFFSET,
       0,
@@ -941,8 +941,8 @@ found:
 
     if (to.data[0] == '=') {
         keep_body = 1;
-        to.data++;
         to.len--;
+        to.data++;
     } else {
         keep_body = 0;
     }
@@ -1141,7 +1141,7 @@ ngx_postgres_conf_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     /*
      * Check if "$variable" was previously defined,
      * back-off even if it was marked as "CHANGEABLE".
-     */ 
+     */
     if (pgvar->var->get_handler != NULL) {
         ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
                            "postgres: variable \"$%V\" is duplicate"
@@ -1206,18 +1206,50 @@ ngx_postgres_conf_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     return NGX_CONF_OK;
 }
 
+/*
+ * Based on: ngx_http_rewrite_module.c/ngx_http_rewrite_set
+ * Copyright (C) Igor Sysoev
+ */
 char *
 ngx_postgres_conf_escape(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
-    ngx_str_t                         *value = cf->args->elts;
-    ngx_str_t                          dst = value[1];
-    ngx_str_t                          src = value[2];
-    ngx_postgres_escape_t             *pgesc;
-    ngx_int_t                          idx;
+    ngx_str_t                           *value = cf->args->elts;
+    ngx_str_t                            src = value[cf->args->nelts - 1];
+    ngx_int_t                            index;
+    ngx_http_variable_t                 *v;
+    ngx_http_script_var_code_t          *vcode;
+    ngx_http_script_var_handler_code_t  *vhcode;
+    ngx_postgres_rewrite_loc_conf_t     *rlcf;
+    ngx_postgres_escape_t               *pge;
+    ngx_str_t                            dst;
+    ngx_uint_t                           empty;
 
     dd("entering");
 
-    if ((dst.len < 2) || (src.len < 2)) {
+    if ((src.len != 0) && (src.data[0] == '=')) {
+        empty = 1;
+        src.len--;
+        src.data++;
+    } else {
+        empty = 0;
+    }
+
+    if (src.len == 0) {
+        ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
+                           "postgres: empty value in \"%V\" directive",
+                           &cmd->name);
+
+        dd("returning NGX_CONF_ERROR");
+        return NGX_CONF_ERROR;
+    }
+
+    if (cf->args->nelts == 2) {
+        dst = src;
+    } else {
+        dst = value[1];
+    }
+
+    if (dst.len < 2) {
         ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
                            "postgres: empty variable name in \"%V\" directive",
                            &cmd->name);
@@ -1238,63 +1270,69 @@ ngx_postgres_conf_escape(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     dst.len--;
     dst.data++;
 
-    if (src.data[0] != '$') {
-        ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
-                           "postgres: invalid variable name \"%V\""
-                           " in \"%V\" directive", &src, &cmd->name);
-
+    v = ngx_http_add_variable(cf, &dst, NGX_HTTP_VAR_CHANGEABLE);
+    if (v == NULL) {
         dd("returning NGX_CONF_ERROR");
         return NGX_CONF_ERROR;
     }
 
-    src.len--;
-    src.data++;
-
-    pgesc = ngx_palloc(cf->pool, sizeof(ngx_postgres_escape_t));
-    if (pgesc == NULL) {
+    index = ngx_http_get_variable_index(cf, &dst);
+    if (index == NGX_ERROR) {
         dd("returning NGX_CONF_ERROR");
         return NGX_CONF_ERROR;
     }
 
-    pgesc->var = ngx_http_add_variable(cf, &dst, 0);
-    if (pgesc->var == NULL) {
+    if (v->get_handler == NULL
+        && ngx_strncasecmp(dst.data, (u_char *) "http_", 5) != 0
+        && ngx_strncasecmp(dst.data, (u_char *) "sent_http_", 10) != 0
+        && ngx_strncasecmp(dst.data, (u_char *) "upstream_http_", 14) != 0)
+    {
+        v->get_handler = ngx_postgres_rewrite_var;
+        v->data = index;
+    }
+
+    rlcf = ngx_http_conf_get_module_loc_conf(cf, ngx_http_rewrite_module);
+
+    if (ngx_postgres_rewrite_value(cf, rlcf, &src) != NGX_CONF_OK) {
         dd("returning NGX_CONF_ERROR");
         return NGX_CONF_ERROR;
     }
 
-    /* idx of escaped variable */
-    idx = ngx_http_get_variable_index(cf, &dst);
-    if (idx == NGX_ERROR) {
+    pge = ngx_http_script_start_code(cf->pool, &rlcf->codes,
+                                     sizeof(ngx_postgres_escape_t));
+    if (pge == NULL) {
         dd("returning NGX_CONF_ERROR");
         return NGX_CONF_ERROR;
     }
 
-    /* idx of unescaped variable */
-    pgesc->idx = ngx_http_get_variable_index(cf, &src);
-    if (pgesc->idx == NGX_ERROR) {
-        ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
-                           "postgres: unknown variable \"$%V\""
-                           " in \"%V\" directive", &src, &cmd->name);
+    pge->code = ngx_postgres_escape_string;
+    pge->empty = empty;
 
+    if (v->set_handler) {
+        vhcode = ngx_http_script_start_code(cf->pool, &rlcf->codes,
+                                   sizeof(ngx_http_script_var_handler_code_t));
+        if (vhcode == NULL) {
+            dd("returning NGX_CONF_ERROR");
+            return NGX_CONF_ERROR;
+        }
+
+        vhcode->code = ngx_http_script_var_set_handler_code;
+        vhcode->handler = v->set_handler;
+        vhcode->data = v->data;
+
+        dd("returning NGX_CONF_OK");
+        return NGX_CONF_OK;
+    }
+
+    vcode = ngx_http_script_start_code(cf->pool, &rlcf->codes,
+                                       sizeof(ngx_http_script_var_code_t));
+    if (vcode == NULL) {
         dd("returning NGX_CONF_ERROR");
         return NGX_CONF_ERROR;
     }
 
-    /*
-     * Check if "$variable" was previously defined,
-     * back-off even if it was marked as "CHANGEABLE".
-     */
-    if (pgesc->var->get_handler != NULL) {
-        ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
-                           "postgres: variable \"$%V\" is duplicate"
-                           " in \"%V\" directive", &dst, &cmd->name);
-
-        dd("returning NGX_CONF_ERROR");
-        return NGX_CONF_ERROR;
-    }
-
-    pgesc->var->get_handler = ngx_postgres_escape_string;
-    pgesc->var->data = (uintptr_t) pgesc;
+    vcode->code = ngx_http_script_set_var_code;
+    vcode->index = (uintptr_t) index;
 
     dd("returning NGX_CONF_OK");
     return NGX_CONF_OK;
