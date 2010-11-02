@@ -219,7 +219,14 @@ ngx_postgres_upstream_send_query(ngx_http_request_t *r, ngx_connection_t *pgxc,
 
     dd("sending query: %s", query);
 
-    pgrc = PQsendQuery(pgdt->pgconn, (const char *) query);
+    if (pgdt->loc_conf->binary_mode) {
+        pgrc = PQsendQueryParams(pgdt->pgconn, (const char *) query, 0,
+                NULL, NULL, NULL, NULL, /* binary */ 1);
+
+    } else {
+        pgrc = PQsendQuery(pgdt->pgconn, (const char *) query);
+    }
+
     if (pgrc == 0) {
         dd("sending query failed");
         ngx_log_error(NGX_LOG_ERR, pgxc->log, 0,

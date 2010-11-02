@@ -78,7 +78,7 @@ Content-Type: application/x-resty-dbd-stream
 
 
 
-=== TEST 1: postgres_pass and postgres_query work in location if blocks
+=== TEST 2: postgres_pass and postgres_query work in location if blocks
 --- http_config
     upstream database {
         postgres_server     127.0.0.1:5432 dbname=ngx_test
