@@ -7,18 +7,17 @@ repeat_each(1);
 
 plan tests => repeat_each() * blocks();
 
+$ENV{TEST_NGINX_POSTGRESQL_PORT} ||= 5432;
+
 our $http_config = <<'_EOC_';
     upstream database {
-        postgres_server  127.0.0.1:5432 dbname=ngx_test
-                         user=ngx_test password=ngx_test;
+        postgres_server  127.0.0.1:$TEST_NGINX_POSTGRESQL_PORT
+                         dbname=ngx_test user=ngx_test password=ngx_test;
     }
 _EOC_
 
-worker_connections(128);
 no_shuffle();
 run_tests();
-
-no_diff();
 
 __DATA__
 
@@ -27,8 +26,11 @@ __DATA__
 --- config
     location = /init {
         postgres_pass   database;
-        postgres_query  "DROP TABLE IF EXISTS cats";
+        postgres_query  "DROP TABLE cats";
+        error_page 500  = /ignore;
     }
+
+    location /ignore { echo "ignore"; }
 --- request
 GET /init
 --- error_code: 200
@@ -83,8 +85,11 @@ GET /init
 --- config
     location = /init {
         postgres_pass   database;
-        postgres_query  "DROP TABLE IF EXISTS numbers";
+        postgres_query  "DROP TABLE numbers";
+        error_page 500  = /ignore;
     }
+
+    location /ignore { echo "ignore"; }
 --- request
 GET /init
 --- error_code: 200
@@ -111,8 +116,11 @@ GET /init
 --- config
     location = /init {
         postgres_pass   database;
-        postgres_query  "DROP TABLE IF EXISTS users";
+        postgres_query  "DROP TABLE users";
+        error_page 500  = /ignore;
     }
+
+    location /ignore { echo "ignore"; }
 --- request
 GET /init
 --- error_code: 200

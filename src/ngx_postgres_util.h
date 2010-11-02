@@ -33,10 +33,28 @@
 #include <ngx_http.h>
 
 
+extern ngx_module_t  ngx_http_rewrite_module;
+
+
+typedef struct {
+    ngx_array_t  *codes;        /* uintptr_t */
+
+    ngx_uint_t    stack_size;
+
+    ngx_flag_t    log;
+    ngx_flag_t    uninitialized_variable_warn;
+} ngx_postgres_rewrite_loc_conf_t;
+
+
 void       ngx_postgres_upstream_finalize_request(ngx_http_request_t *,
                ngx_http_upstream_t *, ngx_int_t);
 void       ngx_postgres_upstream_next(ngx_http_request_t *,
                ngx_http_upstream_t *, ngx_int_t);
 ngx_int_t  ngx_postgres_upstream_test_connect(ngx_connection_t *);
+
+ngx_int_t  ngx_postgres_rewrite_var(ngx_http_request_t *,
+               ngx_http_variable_value_t *, uintptr_t);
+char      *ngx_postgres_rewrite_value(ngx_conf_t *,
+               ngx_postgres_rewrite_loc_conf_t *, ngx_str_t *);
 
 #endif /* _NGX_POSTGRES_UTIL_H_ */

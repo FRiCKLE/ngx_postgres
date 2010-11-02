@@ -1,3 +1,22 @@
+2010-09-30    VERSION 0.7
+    * Add option to send original response body with error responses
+      set by "postgres_rewrite" directive.
+
+2010-08-25
+    * Fix error that could lead to failed connection to the database.
+
+    * Log more details on failed connection to the database.
+
+2010-08-15    VERSION 0.6
+    * Fix linking issue that manifested itself when nginx was build
+      with both: ngx_postgres and ngx_supervisord modules.
+      Reported by Sergey A. Osokin.
+
+2010-08-09
+    * Fix pointer signedness mismatch, which broke build on Darwin
+      and probably few other operating systems.
+      Reported by sahuguet, fixed by Yichun Zhang (agentzh).
+
 2010-08-03    VERSION 0.5
     * Fix compatibility with nginx-0.8.47+.
 

@@ -226,19 +226,6 @@ failed:
 #endif
 }
 
-size_t
-int_strlen(ngx_uint_t n)
-{
-    size_t s = 1;
-
-    while (n >= 10) {
-        n /= 10;
-        s++;
-    }
-
-    return s;
-}
-
 ngx_int_t
 ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
 {
@@ -253,7 +240,7 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
     int                                 fd;
     ngx_event_t                        *rev, *wev;
     ngx_int_t                           rc;
-    u_char                             *connstring;
+    u_char                             *connstring, *last;
     size_t                              len;
 
     dd("entering");
@@ -332,7 +319,7 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
 
     /* sizeof("...") - 1 + 1 (for spaces and '\0' omitted */
     len = sizeof("hostaddr=") + peer->host.len
-        + sizeof("port=") + int_strlen(peer->port)
+        + sizeof("port=") + sizeof("65535") - 1
         + sizeof("dbname=") + peer->dbname.len
         + sizeof("user=") + peer->user.len
         + sizeof("password=") + peer->password.len
@@ -349,13 +336,12 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
     }
 
     /* TODO add unix sockets */
-    (void) ngx_snprintf(connstring, len - 1,
+    last = ngx_snprintf(connstring, len - 1,
                         "hostaddr=%V port=%d dbname=%V user=%V password=%V"
                         " sslmode=disable",
                         &peer->host, peer->port, &peer->dbname, &peer->user,
                         &peer->password);
-
-    connstring[len - 1] = '\0';
+    *last = '\0';
 
     dd("PostgreSQL connection string: %s", connstring);
 
@@ -366,8 +352,8 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
     pgdt->pgconn = PQconnectStart((const char *)connstring);
     if (PQsetnonblocking(pgdt->pgconn, 1) == -1) {
         ngx_log_error(NGX_LOG_ERR, pc->log, 0,
-                      "postgres: connection failed: could not connect to"
-                      " PostgreSQL database in upstream \"%V\"", &peer->name);
+                      "postgres: connection failed: %s in upstream \"%V\"",
+                      PQerrorMessage(pgdt->pgconn), &peer->name);
 
         PQfinish(pgdt->pgconn);
         pgdt->pgconn = NULL;

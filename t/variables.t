@@ -7,17 +7,16 @@ repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 3 + 1 * 4 + 1 * 1 - 5 * 2);
 
+$ENV{TEST_NGINX_POSTGRESQL_PORT} ||= 5432;
+
 our $http_config = <<'_EOC_';
     upstream database {
-        postgres_server     127.0.0.1:5432 dbname=ngx_test
-                            user=ngx_test password=ngx_test;
+        postgres_server  127.0.0.1:$TEST_NGINX_POSTGRESQL_PORT
+                         dbname=ngx_test user=ngx_test password=ngx_test;
     }
 _EOC_
 
-worker_connections(128);
 run_tests();
-
-no_diff();
 
 __DATA__
 

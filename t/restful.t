@@ -7,10 +7,12 @@ repeat_each(1);
 
 plan tests => repeat_each() * (blocks() * 3);
 
+$ENV{TEST_NGINX_POSTGRESQL_PORT} ||= 5432;
+
 our $http_config = <<'_EOC_';
     upstream database {
-        postgres_server     127.0.0.1:5432 dbname=ngx_test
-                            user=ngx_test password=ngx_test;
+        postgres_server  127.0.0.1:$TEST_NGINX_POSTGRESQL_PORT
+                         dbname=ngx_test user=ngx_test password=ngx_test;
     }
 _EOC_
 
@@ -63,11 +65,8 @@ our $request_headers = <<'_EOC_';
 Authorization: Basic bmd4X3Rlc3Q6bmd4X3Rlc3Q=
 _EOC_
 
-worker_connections(128);
 no_shuffle();
 run_tests();
-
-no_diff();
 
 __DATA__
 
@@ -144,6 +143,7 @@ Content-Type: application/x-resty-dbd-stream
 "123".           # field data
 "\x{00}"         # row list terminator
 --- timeout: 10
+--- skip_slave: 3: CentOS
 
 
 
@@ -176,6 +176,7 @@ Content-Type: application/x-resty-dbd-stream
 "123".           # field data
 "\x{00}"         # row list terminator
 --- timeout: 10
+--- skip_slave: 3: CentOS
 
 
 
@@ -208,6 +209,7 @@ Content-Type: application/x-resty-dbd-stream
 "123".           # field data
 "\x{00}"         # row list terminator
 --- timeout: 10
+--- skip_slave: 3: CentOS
 
 
 
@@ -242,6 +244,7 @@ Content-Type: application/x-resty-dbd-stream
 "123".           # field data
 "\x{00}"         # row list terminator
 --- timeout: 10
+--- skip_slave: 3: CentOS
 
 
 
@@ -257,6 +260,7 @@ DELETE /numbers/123
 --- response_body eval
 ""
 --- timeout: 10
+--- skip_slave: 3: CentOS
 
 
 
@@ -273,6 +277,7 @@ PUT /numbers/123
 Content-Type: text/html
 --- response_body_like: 410 Gone
 --- timeout: 10
+--- skip_slave: 3: CentOS
 
 
 

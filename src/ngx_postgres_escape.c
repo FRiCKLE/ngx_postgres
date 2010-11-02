@@ -32,49 +32,62 @@
 #include <libpq-fe.h>
 
 
-ngx_int_t
-ngx_postgres_escape_string(ngx_http_request_t *r,
-    ngx_http_variable_value_t *v, uintptr_t data)
+uintptr_t ngx_postgres_script_exit_code = (uintptr_t) NULL;
+
+
+void
+ngx_postgres_escape_string(ngx_http_script_engine_t *e)
 {
-    ngx_postgres_escape_t      *pgesc = (ngx_postgres_escape_t *) data;
-    ngx_http_variable_value_t  *src;
-    u_char                     *p;
+    ngx_postgres_escape_t      *pge;
+    ngx_http_variable_value_t  *v;
+    u_char                     *p, *s;
 
-    dd("entering: \"$%.*s\"", (int) pgesc->var->name.len,
-                              pgesc->var->name.data);
+    v = e->sp - 1;
 
-    src = ngx_http_get_indexed_variable(r, pgesc->idx);
+    dd("entering: \"%.*s\"", (int) v->len, v->data);
 
+    pge = (ngx_postgres_escape_t *) e->ip;
+    e->ip += sizeof(ngx_postgres_escape_t);
+
+    if ((v == NULL) || (v->not_found)) {
+        v->data = (u_char *) "NULL";
+        v->len = sizeof("NULL") - 1;
+        dd("returning (NULL)");
+        goto done;
+    }
+
+    if (v->len == 0) {
+        if (pge->empty) {
+            v->data = (u_char *) "''";
+            v->len = 2;
+            dd("returning (empty/empty)");
+            goto done;
+        } else {
+            v->data = (u_char *) "NULL";
+            v->len = sizeof("NULL") - 1;
+            dd("returning (empty/NULL)");
+            goto done;
+        }
+    }
+
+    s = p = ngx_pnalloc(e->request->pool, 2 * v->len + 2);
+    if (p == NULL) {
+        e->ip = (u_char *) &ngx_postgres_script_exit_code;
+        e->status = NGX_HTTP_INTERNAL_SERVER_ERROR;
+        dd("returning (NGX_HTTP_INTERNAL_SERVER_ERROR)");
+        return;
+    }
+
+    *p++ = '\'';
+    v->len = PQescapeString((char *) p, (const char *) v->data, v->len);
+    p[v->len] = '\'';
+    v->len += 2;
+    v->data = s;
+
+    dd("returning");
+
+done:
     v->valid = 1;
     v->no_cacheable = 0;
     v->not_found = 0;
-
-    if ((src == NULL) || (src->not_found)) {
-        v->data = (u_char *) "NULL";
-        v->len = sizeof("NULL") - 1;
-        dd("returning NGX_OK (NULL)");
-        return NGX_OK;
-    }
-
-    if (src->len == 0) {
-        v->data = (u_char *) "''";
-        v->len = 2;
-        dd("returning NGX_OK (empty)");
-        return NGX_OK;
-    }
-
-    v->data = ngx_pnalloc(r->pool, 2 * src->len + 2);
-    if (v->data == NULL) {
-        dd("returning NGX_ERROR");
-        return NGX_ERROR;
-    }
-
-    p = v->data;
-    *p++ = '\'';
-    v->len = PQescapeString((char *) p, (const char *) src->data, src->len);
-    p[v->len] = '\'';
-    v->len += 2;
-
-    dd("returning NGX_OK");
-    return NGX_OK;
 }
