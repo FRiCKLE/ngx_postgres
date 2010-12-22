@@ -59,28 +59,31 @@ static ngx_command_t ngx_postgres_module_commands[] = {
       NULL },
 
     { ngx_string("postgres_pass"),
-      NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+      NGX_HTTP_LOC_CONF|NGX_HTTP_LIF_CONF|NGX_CONF_TAKE1,
       ngx_postgres_conf_pass,
       NGX_HTTP_LOC_CONF_OFFSET,
       0,
       NULL },
 
     { ngx_string("postgres_query"),
-      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_1MORE,
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|
+          NGX_HTTP_LIF_CONF|NGX_CONF_1MORE,
       ngx_postgres_conf_query,
       NGX_HTTP_LOC_CONF_OFFSET,
       0,
       NULL },
 
     { ngx_string("postgres_rewrite"),
-      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_2MORE,
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|
+          NGX_HTTP_LIF_CONF|NGX_CONF_2MORE,
       ngx_postgres_conf_rewrite,
       NGX_HTTP_LOC_CONF_OFFSET,
       0,
       NULL },
 
     { ngx_string("postgres_output"),
-      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE123,
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|
+          NGX_HTTP_LIF_CONF|NGX_CONF_TAKE123,
       ngx_postgres_conf_output,
       NGX_HTTP_LOC_CONF_OFFSET,
       0,
@@ -112,6 +115,14 @@ static ngx_command_t ngx_postgres_module_commands[] = {
       ngx_conf_set_msec_slot,
       NGX_HTTP_LOC_CONF_OFFSET,
       offsetof(ngx_postgres_loc_conf_t, upstream.read_timeout),
+      NULL },
+
+    { ngx_string("postgres_binary_mode"),
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|
+          NGX_HTTP_LIF_CONF|NGX_CONF_FLAG,
+      ngx_conf_set_flag_slot,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      offsetof(ngx_postgres_loc_conf_t, binary_mode),
       NULL },
 
       ngx_null_command
@@ -306,6 +317,7 @@ ngx_postgres_create_loc_conf(ngx_conf_t *cf)
      *     conf->query.methods = NULL
      *     conf->query.def = NULL
      *     conf->output_value = NULL
+     *     conf->binary_mode = 0
      */
 
     conf->upstream.connect_timeout = NGX_CONF_UNSET_MSEC;
@@ -314,6 +326,7 @@ ngx_postgres_create_loc_conf(ngx_conf_t *cf)
     conf->rewrites = NGX_CONF_UNSET_PTR;
     conf->output_handler = NGX_CONF_UNSET_PTR;
     conf->variables = NGX_CONF_UNSET_PTR;
+    conf->binary_mode = NGX_CONF_UNSET;
 
     /* the hardcoded values */
     conf->upstream.cyclic_temp_file = 0;
@@ -373,6 +386,8 @@ ngx_postgres_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
     }
 
     ngx_conf_merge_ptr_value(conf->variables, prev->variables, NULL);
+
+    ngx_conf_merge_value(conf->binary_mode, prev->binary_mode, 0);
 
     dd("returning NGX_CONF_OK");
     return NGX_CONF_OK;
@@ -1062,6 +1077,8 @@ ngx_postgres_conf_output(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         (void) ngx_cpystrn(pglcf->output_value->col_name,
                            value[3].data, value[3].len + 1);
     }
+
+    pglcf->output_value->required = 0;
 
     dd("returning NGX_CONF_OK");
     return NGX_CONF_OK;

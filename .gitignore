@@ -16,6 +16,14 @@ src/upstream.c
 src/upstream.h
 src/util.c
 src/util.h
+reindex
+src/escape.c
+src/escape.h
+src/output.c
+src/rewrite.c
+src/rewrite.h
+src/variable.c
+src/variable.h
 build
 build7
 build8

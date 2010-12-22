@@ -46,7 +46,7 @@ postgres_pass
 -------------
 * **syntax**: `postgres_pass upstream`
 * **default**: `none`
-* **context**: `location`
+* **context**: `location`, `if location`
 
 Set name of an upstream block that will be used for the database connections
 (it can include variables).
@@ -56,7 +56,7 @@ postgres_query
 --------------
 * **syntax**: `postgres_query [methods] query`
 * **default**: `none`
-* **context**: `http`, `server`, `location`
+* **context**: `http`, `server`, `location`, `if location`
 
 Set query string (it can include variables). When methods are specified then
 query is used only for them, otherwise it's used for all methods.
@@ -64,11 +64,23 @@ query is used only for them, otherwise it's used for all methods.
 This directive can be used more than once within same context.
 
 
+postgres_binary_mode
+-----------------------
+* **syntax**: `postgres_binary_mode on|off`
+* **default**: `off`
+* **context**: `http`, `server`, `location`, `if location`
+
+Controls whether to use the binary mode for `all` the data fields
+in the result set on the PostgreSQL side. The big-endian format is usually followed,
+which is controled by PostgreSQL.
+
+Default off.
+
 postgres_rewrite
 ----------------
 * **syntax**: `postgres_rewrite [methods] condition [=]status_code`
 * **default**: `none`
-* **context**: `http`, `server`, `location`
+* **context**: `http`, `server`, `location`, `location if`
 
 Rewrite response `status_code` when given condition is met (first one wins!):
 
@@ -90,7 +102,7 @@ postgres_output
 ---------------
 * **syntax**: `postgres_output none|value|row|rds [row] [column]`
 * **default**: `rds`
-* **context**: `http`, `server`, `location`
+* **context**: `http`, `server`, `location`, `location if`
 
 Set output format:
 
@@ -334,8 +346,22 @@ codes.
 
 Required modules (other than `ngx_postgres`):
 
-- [ngx_rds_json](http://github.com/agentzh/rds-json-nginx-module).
+- [ngx_rds_json] (http://github.com/agentzh/rds-json-nginx-module).
 
+Sample configuration #6
+-----------------------
+Using GET parameters for the SQL queries
+
+    location /cat {
+        set_unescape_uri $name $arg_name;   # this requires ngx_set_misc
+        set_quote_pgsql_str $name;   # ditto
+        postgres_query 'select * from cats where name = $name';
+        postgres_pass my_pg_backend;
+    }
+
+Required modules (other than `ngx_postgres`):
+
+- [ngx_set_misc] (http://github.com/agentzh/set-misc-nginx-module).
 
 Testing
 =======
