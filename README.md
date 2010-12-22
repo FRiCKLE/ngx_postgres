@@ -346,22 +346,22 @@ codes.
 
 Required modules (other than `ngx_postgres`):
 
-- [ngx_rds_json] (http://github.com/agentzh/rds-json-nginx-module).
+- [ngx_rds_json](http://github.com/agentzh/rds-json-nginx-module).
 
 Sample configuration #6
 -----------------------
-Using GET parameters for the SQL queries
+Use GET parameter in SQL query.
 
-    location /cat {
-        set_unescape_uri $name $arg_name;   # this requires ngx_set_misc
-        set_quote_pgsql_str $name;   # ditto
-        postgres_query 'select * from cats where name = $name';
-        postgres_pass my_pg_backend;
+    location /quotes {
+        set_unescape_uri  $txt $arg_txt;
+        postgres_escape   $txt;
+        postgres_pass     database;
+        postgres_query    "SELECT * FROM quotes WHERE quote=$txt";
     }
 
 Required modules (other than `ngx_postgres`):
 
-- [ngx_set_misc] (http://github.com/agentzh/set-misc-nginx-module).
+- [ngx_set_misc](http://github.com/agentzh/set-misc-nginx-module).
 
 Testing
 =======
