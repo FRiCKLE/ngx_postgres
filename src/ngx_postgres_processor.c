@@ -50,7 +50,7 @@ ngx_postgres_process_events(ngx_http_request_t *r)
 
     if (!ngx_postgres_upstream_is_my_peer(&u->peer)) {
         ngx_log_error(NGX_LOG_ERR, pgxc->log, 0,
-                      "trying to connect to something that"
+                      "postgres: trying to connect to something that"
                       " is not PostgreSQL database");
 
         goto failed;
@@ -80,9 +80,9 @@ ngx_postgres_process_events(ngx_http_request_t *r)
         rc = ngx_postgres_upstream_send_query(r, pgxc, pgdt);
         break;
     default:
-        dd("unknown state: %d", pgdt->state);
+        dd("unknown state:%d", pgdt->state);
         ngx_log_error(NGX_LOG_ERR, pgxc->log, 0,
-                      "unknown state: %d", pgdt->state);
+                      "postgres: unknown state:%d", pgdt->state);
 
         goto failed;
     }
@@ -184,8 +184,8 @@ ngx_postgres_upstream_connect(ngx_http_request_t *r, ngx_connection_t *pgxc,
     if (pgrc != PGRES_POLLING_OK) {
         dd("connection failed");
         ngx_log_error(NGX_LOG_ERR, pgxc->log, 0,
-                      "connection failed: %s",
-                      PQerrorMessage(pgdt->pgconn));
+                      "postgres: connection failed: %s in upstream \"%V\"",
+                      PQerrorMessage(pgdt->pgconn), pgdt->name);
 
         dd("returning NGX_ERROR");
         return NGX_ERROR;
@@ -230,8 +230,8 @@ ngx_postgres_upstream_send_query(ngx_http_request_t *r, ngx_connection_t *pgxc,
     if (pgrc == 0) {
         dd("sending query failed");
         ngx_log_error(NGX_LOG_ERR, pgxc->log, 0,
-                      "sending query failed: %s",
-                      PQerrorMessage(pgdt->pgconn));
+                      "postgres: sending query failed: %s in upstream \"%V\"",
+                      PQerrorMessage(pgdt->pgconn), pgdt->name);
 
         dd("returning NGX_ERROR");
         return NGX_ERROR;
@@ -280,8 +280,8 @@ ngx_postgres_upstream_get_result(ngx_http_request_t *r, ngx_connection_t *pgxc,
     if (res == NULL) {
         dd("receiving result failed");
         ngx_log_error(NGX_LOG_ERR, pgxc->log, 0,
-                      "receiving result failed: %s",
-                      PQerrorMessage(pgdt->pgconn));
+                      "postgres: receiving result failed: %s in upstream"
+                      " \"%V\"", PQerrorMessage(pgdt->pgconn), pgdt->name);
 
         dd("returning NGX_ERROR");
         return NGX_ERROR;
@@ -291,9 +291,9 @@ ngx_postgres_upstream_get_result(ngx_http_request_t *r, ngx_connection_t *pgxc,
     if ((pgrc != PGRES_COMMAND_OK) && (pgrc != PGRES_TUPLES_OK)) {
         dd("receiving result failed");
         ngx_log_error(NGX_LOG_ERR, pgxc->log, 0,
-                      "receiving result failed: %s: %s",
-                      PQresStatus(pgrc),
-                      PQerrorMessage(pgdt->pgconn));
+                      "postgres: receiving result failed: %s: %s in upstream"
+                      " \"%V\"", PQresStatus(pgrc),
+                      PQerrorMessage(pgdt->pgconn), pgdt->name);
 
         PQclear(res);
 
@@ -426,7 +426,8 @@ ngx_postgres_upstream_get_ack(ngx_http_request_t *r, ngx_connection_t *pgxc,
     if (res != NULL) {
         dd("receiving ACK failed");
         ngx_log_error(NGX_LOG_ERR, pgxc->log, 0,
-                      "receiving ACK failed: multiple queries(?)");
+                      "postgres: receiving ACK failed: multiple queries(?),"
+                      " in upstream \"%V\"", pgdt->name);
 
         PQclear(res);
 

@@ -49,7 +49,7 @@ ngx_postgres_upstream_init(ngx_conf_t *cf, ngx_http_upstream_srv_conf_t *uscf)
 
     if (pgscf->servers == NULL || pgscf->servers->nelts == 0) {
         ngx_log_error(NGX_LOG_ERR, cf->log, 0,
-                      "no \"postgres_server\" defined"
+                      "postgres: no \"postgres_server\" defined"
                       " in upstream \"%V\" in %s:%ui",
                       &uscf->host, uscf->file_name, uscf->line);
 
@@ -193,7 +193,7 @@ ngx_postgres_upstream_init_peer(ngx_http_request_t *r,
             clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
 
             ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                          "empty \"postgres_query\" (was: \"%V\")"
+                          "postgres: empty \"postgres_query\" (was: \"%V\")"
                           " in location \"%V\"", &query->cv->value,
                           &clcf->name);
 
@@ -282,7 +282,6 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
 
     pgdt->name = &peer->name;
 
-    pc->name = &peer->name;
     pc->sockaddr = peer->sockaddr;
     pc->socklen = peer->socklen;
     pc->cached = 0;
@@ -304,8 +303,8 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
 
     if ((pgscf->reject) && (pgscf->active_conns >= pgscf->max_cached)) {
         ngx_log_error(NGX_LOG_INFO, pc->log, 0,
-                      "keepalive connection pool is full,"
-                      " rejecting requests");
+                      "postgres: keepalive connection pool is full,"
+                      " rejecting request to upstream \"%V\"", &peer->name);
 
         /* a bit hack-ish way to return error response (setup part) */
         pc->connection = ngx_get_connection(0, pc->log);
@@ -353,8 +352,8 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
     pgdt->pgconn = PQconnectStart((const char *)connstring);
     if (PQsetnonblocking(pgdt->pgconn, 1) == -1) {
         ngx_log_error(NGX_LOG_ERR, pc->log, 0,
-                      "connection failed: %s",
-                      PQerrorMessage(pgdt->pgconn));
+                      "postgres: connection failed: %s in upstream \"%V\"",
+                      PQerrorMessage(pgdt->pgconn), &peer->name);
 
         PQfinish(pgdt->pgconn);
         pgdt->pgconn = NULL;
@@ -380,7 +379,7 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
     fd = PQsocket(pgdt->pgconn);
     if (fd == -1) {
         ngx_log_error(NGX_LOG_ERR, pc->log, 0,
-                      "failed to get connection fd");
+                      "postgres: failed to get connection fd");
 
         goto invalid;
     }
@@ -389,7 +388,7 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
 
     if (pgxc == NULL) {
         ngx_log_error(NGX_LOG_ERR, pc->log, 0,
-                      "failed to get a free nginx connection");
+                      "postgres: failed to get a free nginx connection");
 
         goto invalid;
     }
@@ -415,7 +414,7 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
         rc = ngx_add_event(rev, NGX_READ_EVENT, NGX_CLEAR_EVENT);
         if (ngx_add_event(wev, NGX_WRITE_EVENT, NGX_CLEAR_EVENT) != NGX_OK) {
             ngx_log_error(NGX_LOG_ERR, pc->log, 0,
-                          "failed to add nginx connection");
+                          "postgres: failed to add nginx connection");
 
             goto invalid;
         }
@@ -426,7 +425,7 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
 
     if (rc != NGX_OK) {
         ngx_log_error(NGX_LOG_ERR, pc->log, 0,
-                      "failed to add nginx connection");
+                      "postgres: failed to add nginx connection");
 
         goto invalid;
     }
