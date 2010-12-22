@@ -21,17 +21,4 @@ Features that sooner or later will be added to `ngx_postgres`:
 
 * Cancel long-running queries using `PQcancel()`.
 
-* Detect client library version using `PQlibVersion()` (PostgreSQL 9.1+)
-  or exports (for older releases):
-
-      8.0.0 -> PQcancel                  122
-      8.1.0 -> PQregisterThreadLock      125
-      8.1.4 -> PQescapeByteaConn         127
-      8.2.0 -> PQsendDescribePortal      136
-      8.3.0 -> PQconnectionNeedsPassword 140
-      8.4.0 -> PQinitOpenSSL             153
-      8.5.x -> PQinitOpenSSL             153
-      9.0.0 -> PQconnectStartParams      157
-      9.1.x -> PQlibVersion              160
-
 * Detect server version using `PQserverVersion()`.
