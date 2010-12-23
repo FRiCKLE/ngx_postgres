@@ -320,3 +320,28 @@ Content-Type: application/x-resty-dbd-stream
 "bob".           # field data
 "\x{00}"         # row list terminator
 --- timeout: 10
+
+
+
+=== TEST 15: rows - "if" pseudo-location
+--- http_config eval: $::http_config
+--- config
+    location /postgres {
+        if ($arg_foo) {
+            postgres_pass       database;
+            postgres_query      "select * from cats";
+            postgres_rewrite    no_changes 500;
+            postgres_rewrite    changes 500;
+            postgres_rewrite    no_rows 410;
+            postgres_rewrite    rows 206;
+            break;
+        }
+
+        return 404;
+    }
+--- request
+GET /postgres?foo=1
+--- error_code: 206
+--- response_headers
+Content-Type: application/x-resty-dbd-stream
+--- timeout: 10
