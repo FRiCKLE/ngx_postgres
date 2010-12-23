@@ -94,13 +94,17 @@ postgres_output
 
 Set output format:
 
-- `rds`   - return output in `rds` format (with appropriate `Content-Type`),
-- `row`   - return all values from a single row from the result-set
-  in clear text, values are separated by new line (with default `Content-Type`),
-- `value` - return single value from the result-set in clear text
+- `rds`          - return output in `rds` format (with appropriate
+  `Content-Type`),
+- `row`          - return all values from a single row from the result-set
+  in text format, values are separated by new line (with default `Content-Type`),
+- `value`        - return single value from the result-set in text format
   (with default `Content-Type`),
-- `none`  - don't return anything, this should be used only when extracting
-  values with `postgres_set` for use with other modules (without `Content-Type`).
+- `binary_value` - return single value from the result-set in binary format
+  (with default `Content-Type`),
+- `none`         - don't return anything, this should be used only when
+  extracting values with `postgres_set` for use with other modules (without
+  `Content-Type`).
 
 Row and column numbers start at 0. Column name can be used instead of column
 number.

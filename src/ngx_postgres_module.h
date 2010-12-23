@@ -59,6 +59,7 @@ typedef struct {
     ngx_int_t                           column;
     u_char                             *col_name;
     ngx_uint_t                          required;
+    unsigned                            binary:1;
 } ngx_postgres_value_t;
 
 typedef struct {
@@ -90,9 +91,16 @@ struct ngx_postgres_rewrite_conf_s {
 
 typedef struct {
     ngx_str_t                           name;
-    ngx_uint_t                          param;
+    ngx_uint_t                          key;
     void                               *handler;
-} ngx_postgres_handler_enum_t;
+} ngx_postgres_rewrite_enum_t;
+
+typedef struct {
+    ngx_str_t                           name;
+    ngx_uint_t                          args;
+    unsigned                            binary:1;
+    void                               *handler;
+} ngx_postgres_output_enum_t;
 
 typedef struct {
 #if defined(nginx_version) && (nginx_version >= 8022)

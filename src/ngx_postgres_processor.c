@@ -204,10 +204,13 @@ ngx_int_t
 ngx_postgres_upstream_send_query(ngx_http_request_t *r, ngx_connection_t *pgxc,
     ngx_postgres_upstream_peer_data_t *pgdt)
 {
-    ngx_int_t   pgrc;
-    u_char     *query;
+    ngx_postgres_loc_conf_t  *pglcf;
+    ngx_int_t                 pgrc;
+    u_char                   *query;
 
     dd("entering");
+
+    pglcf = ngx_http_get_module_loc_conf(r, ngx_postgres_module);
 
     query = ngx_pnalloc(r->pool, pgdt->query.len + 1);
     if (query == NULL) {
@@ -219,7 +222,13 @@ ngx_postgres_upstream_send_query(ngx_http_request_t *r, ngx_connection_t *pgxc,
 
     dd("sending query: %s", query);
 
-    pgrc = PQsendQuery(pgdt->pgconn, (const char *) query);
+    if (pglcf->output_value && pglcf->output_value->binary) {
+        pgrc = PQsendQueryParams(pgdt->pgconn, (const char *) query,
+                                 0, NULL, NULL, NULL, NULL, /* binary */ 1);
+    } else {
+        pgrc = PQsendQuery(pgdt->pgconn, (const char *) query);
+    }
+
     if (pgrc == 0) {
         dd("sending query failed");
         ngx_log_error(NGX_LOG_ERR, pgxc->log, 0,

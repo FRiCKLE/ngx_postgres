@@ -328,3 +328,66 @@ Content-Type: text/plain
 --- response_body eval
 "test"
 --- timeout: 10
+
+
+
+=== TEST 15: value - bytea returned in text format
+--- http_config eval: $::http_config
+--- config
+    default_type  text/plain;
+
+    location /postgres {
+        postgres_pass       database;
+        postgres_query      "select E'\\001'::bytea as res";
+        postgres_output     value 0 0;
+    }
+--- request
+GET /postgres
+--- error_code: 200
+--- response_headers
+Content-Type: text/plain
+--- response_body chomp
+\001
+--- timeout: 10
+
+
+
+=== TEST 16: binary value - bytea returned in binary format
+--- http_config eval: $::http_config
+--- config
+    default_type  text/plain;
+
+    location /postgres {
+        postgres_pass       database;
+        postgres_query      "select E'\\001'::bytea as res";
+        postgres_output     binary_value 0 0;
+    }
+--- request
+GET /postgres
+--- error_code: 200
+--- response_headers
+Content-Type: text/plain
+--- response_body eval
+"\1"
+--- timeout: 10
+
+
+
+=== TEST 17: binary value - int2 returned in binary format
+--- http_config eval: $::http_config
+--- config
+    default_type  text/plain;
+
+    location /postgres {
+        postgres_pass       database;
+        postgres_query      "select 3::int2 as res";
+        postgres_output     binary_value 0 0;
+    }
+--- request
+GET /postgres
+--- error_code: 200
+--- response_headers
+Content-Type: text/plain
+--- response_body eval
+"\0\3"
+--- timeout: 10

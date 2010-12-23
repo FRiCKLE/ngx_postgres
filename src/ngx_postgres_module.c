@@ -208,7 +208,7 @@ ngx_conf_enum_t ngx_postgres_requirement_options[] = {
     { ngx_null_string, 0 }
 };
 
-ngx_postgres_handler_enum_t ngx_postgres_rewrite_handlers[] = {
+ngx_postgres_rewrite_enum_t ngx_postgres_rewrite_handlers[] = {
     { ngx_string("no_changes"), 0, ngx_postgres_rewrite_changes },
     { ngx_string("changes"),    1, ngx_postgres_rewrite_changes },
     { ngx_string("no_rows"),    2, ngx_postgres_rewrite_rows }, 
@@ -216,12 +216,13 @@ ngx_postgres_handler_enum_t ngx_postgres_rewrite_handlers[] = {
     { ngx_null_string, 0, NULL }
 };
 
-ngx_postgres_handler_enum_t ngx_postgres_output_handlers[] = {
-    { ngx_string("none"),  0, NULL },
-    { ngx_string("value"), 2, ngx_postgres_output_value },
-    { ngx_string("row"),   1, ngx_postgres_output_row },
-    { ngx_string("rds"),   0, ngx_postgres_output_rds },
-    { ngx_null_string, 0, NULL }
+ngx_postgres_output_enum_t ngx_postgres_output_handlers[] = {
+    { ngx_string("none"),         0, 0, NULL },
+    { ngx_string("rds"),          0, 0, ngx_postgres_output_rds },
+    { ngx_string("row"),          1, 0, ngx_postgres_output_row },
+    { ngx_string("value"),        2, 0, ngx_postgres_output_value },
+    { ngx_string("binary_value"), 2, 1, ngx_postgres_output_value },
+    { ngx_null_string, 0, 0, NULL }
 };
 
 
@@ -815,7 +816,7 @@ ngx_postgres_conf_rewrite(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     ngx_postgres_loc_conf_t      *pglcf = conf;
     ngx_postgres_rewrite_conf_t  *pgrcf;
     ngx_postgres_rewrite_t       *rewrite;
-    ngx_postgres_handler_enum_t  *e;
+    ngx_postgres_rewrite_enum_t  *e;
     ngx_conf_bitmask_t           *b;
     ngx_uint_t                    methods, keep_body, i, j;
 
@@ -849,7 +850,7 @@ ngx_postgres_conf_rewrite(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     } else {
         pgrcf = pglcf->rewrites->elts;
         for (j = 0; j < pglcf->rewrites->nelts; j++) {
-            if (pgrcf[j].key == e[i].param) {
+            if (pgrcf[j].key == e[i].key) {
                 pgrcf = &pgrcf[j];
                 goto found;
             }
@@ -864,7 +865,7 @@ ngx_postgres_conf_rewrite(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
     ngx_memzero(pgrcf, sizeof(ngx_postgres_rewrite_conf_t));
 
-    pgrcf->key = e[i].param;
+    pgrcf->key = e[i].key;
     pgrcf->handler = e[i].handler;
 
 found:
@@ -978,10 +979,10 @@ found:
 char *
 ngx_postgres_conf_output(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
-    ngx_str_t                    *value = cf->args->elts;
-    ngx_postgres_loc_conf_t      *pglcf = conf;
-    ngx_postgres_handler_enum_t  *e;
-    ngx_uint_t                    i;
+    ngx_str_t                   *value = cf->args->elts;
+    ngx_postgres_loc_conf_t     *pglcf = conf;
+    ngx_postgres_output_enum_t  *e;
+    ngx_uint_t                   i;
 
     dd("entering");
 
@@ -1009,7 +1010,7 @@ ngx_postgres_conf_output(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         return NGX_CONF_ERROR;
     }
 
-    if (e[i].param != cf->args->nelts - 2) {
+    if (e[i].args != cf->args->nelts - 2) {
         ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
                            "postgres: invalid number of arguments"
                            " in \"%V\" directive", &cmd->name);
@@ -1018,7 +1019,7 @@ ngx_postgres_conf_output(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         return NGX_CONF_ERROR;
     }
 
-    if (e[i].param == 0) {
+    if (e[i].args == 0) {
         dd("returning NGX_CONF_OK");
         return NGX_CONF_OK;
     }
@@ -1028,7 +1029,9 @@ ngx_postgres_conf_output(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         dd("returning NGX_CONF_ERROR");
         return NGX_CONF_ERROR;
     }
- 
+
+    pglcf->output_value->binary = e[i].binary;
+
     pglcf->output_value->row = ngx_atoi(value[2].data, value[2].len);
     if (pglcf->output_value->row == NGX_ERROR) {
         ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
@@ -1039,7 +1042,7 @@ ngx_postgres_conf_output(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         return NGX_CONF_ERROR;
     }
 
-    if (e[i].param == 1) {
+    if (e[i].args == 1) {
         dd("returning NGX_CONF_OK");
         return NGX_CONF_OK;
     }
