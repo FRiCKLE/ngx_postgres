@@ -155,9 +155,6 @@ typedef struct {
     ngx_postgres_value_t               *output_value;
     /* custom variables */
     ngx_array_t                        *variables;
-
-    /* data field format */
-    ngx_flag_t                          binary_mode;
 } ngx_postgres_loc_conf_t;
 
 typedef struct {
