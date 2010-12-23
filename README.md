@@ -88,7 +88,7 @@ This directive can be used more than once within same context.
 
 postgres_output
 ---------------
-* **syntax**: `postgres_output none|value|row|rds [row] [column]`
+* **syntax**: `postgres_output rds|row|value|binary_value|none [row] [column]`
 * **default**: `rds`
 * **context**: `http`, `server`, `location`, `if location`
 

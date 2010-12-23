@@ -1,3 +1,16 @@
+2010-12-23    VERSION 0.8
+    * Add option to return content in binary format using
+      "binary_value" output format in "postgres_output" directive.
+      Mostly done by Yichun Zhang (agentzh).
+
+2010-11-01
+    * Support "postgres_pass", "postgres_query", "postgres_rewrite"
+      and "postgres_output" directives in "if" pseudo-locations.
+      From Yichun Zhang (agentzh).
+
+2010-10-02
+    * Major rewrite of "postgres_escape" directive.
+
 2010-09-30    VERSION 0.7
     * Add option to send original response body with error responses
       set by "postgres_rewrite" directive.
