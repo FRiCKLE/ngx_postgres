@@ -46,8 +46,8 @@ GET /test
 --- error_code: 200
 --- response_headers
 Content-Type: text/plain
---- response_body eval
-"hi, ngx_test!"
+--- response_body chomp
+hi, ngx_test!
 --- timeout: 10
 
 

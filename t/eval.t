@@ -43,8 +43,8 @@ GET /eval
 --- error_code: 200
 --- response_headers
 Content-Type: text/plain
---- response_body eval
-"it works!"
+--- response_body chomp
+it works!
 --- timeout: 10
 --- skip_nginx: 3: < 0.8.25
 
@@ -69,6 +69,6 @@ GET /eval
 --- error_code: 200
 --- response_headers
 Content-Type: text/plain
---- response_body eval
-"test"
+--- response_body chomp
+test
 --- timeout: 10

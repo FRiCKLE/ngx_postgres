@@ -96,7 +96,7 @@ GET /numbers/
 --- error_code: 200
 --- response_headers
 Content-Type: application/json
---- response_body chop
+--- response_body chomp
 []
 --- timeout: 10
 
@@ -111,7 +111,7 @@ POST /numbers/
 --- error_code: 201
 --- response_headers
 Content-Type: application/json
---- response_body chop
+--- response_body chomp
 [{"number":123}]
 --- timeout: 10
 --- skip_slave: 3: CentOS
@@ -127,7 +127,7 @@ GET /numbers/
 --- error_code: 200
 --- response_headers
 Content-Type: application/json
---- response_body chop
+--- response_body chomp
 [{"number":123}]
 --- timeout: 10
 --- skip_slave: 3: CentOS
@@ -143,7 +143,7 @@ GET /numbers/123
 --- error_code: 200
 --- response_headers
 Content-Type: application/json
---- response_body chop
+--- response_body chomp
 [{"number":123}]
 --- timeout: 10
 --- skip_slave: 3: CentOS
@@ -161,7 +161,7 @@ PUT /numbers/123
 --- error_code: 200
 --- response_headers
 Content-Type: application/json
---- response_body chop
+--- response_body chomp
 [{"number":123}]
 --- timeout: 10
 --- skip_slave: 3: CentOS
@@ -238,6 +238,6 @@ GET /numbers/
 --- error_code: 200
 --- response_headers
 Content-Type: application/json
---- response_body chop
+--- response_body chomp
 []
 --- timeout: 10

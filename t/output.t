@@ -54,8 +54,8 @@ GET /postgres
 --- error_code: 200
 --- response_headers
 Content-Type: text/plain
---- response_body eval
-"test"
+--- response_body chomp
+test
 --- timeout: 10
 
 
@@ -75,8 +75,8 @@ GET /postgres
 --- error_code: 200
 --- response_headers
 Content-Type: text/html
---- response_body eval
-"test"
+--- response_body chomp
+test
 --- timeout: 10
 
 
@@ -245,8 +245,8 @@ GET /postgres
 --- error_code: 200
 --- response_headers
 Content-Type: text/plain
---- response_body eval
-"test"
+--- response_body chomp
+test
 --- timeout: 10
 
 
@@ -287,8 +287,8 @@ GET /postgres
 --- error_code: 200
 --- response_headers
 Content-Type: text/plain
---- response_body eval
-"test"
+--- response_body chomp
+test
 --- timeout: 10
 
 
@@ -325,8 +325,8 @@ GET /postgres.jpg
 --- error_code: 200
 --- response_headers
 Content-Type: text/plain
---- response_body eval
-"test"
+--- response_body chomp
+test
 --- timeout: 10
 
 
