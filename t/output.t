@@ -391,3 +391,29 @@ Content-Type: text/plain
 --- response_body eval
 "\0\3"
 --- timeout: 10
+
+
+
+=== TEST 18: value - "if" pseudo-location
+--- http_config eval: $::http_config
+--- config
+    default_type  text/plain;
+
+    location /postgres {
+        if ($arg_foo) {
+            postgres_pass       database;
+            postgres_query      "select * from cats order by id";
+            postgres_output     value 0 0;
+            break;
+        }
+
+        return 404;
+    }
+--- request
+GET /postgres?foo=1
+--- error_code: 200
+--- response_headers
+Content-Type: text/plain
+--- response_body chomp
+2
+--- timeout: 10
