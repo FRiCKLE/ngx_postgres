@@ -165,7 +165,7 @@ ngx_postgres_upstream_connect(ngx_http_request_t *r, ngx_connection_t *pgxc,
               * This cannot happen, PQconnectPoll would return
               * PGRES_POLLING_FAILED in that case.
               */
-             dd("connecting (unknown state: %d)", (int) PQstatus(pgdt->pgconn));
+             dd("connecting (unknown state:%d)", (int) PQstatus(pgdt->pgconn));
 
              dd("returning NGX_ERROR");
              return NGX_ERROR;

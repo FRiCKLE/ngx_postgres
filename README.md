@@ -46,7 +46,7 @@ postgres_pass
 -------------
 * **syntax**: `postgres_pass upstream`
 * **default**: `none`
-* **context**: `location`
+* **context**: `location`, `if location`
 
 Set name of an upstream block that will be used for the database connections
 (it can include variables).
@@ -56,7 +56,7 @@ postgres_query
 --------------
 * **syntax**: `postgres_query [methods] query`
 * **default**: `none`
-* **context**: `http`, `server`, `location`
+* **context**: `http`, `server`, `location`, `if location`
 
 Set query string (it can include variables). When methods are specified then
 query is used only for them, otherwise it's used for all methods.
@@ -68,7 +68,7 @@ postgres_rewrite
 ----------------
 * **syntax**: `postgres_rewrite [methods] condition [=]status_code`
 * **default**: `none`
-* **context**: `http`, `server`, `location`
+* **context**: `http`, `server`, `location`, `if location`
 
 Rewrite response `status_code` when given condition is met (first one wins!):
 
@@ -90,7 +90,7 @@ postgres_output
 ---------------
 * **syntax**: `postgres_output none|value|row|rds [row] [column]`
 * **default**: `rds`
-* **context**: `http`, `server`, `location`
+* **context**: `http`, `server`, `location`, `if location`
 
 Set output format:
 
