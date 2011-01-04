@@ -8,6 +8,8 @@ Features that sooner or later will be added to `ngx_postgres`:
 * Add support for dropping of idle keep-alived connections to the
   database.
 
+* Add `$postgres_error` variable.
+
 * Add support for sending mulitple queries in one go (transactions,
   multiple SELECTs, etc), this will require changes in the processing
   flow __and__ RDS format.
