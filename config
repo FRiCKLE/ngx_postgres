@@ -109,7 +109,7 @@ ngx_feature_test="printf(\"%d\", PQlibVersion())"
 if [ $ngx_found = no ]; then
     lib_version=90000
     ngx_feature="libpq library version 9.0"
-    ngx_feature_test="(void) PQconnectStartParams(NULL, NULL, 0);
+    ngx_feature_test="(void) PQescapeLiteral(NULL, NULL, 0);
                       printf(\"$lib_version\")"
     . auto/feature
 fi
