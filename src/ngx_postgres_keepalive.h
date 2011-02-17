@@ -41,7 +41,7 @@ typedef struct {
     ngx_postgres_upstream_srv_conf_t  *srv_conf;
     ngx_connection_t                  *connection;
     PGconn                            *pgconn;
-    struct sockaddr_storage            sockaddr;
+    struct sockaddr                    sockaddr;
     socklen_t                          socklen;
     ngx_str_t                          name;
 } ngx_postgres_keepalive_cache_t;

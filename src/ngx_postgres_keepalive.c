@@ -85,13 +85,17 @@ ngx_postgres_keepalive_get_peer_single(ngx_peer_connection_t *pc,
         c->read->log = pc->log;
         c->write->log = pc->log;
 
-        pc->connection = c;
-        pc->cached = 1;
-
         pgp->name = &item->name;
         pgp->pgconn = item->pgconn;
 
+        pc->connection = c;
+        pc->cached = 1;
+        pc->name = pgp->name;
+        pc->sockaddr = &item->sockaddr;
+        pc->socklen = item->socklen;
+
         dd("returning NGX_DONE");
+
         return NGX_DONE;
     }
 
@@ -186,6 +190,7 @@ ngx_postgres_keepalive_free_peer(ngx_peer_connection_t *pc,
 
             ngx_postgres_upstream_free_connection(pc->log, item->connection,
                                                   item->pgconn, pgscf);
+
         } else {
             q = ngx_queue_head(&pgscf->free);
             ngx_queue_remove(q);
@@ -216,10 +221,13 @@ ngx_postgres_keepalive_free_peer(ngx_peer_connection_t *pc,
         c->read->log = ngx_cycle->log;
         c->write->log = ngx_cycle->log;
 
-        item->socklen = pc->socklen;
-        ngx_memcpy(&item->sockaddr, pc->sockaddr, pc->socklen);
+        if (pc->sockaddr != &item->sockaddr) {
+            item->socklen = pc->socklen;
+            ngx_memcpy(&item->sockaddr, pc->sockaddr, pc->socklen);
+        }
 
         item->pgconn = pgp->pgconn;
+        item->name = *pgp->name;
     }
 
     dd("returning");
