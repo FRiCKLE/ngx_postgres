@@ -12,8 +12,8 @@ Status
 This module is production-ready and it's compatible with following nginx
 releases:
 
-- 0.7.x (tested with 0.7.60 to 0.7.67),
-- 0.8.x (tested with 0.8.0 to 0.8.50).
+- 0.7.x (tested with 0.7.60 to 0.7.68),
+- 0.8.x (tested with 0.8.0 to 0.8.54).
 
 
 Configuration directives
