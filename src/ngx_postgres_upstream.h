@@ -52,8 +52,9 @@ typedef struct {
     PGconn                            *pgconn;
     ngx_postgres_state_t               state;
     ngx_str_t                          query;
-    ngx_str_t                         *name;
-    ngx_flag_t                         failed;
+    ngx_str_t                          name;
+    struct sockaddr                    sockaddr;
+    unsigned                           failed;
 } ngx_postgres_upstream_peer_data_t;
 
 
@@ -68,5 +69,6 @@ ngx_flag_t  ngx_postgres_upstream_is_my_peer(const ngx_peer_connection_t *);
 void        ngx_postgres_upstream_free_connection(ngx_log_t *,
                 ngx_connection_t *, PGconn *,
                 ngx_postgres_upstream_srv_conf_t *);
+
 
 #endif /* _NGX_HTTP_UPSTREAM_POSTGRES_H_ */

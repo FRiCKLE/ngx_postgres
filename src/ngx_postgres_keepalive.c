@@ -85,13 +85,19 @@ ngx_postgres_keepalive_get_peer_single(ngx_peer_connection_t *pc,
         c->read->log = pc->log;
         c->write->log = pc->log;
 
-        pgp->name = &item->name;
+        pgp->name.data = item->name.data;
+        pgp->name.len = item->name.len;
+
+        pgp->sockaddr = item->sockaddr;
+
         pgp->pgconn = item->pgconn;
 
         pc->connection = c;
         pc->cached = 1;
-        pc->name = pgp->name;
-        pc->sockaddr = &item->sockaddr;
+
+        pc->name = &pgp->name;
+
+        pc->sockaddr = &pgp->sockaddr;
         pc->socklen = item->socklen;
 
         dd("returning NGX_DONE");
@@ -137,7 +143,9 @@ ngx_postgres_keepalive_get_peer_multi(ngx_peer_connection_t *pc,
             pc->connection = c;
             pc->cached = 1;
 
-            pgp->name = &item->name;
+            /* we do not need to resume the peer name
+             * because we already take the right value outside */
+
             pgp->pgconn = item->pgconn;
 
             dd("returning NGX_DONE");
@@ -221,13 +229,13 @@ ngx_postgres_keepalive_free_peer(ngx_peer_connection_t *pc,
         c->read->log = ngx_cycle->log;
         c->write->log = ngx_cycle->log;
 
-        if (pc->sockaddr != &item->sockaddr) {
-            item->socklen = pc->socklen;
-            ngx_memcpy(&item->sockaddr, pc->sockaddr, pc->socklen);
-        }
+        item->socklen = pc->socklen;
+        ngx_memcpy(&item->sockaddr, pc->sockaddr, pc->socklen);
 
         item->pgconn = pgp->pgconn;
-        item->name = *pgp->name;
+
+        item->name.data = pgp->name.data;
+        item->name.len = pgp->name.len;
     }
 
     dd("returning");

@@ -185,7 +185,7 @@ ngx_postgres_upstream_connect(ngx_http_request_t *r, ngx_connection_t *pgxc,
         dd("connection failed");
         ngx_log_error(NGX_LOG_ERR, pgxc->log, 0,
                       "postgres: connection failed: %s in upstream \"%V\"",
-                      PQerrorMessage(pgdt->pgconn), pgdt->name);
+                      PQerrorMessage(pgdt->pgconn), &pgdt->name);
 
         dd("returning NGX_ERROR");
         return NGX_ERROR;
@@ -233,7 +233,7 @@ ngx_postgres_upstream_send_query(ngx_http_request_t *r, ngx_connection_t *pgxc,
         dd("sending query failed");
         ngx_log_error(NGX_LOG_ERR, pgxc->log, 0,
                       "postgres: sending query failed: %s in upstream \"%V\"",
-                      PQerrorMessage(pgdt->pgconn), pgdt->name);
+                      PQerrorMessage(pgdt->pgconn), &pgdt->name);
 
         dd("returning NGX_ERROR");
         return NGX_ERROR;
@@ -283,7 +283,7 @@ ngx_postgres_upstream_get_result(ngx_http_request_t *r, ngx_connection_t *pgxc,
         dd("receiving result failed");
         ngx_log_error(NGX_LOG_ERR, pgxc->log, 0,
                       "postgres: receiving result failed: %s in upstream"
-                      " \"%V\"", PQerrorMessage(pgdt->pgconn), pgdt->name);
+                      " \"%V\"", PQerrorMessage(pgdt->pgconn), &pgdt->name);
 
         dd("returning NGX_ERROR");
         return NGX_ERROR;
@@ -295,7 +295,7 @@ ngx_postgres_upstream_get_result(ngx_http_request_t *r, ngx_connection_t *pgxc,
         ngx_log_error(NGX_LOG_ERR, pgxc->log, 0,
                       "postgres: receiving result failed: %s: %s in upstream"
                       " \"%V\"", PQresStatus(pgrc),
-                      PQerrorMessage(pgdt->pgconn), pgdt->name);
+                      PQerrorMessage(pgdt->pgconn), &pgdt->name);
 
         PQclear(res);
 
@@ -429,7 +429,7 @@ ngx_postgres_upstream_get_ack(ngx_http_request_t *r, ngx_connection_t *pgxc,
         dd("receiving ACK failed");
         ngx_log_error(NGX_LOG_ERR, pgxc->log, 0,
                       "postgres: receiving ACK failed: multiple queries(?),"
-                      " in upstream \"%V\"", pgdt->name);
+                      " in upstream \"%V\"", &pgdt->name);
 
         PQclear(res);
 
