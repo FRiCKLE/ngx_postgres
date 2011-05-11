@@ -25,9 +25,11 @@ src/rewrite.h
 src/variable.c
 src/variable.h
 build
-build7
-build8
-t.sh
+build[789]
+build10
+go
 genmobi.sh
 tags
 *.mobi
+all
+releng
