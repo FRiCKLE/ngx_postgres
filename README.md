@@ -14,6 +14,7 @@ releases:
 
 - 0.7.x (tested with 0.7.60 to 0.7.68),
 - 0.8.x (tested with 0.8.0 to 0.8.54).
+- 1.0.x (tested with 1.0.0 to 1.0.2).
 
 
 Configuration directives
