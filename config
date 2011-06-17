@@ -14,11 +14,30 @@ if [ -n "$LIBPQ_INC" -o -n "$LIBPQ_LIB" ]; then
     fi
     . auto/feature
 else
+    if [ -z "$PG_CONFIG" ]; then
+        PG_CONFIG=pg_config
+    fi
+
+    if type $PG_CONFIG >/dev/null 2>&1; then
+        # based on information from pg_config
+        ngx_feature="libpq library (via $PG_CONFIG)"
+        ngx_feature_path="`$PG_CONFIG --includedir`"
+        if [ $NGX_RPATH = YES ]; then
+            ngx_feature_libs="-R`$PG_CONFIG --libdir` -L`$PG_CONFIG --libdir` -lpq"
+        else
+            ngx_feature_libs="-L`$PG_CONFIG --libdir` -lpq"
+        fi
+        . auto/feature
+    fi
+
     # auto-discovery
-    ngx_feature="libpq library"
-    ngx_feature_path=
-    ngx_feature_libs="-lpq"
-    . auto/feature
+    if [ $ngx_found = no ]; then
+        # system-wide
+        ngx_feature="libpq library"
+        ngx_feature_path=
+        ngx_feature_libs="-lpq"
+        . auto/feature
+    fi
 
     if [ $ngx_found = no ]; then
         # Debian
