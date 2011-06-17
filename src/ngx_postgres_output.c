@@ -124,7 +124,6 @@ ngx_postgres_output_value(ngx_http_request_t *r, PGresult *res,
     cl->buf = b;
     b->memory = 1;
     b->tag = r->upstream->output.tag;
-    b->last_buf = 1;
 
     b->last = ngx_copy(b->last, PQgetvalue(res, pgv->row, col), size);
 
@@ -209,7 +208,6 @@ ngx_postgres_output_row(ngx_http_request_t *r, PGresult *res,
     cl->buf = b;
     b->memory = 1;
     b->tag = r->upstream->output.tag;
-    b->last_buf = 1;
 
     /* fill data */
     for (col = 0; col < col_count - 1; col++) {
@@ -521,7 +519,6 @@ ngx_postgres_render_rds_row(ngx_http_request_t *r, ngx_pool_t *pool,
     }
 
     if (last_row) {
-        b->last_buf = 1;
         *b->last++ = (uint8_t) 0; /* row terminator */
     }
 
@@ -557,7 +554,6 @@ ngx_postgres_render_rds_row_terminator(ngx_http_request_t *r, ngx_pool_t *pool)
     cl->buf = b;
     b->memory = 1;
     b->tag = r->upstream->output.tag;
-    b->last_buf = 1;
 
     /* fill data */
     *b->last++ = (uint8_t) 0; /* row terminator */
