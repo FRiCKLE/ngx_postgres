@@ -33,58 +33,32 @@
 
 
 ngx_int_t
-ngx_postgres_output_value(ngx_http_request_t *r, PGresult *res,
-    ngx_postgres_value_t *pgv)
+ngx_postgres_output_value(ngx_http_request_t *r, PGresult *res)
 {
     ngx_postgres_ctx_t        *pgctx;
     ngx_http_core_loc_conf_t  *clcf;
     ngx_chain_t               *cl;
     ngx_buf_t                 *b;
     size_t                     size;
-    ngx_int_t                  col_count, row_count, col;
 
     dd("entering");
 
     pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
 
-    col_count = pgctx->var_cols;
-    row_count = pgctx->var_rows;
-
-    if (pgv->column != NGX_ERROR) {
-        /* get column by number */
-        col = pgv->column;
-    } else {
-        /* get column by name */
-        col = PQfnumber(res, (char const *) pgv->col_name);
-        if (col == NGX_ERROR) {
-            clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
-
-            ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                          "postgres: \"postgres_output value\" requires"
-                          " value from column \"%s\" that wasn't found"
-                          " in the received result-set in location \"%V\"",
-                          pgv->col_name, &clcf->name);
-
-            dd("returning NGX_DONE, status NGX_HTTP_INTERNAL_SERVER_ERROR");
-            pgctx->status = NGX_HTTP_INTERNAL_SERVER_ERROR;
-            return NGX_DONE;
-        }
-    }
-
-    if ((pgv->row >= row_count) || (col >= col_count)) {
+    if ((pgctx->var_rows != 1) || (pgctx->var_cols != 1)) {
         clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
 
         ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                      "postgres: \"postgres_output value\" requires value out"
-                      " of range of the received result-set (rows:%d cols:%d)"
-                      " in location \"%V\"", row_count, col_count, &clcf->name);
+                      "postgres: \"postgres_output value\" received %d value(s)"
+                      " instead of expected single value in location \"%V\"",
+                      pgctx->var_rows * pgctx->var_cols, &clcf->name);
 
         dd("returning NGX_DONE, status NGX_HTTP_INTERNAL_SERVER_ERROR");
         pgctx->status = NGX_HTTP_INTERNAL_SERVER_ERROR;
         return NGX_DONE;
     }
 
-    if (PQgetisnull(res, pgv->row, col)) {
+    if (PQgetisnull(res, 0, 0)) {
         clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
 
         ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
@@ -96,7 +70,7 @@ ngx_postgres_output_value(ngx_http_request_t *r, PGresult *res,
         return NGX_DONE;
     }
 
-    size = PQgetlength(res, pgv->row, col); 
+    size = PQgetlength(res, 0, 0);
     if (size == 0) {
         clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
 
@@ -125,7 +99,7 @@ ngx_postgres_output_value(ngx_http_request_t *r, PGresult *res,
     b->memory = 1;
     b->tag = r->upstream->output.tag;
 
-    b->last = ngx_copy(b->last, PQgetvalue(res, pgv->row, col), size);
+    b->last = ngx_copy(b->last, PQgetvalue(res, 0, 0), size);
 
     if (b->last != b->end) {
         dd("returning NGX_ERROR");
@@ -142,8 +116,7 @@ ngx_postgres_output_value(ngx_http_request_t *r, PGresult *res,
 }
 
 ngx_int_t
-ngx_postgres_output_text(ngx_http_request_t *r, PGresult *res,
-    ngx_postgres_value_t *pgv)
+ngx_postgres_output_text(ngx_http_request_t *r, PGresult *res)
 {
     ngx_postgres_ctx_t        *pgctx;
     ngx_chain_t               *cl;
@@ -227,8 +200,7 @@ ngx_postgres_output_text(ngx_http_request_t *r, PGresult *res,
 }
 
 ngx_int_t
-ngx_postgres_output_rds(ngx_http_request_t *r, PGresult *res,
-    ngx_postgres_value_t *pgv)
+ngx_postgres_output_rds(ngx_http_request_t *r, PGresult *res)
 {
     ngx_postgres_ctx_t  *pgctx;
     ngx_chain_t         *first, *last;

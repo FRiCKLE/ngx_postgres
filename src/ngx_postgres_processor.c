@@ -222,7 +222,7 @@ ngx_postgres_upstream_send_query(ngx_http_request_t *r, ngx_connection_t *pgxc,
 
     dd("sending query: %s", query);
 
-    if (pglcf->output_value && pglcf->output_value->binary) {
+    if (pglcf->output_binary) {
         pgrc = PQsendQueryParams(pgdt->pgconn, (const char *) query,
                                  0, NULL, NULL, NULL, NULL, /* binary */ 1);
     } else {
@@ -392,7 +392,7 @@ ngx_postgres_process_response(ngx_http_request_t *r, PGresult *res)
     if (pglcf->output_handler) {
         /* generate output */
         dd("returning");
-        return pglcf->output_handler(r, res, pglcf->output_value);
+        return pglcf->output_handler(r, res);
     }
 
     dd("returning NGX_DONE");

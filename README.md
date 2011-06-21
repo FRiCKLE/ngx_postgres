@@ -89,7 +89,7 @@ This directive can be used more than once within same context.
 
 postgres_output
 ---------------
-* **syntax**: `postgres_output rds|text|value|binary_value|none [row] [column]`
+* **syntax**: `postgres_output rds|text|value|binary_value|none`
 * **default**: `rds`
 * **context**: `http`, `server`, `location`, `if location`
 
@@ -106,9 +106,6 @@ Set output format:
 - `none`         - don't return anything, this should be used only when
   extracting values with `postgres_set` for use with other modules (without
   `Content-Type`).
-
-Row and column numbers start at 0. Column name can be used instead of column
-number.
 
 
 postgres_set

@@ -83,7 +83,7 @@ static ngx_command_t ngx_postgres_module_commands[] = {
 
     { ngx_string("postgres_output"),
       NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|
-          NGX_HTTP_LIF_CONF|NGX_CONF_TAKE123,
+          NGX_HTTP_LIF_CONF|NGX_CONF_TAKE1,
       ngx_postgres_conf_output,
       NGX_HTTP_LOC_CONF_OFFSET,
       0,
@@ -217,12 +217,12 @@ ngx_postgres_rewrite_enum_t ngx_postgres_rewrite_handlers[] = {
 };
 
 ngx_postgres_output_enum_t ngx_postgres_output_handlers[] = {
-    { ngx_string("none"),         0, 0, NULL },
-    { ngx_string("rds"),          0, 0, ngx_postgres_output_rds },
-    { ngx_string("text") ,        0, 0, ngx_postgres_output_text },
-    { ngx_string("value"),        2, 0, ngx_postgres_output_value },
-    { ngx_string("binary_value"), 2, 1, ngx_postgres_output_value },
-    { ngx_null_string, 0, 0, NULL }
+    { ngx_string("none"),         0, NULL },
+    { ngx_string("rds"),          0, ngx_postgres_output_rds },
+    { ngx_string("text") ,        0, ngx_postgres_output_text },
+    { ngx_string("value"),        0, ngx_postgres_output_value },
+    { ngx_string("binary_value"), 1, ngx_postgres_output_value },
+    { ngx_null_string, 0, NULL }
 };
 
 
@@ -309,7 +309,7 @@ ngx_postgres_create_loc_conf(ngx_conf_t *cf)
      *     conf->query.methods_set = 0
      *     conf->query.methods = NULL
      *     conf->query.def = NULL
-     *     conf->output_value = NULL
+     *     conf->output_binary = 0
      */
 
     conf->upstream.connect_timeout = NGX_CONF_UNSET_MSEC;
@@ -368,11 +368,11 @@ ngx_postgres_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
         if (prev->output_handler == NGX_CONF_UNSET_PTR) {
             /* default */
             conf->output_handler = ngx_postgres_output_rds;
-            conf->output_value = NULL;
+            conf->output_binary = 0;
         } else {
             /* merge */
             conf->output_handler = prev->output_handler;
-            conf->output_value = prev->output_value;
+            conf->output_binary = prev->output_binary;
         }
     }
 
@@ -1010,64 +1010,7 @@ ngx_postgres_conf_output(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         return NGX_CONF_ERROR;
     }
 
-    if (e[i].args != cf->args->nelts - 2) {
-        ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
-                           "postgres: invalid number of arguments"
-                           " in \"%V\" directive", &cmd->name);
-
-        dd("returning NGX_CONF_ERROR");
-        return NGX_CONF_ERROR;
-    }
-
-    if (e[i].args == 0) {
-        dd("returning NGX_CONF_OK");
-        return NGX_CONF_OK;
-    }
-
-    pglcf->output_value = ngx_palloc(cf->pool, sizeof(ngx_postgres_value_t));
-    if (pglcf->output_value == NULL) {
-        dd("returning NGX_CONF_ERROR");
-        return NGX_CONF_ERROR;
-    }
-
-    pglcf->output_value->binary = e[i].binary;
-
-    pglcf->output_value->row = ngx_atoi(value[2].data, value[2].len);
-    if (pglcf->output_value->row == NGX_ERROR) {
-        ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
-                           "postgres: invalid row number \"%V\""
-                           " in \"%V\" directive", &value[2], &cmd->name);
-
-        dd("returning NGX_CONF_ERROR");
-        return NGX_CONF_ERROR;
-    }
-
-    if (e[i].args == 1) {
-        dd("returning NGX_CONF_OK");
-        return NGX_CONF_OK;
-    }
-
-    if (value[3].len == 0) {
-        ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
-                           "postgres: empty column in \"%V\" directive",
-                           &cmd->name);
-
-        dd("returning NGX_CONF_ERROR");
-        return NGX_CONF_ERROR;
-    }
-
-    pglcf->output_value->column = ngx_atoi(value[3].data, value[3].len);
-    if (pglcf->output_value->column == NGX_ERROR) {
-        /* get column by name */
-        pglcf->output_value->col_name = ngx_pnalloc(cf->pool, value[3].len + 1);
-        if (pglcf->output_value->col_name == NULL) {
-            dd("returning NGX_CONF_ERROR");
-            return NGX_CONF_ERROR;
-        }
-
-        (void) ngx_cpystrn(pglcf->output_value->col_name,
-                           value[3].data, value[3].len + 1);
-    }
+    pglcf->output_binary = e[i].binary;
 
     dd("returning NGX_CONF_OK");
     return NGX_CONF_OK;

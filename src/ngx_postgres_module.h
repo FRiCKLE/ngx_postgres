@@ -59,7 +59,6 @@ typedef struct {
     ngx_int_t                           column;
     u_char                             *col_name;
     ngx_uint_t                          required;
-    unsigned                            binary:1;
 } ngx_postgres_value_t;
 
 typedef struct {
@@ -96,11 +95,10 @@ typedef struct {
 } ngx_postgres_rewrite_enum_t;
 
 typedef ngx_int_t (*ngx_postgres_output_handler_pt)
-    (ngx_http_request_t *, PGresult *, ngx_postgres_value_t *);
+    (ngx_http_request_t *, PGresult *);
 
 typedef struct {
     ngx_str_t                           name;
-    ngx_uint_t                          args;
     unsigned                            binary:1;
     ngx_postgres_output_handler_pt      handler;
 } ngx_postgres_output_enum_t;
@@ -160,7 +158,7 @@ typedef struct {
     ngx_array_t                        *rewrites;
     /* output */
     ngx_postgres_output_handler_pt      output_handler;
-    ngx_postgres_value_t               *output_value;
+    unsigned                            output_binary:1;
     /* custom variables */
     ngx_array_t                        *variables;
 } ngx_postgres_loc_conf_t;

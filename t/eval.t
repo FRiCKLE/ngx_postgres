@@ -29,7 +29,7 @@ __DATA__
         eval $backend {
             postgres_pass    database;
             postgres_query   "select '$scheme://127.0.0.1:$server_port/echo'";
-            postgres_output  value 0 0;
+            postgres_output  value;
         }
 
         proxy_pass $backend;
@@ -59,7 +59,7 @@ it works!
         eval $echo {
             postgres_pass    database;
             postgres_query   "select 'test' as echo";
-            postgres_output  value 0 0;
+            postgres_output  value;
         }
 
         echo -n  $echo;

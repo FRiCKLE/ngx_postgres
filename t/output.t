@@ -46,8 +46,8 @@ GET /postgres
 
     location /postgres {
         postgres_pass       database;
-        postgres_query      "select 'test', 'test' as echo";
-        postgres_output     value 0 0;
+        postgres_query      "select 'test' as echo";
+        postgres_output     value;
     }
 --- request
 GET /postgres
@@ -67,8 +67,8 @@ test
 
     location /postgres {
         postgres_pass       database;
-        postgres_query      "select 'test', 'test' as echo";
-        postgres_output     value 0 1;
+        postgres_query      "select 'test' as echo";
+        postgres_output     value;
     }
 --- request
 GET /postgres
@@ -81,23 +81,6 @@ test
 
 
 
-=== TEST 4: value - value outside of the result-set
---- http_config eval: $::http_config
---- config
-    default_type  text/plain;
-
-    location /postgres {
-        postgres_pass       database;
-        postgres_query      "select 'test' as echo";
-        postgres_output     value 2 2;
-    }
---- request
-GET /postgres
---- error_code: 500
---- timeout: 10
-
-
-
 === TEST 5: value - NULL value
 --- http_config eval: $::http_config
 --- config
@@ -106,7 +89,7 @@ GET /postgres
     location /postgres {
         postgres_pass       database;
         postgres_query      "select NULL as echo";
-        postgres_output     value 0 0;
+        postgres_output     value;
     }
 --- request
 GET /postgres
@@ -123,7 +106,7 @@ GET /postgres
     location /postgres {
         postgres_pass       database;
         postgres_query      "select '' as echo";
-        postgres_output     value 0 0;
+        postgres_output     value;
     }
 --- request
 GET /postgres
@@ -234,11 +217,11 @@ Content-Type: application/x-resty-dbd-stream
 --- http_config eval: $::http_config
 --- config
     default_type     text/plain;
-    postgres_output  value 0 3;
+    postgres_output  value;
 
     location /postgres {
         postgres_pass       database;
-        postgres_query      "select 'a', 'b', 'c', 'test' as echo";
+        postgres_query      "select 'test' as echo";
     }
 --- request
 GET /postgres
@@ -272,44 +255,6 @@ GET /postgres
 
 
 
-=== TEST 12: value - column by name (existing)
---- http_config eval: $::http_config
---- config
-    default_type  text/plain;
-
-    location /postgres {
-        postgres_pass       database;
-        postgres_query      "select 'test' as echo";
-        postgres_output     value 0 "echo";
-    }
---- request
-GET /postgres
---- error_code: 200
---- response_headers
-Content-Type: text/plain
---- response_body chomp
-test
---- timeout: 10
-
-
-
-=== TEST 13: value - column by name (not existing)
---- http_config eval: $::http_config
---- config
-    default_type  text/plain;
-
-    location /postgres {
-        postgres_pass       database;
-        postgres_query      "select 'test' as echo";
-        postgres_output     value 0 "test";
-    }
---- request
-GET /postgres
---- error_code: 500
---- timeout: 10
-
-
-
 === TEST 14: value - sanity (request with known extension)
 --- http_config eval: $::http_config
 --- config
@@ -317,8 +262,8 @@ GET /postgres
 
     location /postgres {
         postgres_pass       database;
-        postgres_query      "select 'test', 'test' as echo";
-        postgres_output     value 0 0;
+        postgres_query      "select 'test' as echo";
+        postgres_output     value;
     }
 --- request
 GET /postgres.jpg
@@ -339,7 +284,7 @@ test
     location /postgres {
         postgres_pass       database;
         postgres_query      "select E'\\001'::bytea as res";
-        postgres_output     value 0 0;
+        postgres_output     value;
     }
 --- request
 GET /postgres
@@ -360,7 +305,7 @@ Content-Type: text/plain
     location /postgres {
         postgres_pass       database;
         postgres_query      "select E'\\001'::bytea as res";
-        postgres_output     binary_value 0 0;
+        postgres_output     binary_value;
     }
 --- request
 GET /postgres
@@ -381,7 +326,7 @@ Content-Type: text/plain
     location /postgres {
         postgres_pass       database;
         postgres_query      "select 3::int2 as res";
-        postgres_output     binary_value 0 0;
+        postgres_output     binary_value;
     }
 --- request
 GET /postgres
@@ -402,8 +347,8 @@ Content-Type: text/plain
     location /postgres {
         if ($arg_foo) {
             postgres_pass       database;
-            postgres_query      "select * from cats order by id";
-            postgres_output     value 0 0;
+            postgres_query      "select id from cats order by id limit 1";
+            postgres_output     value;
             break;
         }
 
@@ -464,4 +409,38 @@ GET /postgres
 Content-Type: text/plain
 --- response_body eval
 ""
+--- timeout: 10
+
+
+
+=== TEST 21: value - empty result
+--- http_config eval: $::http_config
+--- config
+    default_type  text/plain;
+
+    location /postgres {
+        postgres_pass       database;
+        postgres_query      "select * from cats where id=1";
+        postgres_output     value;
+    }
+--- request
+GET /postgres
+--- error_code: 500
+--- timeout: 10
+
+
+
+=== TEST 22: value - too many values
+--- http_config eval: $::http_config
+--- config
+    default_type  text/plain;
+
+    location /postgres {
+        postgres_pass       database;
+        postgres_query      "select * from cats";
+        postgres_output     value;
+    }
+--- request
+GET /postgres
+--- error_code: 500
 --- timeout: 10
