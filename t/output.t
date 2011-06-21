@@ -132,7 +132,7 @@ GET /postgres
 
 
 
-=== TEST 7: row - sanity
+=== TEST 7: text - sanity
 --- http_config eval: $::http_config
 --- config
     default_type  text/plain;
@@ -140,7 +140,7 @@ GET /postgres
     location /postgres {
         postgres_pass       database;
         postgres_query      "select 'a', 'b', 'c', 'd'";
-        postgres_output     row 0;
+        postgres_output     text;
     }
 --- request
 GET /postgres
@@ -254,7 +254,7 @@ test
 === TEST 11: inheritance (mixed, don't inherit)
 --- http_config eval: $::http_config
 --- config
-    postgres_output  row 0;
+    postgres_output  text;
 
     location /postgres {
         postgres_pass       database;
@@ -416,4 +416,52 @@ GET /postgres?foo=1
 Content-Type: text/plain
 --- response_body chomp
 2
+--- timeout: 10
+
+
+
+=== TEST 19: text - NULL value
+--- http_config eval: $::http_config
+--- config
+    default_type  text/plain;
+
+    location /postgres {
+        postgres_pass       database;
+        postgres_query      "select * from cats order by id";
+        postgres_output     text;
+    }
+--- request
+GET /postgres
+--- error_code: 200
+--- response_headers
+Content-Type: text/plain
+--- response_body eval
+"2".
+"\x{0a}".  # new line - delimiter
+"(null)".
+"\x{0a}".  # new line - delimiter
+"3".
+"\x{0a}".  # new line - delimiter
+"bob"
+--- timeout: 10
+
+
+
+=== TEST 20: text - empty result
+--- http_config eval: $::http_config
+--- config
+    default_type  text/plain;
+
+    location /postgres {
+        postgres_pass       database;
+        postgres_query      "select * from cats where id=1";
+        postgres_output     text;
+    }
+--- request
+GET /postgres
+--- error_code: 200
+--- response_headers
+Content-Type: text/plain
+--- response_body eval
+""
 --- timeout: 10

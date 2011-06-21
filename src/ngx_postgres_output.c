@@ -142,15 +142,14 @@ ngx_postgres_output_value(ngx_http_request_t *r, PGresult *res,
 }
 
 ngx_int_t
-ngx_postgres_output_row(ngx_http_request_t *r, PGresult *res,
+ngx_postgres_output_text(ngx_http_request_t *r, PGresult *res,
     ngx_postgres_value_t *pgv)
 {
     ngx_postgres_ctx_t        *pgctx;
-    ngx_http_core_loc_conf_t  *clcf;
     ngx_chain_t               *cl;
     ngx_buf_t                 *b;
     size_t                     size;
-    ngx_int_t                  col_count, row_count, col;
+    ngx_int_t                  col_count, row_count, col, row;
 
     dd("entering");
 
@@ -159,39 +158,25 @@ ngx_postgres_output_row(ngx_http_request_t *r, PGresult *res,
     col_count = pgctx->var_cols;
     row_count = pgctx->var_rows;
 
-    if (pgv->row >= row_count) {
-        clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
-
-        ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                      "postgres: \"postgres_output row\" requires row out"
-                      " of range of the received result-set (rows:%d cols:%d)"
-                      " in location \"%V\"", row_count, col_count, &clcf->name);
-
-        dd("returning NGX_DONE, status NGX_HTTP_INTERNAL_SERVER_ERROR");
-        pgctx->status = NGX_HTTP_INTERNAL_SERVER_ERROR;
-        return NGX_DONE;
-    }
-
     /* pre-calculate total length up-front for single buffer allocation */
     size = 0;
 
-    for (col = 0; col < col_count; col++) {
-        if (PQgetisnull(res, pgv->row, col)) {
-            clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
-
-            ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                          "postgres: \"postgres_output row\" received NULL"
-                          " value in location \"%V\"", &clcf->name);
-
-            dd("returning NGX_DONE, status NGX_HTTP_INTERNAL_SERVER_ERROR");
-            pgctx->status = NGX_HTTP_INTERNAL_SERVER_ERROR;
-            return NGX_DONE;
+    for (row = 0; row < row_count; row++) {
+        for (col = 0; col < col_count; col++) {
+            if (PQgetisnull(res, row, col)) {
+                size += sizeof("(null)") - 1;
+            } else {
+                size += PQgetlength(res, row, col);  /* field string data */
+            }
         }
-
-        size += PQgetlength(res, pgv->row, col);  /* field string data */
     }
 
-    size += col_count - 1;                        /* delimiters */
+    size += row_count * col_count - 1;               /* delimiters */
+
+    if ((row_count == 0) || (size == 0)) {
+        dd("returning NGX_DONE (empty result)");
+        return NGX_DONE;
+    }
 
     b = ngx_create_temp_buf(r->pool, size);
     if (b == NULL) {
@@ -210,18 +195,21 @@ ngx_postgres_output_row(ngx_http_request_t *r, PGresult *res,
     b->tag = r->upstream->output.tag;
 
     /* fill data */
-    for (col = 0; col < col_count - 1; col++) {
-        size = PQgetlength(res, pgv->row, col);
-        if (size) {
-            b->last = ngx_copy(b->last, PQgetvalue(res, pgv->row, col), size);
-        }
-        b->last = ngx_copy(b->last, "\n", 1); 
-    }
+    for (row = 0; row < row_count; row++) {
+        for (col = 0; col < col_count; col++) {
+            if (PQgetisnull(res, row, col)) {
+                b->last = ngx_copy(b->last, "(null)", sizeof("(null)") - 1);
+            } else {
+                size = PQgetlength(res, row, col);
+                if (size) {
+                    b->last = ngx_copy(b->last, PQgetvalue(res, row, col), size);
+                }
+            }
 
-    /* last column without delimiter */
-    size = PQgetlength(res, pgv->row, col);
-    if (size) {
-        b->last = ngx_copy(b->last, PQgetvalue(res, pgv->row, col), size);
+            if ((row != row_count - 1) || (col != col_count - 1)) {
+                b->last = ngx_copy(b->last, "\n", 1);
+            }
+        }
     }
 
     if (b->last != b->end) {

@@ -219,7 +219,7 @@ ngx_postgres_rewrite_enum_t ngx_postgres_rewrite_handlers[] = {
 ngx_postgres_output_enum_t ngx_postgres_output_handlers[] = {
     { ngx_string("none"),         0, 0, NULL },
     { ngx_string("rds"),          0, 0, ngx_postgres_output_rds },
-    { ngx_string("row"),          1, 0, ngx_postgres_output_row },
+    { ngx_string("text") ,        0, 0, ngx_postgres_output_text },
     { ngx_string("value"),        2, 0, ngx_postgres_output_value },
     { ngx_string("binary_value"), 2, 1, ngx_postgres_output_value },
     { ngx_null_string, 0, 0, NULL }

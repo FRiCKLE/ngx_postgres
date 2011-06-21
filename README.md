@@ -89,16 +89,16 @@ This directive can be used more than once within same context.
 
 postgres_output
 ---------------
-* **syntax**: `postgres_output rds|row|value|binary_value|none [row] [column]`
+* **syntax**: `postgres_output rds|text|value|binary_value|none [row] [column]`
 * **default**: `rds`
 * **context**: `http`, `server`, `location`, `if location`
 
 Set output format:
 
-- `rds`          - return output in `rds` format (with appropriate
-  `Content-Type`),
-- `row`          - return all values from a single row from the result-set
-  in text format, values are separated by new line (with default `Content-Type`),
+- `rds`          - return all values from the result-set in `rds` format
+  (with appropriate `Content-Type`),
+- `text`         - return all values from the result-set in text format
+  (with default `Content-Type`), values are separated by new line,
 - `value`        - return single value from the result-set in text format
   (with default `Content-Type`),
 - `binary_value` - return single value from the result-set in binary format

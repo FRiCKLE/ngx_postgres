@@ -39,7 +39,7 @@
 
 ngx_int_t        ngx_postgres_output_value(ngx_http_request_t *, PGresult *,
                      ngx_postgres_value_t *);
-ngx_int_t        ngx_postgres_output_row(ngx_http_request_t *, PGresult *,
+ngx_int_t        ngx_postgres_output_text(ngx_http_request_t *, PGresult *,
                      ngx_postgres_value_t *);
 ngx_int_t        ngx_postgres_output_rds(ngx_http_request_t *, PGresult *,
                      ngx_postgres_value_t *);
