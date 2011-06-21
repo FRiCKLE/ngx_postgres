@@ -92,14 +92,17 @@ struct ngx_postgres_rewrite_conf_s {
 typedef struct {
     ngx_str_t                           name;
     ngx_uint_t                          key;
-    void                               *handler;
+    ngx_postgres_rewrite_handler_pt     handler;
 } ngx_postgres_rewrite_enum_t;
+
+typedef ngx_int_t (*ngx_postgres_output_handler_pt)
+    (ngx_http_request_t *, PGresult *, ngx_postgres_value_t *);
 
 typedef struct {
     ngx_str_t                           name;
     ngx_uint_t                          args;
     unsigned                            binary:1;
-    void                               *handler;
+    ngx_postgres_output_handler_pt      handler;
 } ngx_postgres_output_enum_t;
 
 typedef struct {
@@ -146,9 +149,6 @@ typedef struct {
     ngx_uint_t                          max_cached;
     ngx_uint_t                          reject;
 } ngx_postgres_upstream_srv_conf_t;
-
-typedef ngx_int_t (*ngx_postgres_output_handler_pt)
-    (ngx_http_request_t *, PGresult *, ngx_postgres_value_t *);
 
 typedef struct {
     /* upstream */
