@@ -11,7 +11,7 @@
     (sizeof(rds_content_type) - 1)
 
 
-enum {
+typedef enum {
     rds_rough_col_type_int = 0 << 14,
     rds_rough_col_type_float = 1 << 14,
     rds_rough_col_type_str = 2 << 14,
