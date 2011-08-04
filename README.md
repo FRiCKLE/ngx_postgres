@@ -14,7 +14,7 @@ releases:
 
 - 0.7.x (tested with 0.7.60 to 0.7.68),
 - 0.8.x (tested with 0.8.0 to 0.8.54).
-- 1.0.x (tested with 1.0.0 to 1.0.2).
+- 1.0.x (tested with 1.0.0 to 1.0.5).
 
 
 Configuration directives
@@ -352,6 +352,20 @@ Use GET parameter in SQL query.
 Required modules (other than `ngx_postgres`):
 
 - [ngx_set_misc](http://github.com/agentzh/set-misc-nginx-module).
+
+Installation
+============
+
+    # if libpq is installed with postgresql into /opt/postgres/,
+    # set the environments LIBPQ_INC and LIBPQ_LIB:
+    # export LIBPQ_INC=/opt/postgres/include
+    # export LIBPQ_LIB=/opt/postgres/lib
+
+    cd nginx-VERSION/
+    ./configure \
+        --add-module=/path/to/postgres-nginx-module
+    make
+    make install
 
 Testing
 =======
