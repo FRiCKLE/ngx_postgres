@@ -26,7 +26,10 @@ src/variable.c
 src/variable.h
 build
 build[789]
-build10
+build1[01]
+buildroot/
+util/
+work/
 go
 genmobi.sh
 tags

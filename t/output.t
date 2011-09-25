@@ -5,7 +5,7 @@ use Test::Nginx::Socket;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 3 - 4 * 2);
+plan tests => repeat_each() * 49;
 
 $ENV{TEST_NGINX_POSTGRESQL_PORT} ||= 5432;
 
@@ -155,15 +155,15 @@ GET /postgres
 --- error_code: 200
 --- response_headers
 Content-Type: application/x-resty-dbd-stream
---- response_body eval
-"\x{00}".        # endian
+--- response_body_like eval
+"^\x{00}".        # endian
 "\x{03}\x{00}\x{00}\x{00}".  # format version 0.0.3
 "\x{00}".        # result type
 "\x{00}\x{00}".  # std errcode
 "\x{02}\x{00}".  # driver errcode
 "\x{00}\x{00}".  # driver errstr len
 "".              # driver errstr data
-"\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}".  # rows affected
+"(?:\x{00}|\x{01})\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}".  # rows affected
 "\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}".  # insert id
 "\x{01}\x{00}".  # col count
 "\x{00}\x{80}".  # std col type (unknown/str)
@@ -173,7 +173,7 @@ Content-Type: application/x-resty-dbd-stream
 "\x{01}".        # valid row flag
 "\x{07}\x{00}\x{00}\x{00}".  # field len
 "default".       # field data
-"\x{00}"         # row list terminator
+"\x{00}\$"         # row list terminator
 --- timeout: 10
 
 
@@ -190,15 +190,15 @@ GET /postgres
 --- error_code: 200
 --- response_headers
 Content-Type: application/x-resty-dbd-stream
---- response_body eval
-"\x{00}".        # endian
+--- response_body_like eval
+"^\x{00}".        # endian
 "\x{03}\x{00}\x{00}\x{00}".  # format version 0.0.3
 "\x{00}".        # result type
 "\x{00}\x{00}".  # std errcode
 "\x{02}\x{00}".  # driver errcode
 "\x{00}\x{00}".  # driver errstr len
 "".              # driver errstr data
-"\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}".  # rows affected
+"(?:\x{00}|\x{01})\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}".  # rows affected
 "\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}".  # insert id
 "\x{01}\x{00}".  # col count
 "\x{00}\x{80}".  # std col type (unknown/str)
@@ -208,7 +208,7 @@ Content-Type: application/x-resty-dbd-stream
 "\x{01}".        # valid row flag
 "\x{07}\x{00}\x{00}\x{00}".  # field len
 "default".       # field data
-"\x{00}"         # row list terminator
+"\x{00}\$"         # row list terminator
 --- timeout: 10
 
 
@@ -291,8 +291,8 @@ GET /postgres
 --- error_code: 200
 --- response_headers
 Content-Type: text/plain
---- response_body chomp
-\001
+--- response_body_like chomp
+^(?:\\001|\\x01)$
 --- timeout: 10
 
 

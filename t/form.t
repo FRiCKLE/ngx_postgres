@@ -37,15 +37,15 @@ sql=select%20*%20from%20cats;
 --- error_code: 200
 --- response_headers
 Content-Type: application/x-resty-dbd-stream
---- response_body eval
-"\x{00}".        # endian
+--- response_body_like eval
+"^\x{00}".        # endian
 "\x{03}\x{00}\x{00}\x{00}".  # format version 0.0.3
 "\x{00}".        # result type
 "\x{00}\x{00}".  # std errcode
 "\x{02}\x{00}".  # driver errcode
 "\x{00}\x{00}".  # driver errstr len
 "".              # driver errstr data
-"\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}".  # rows affected
+"(?:\x{02}|\x{00})\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}".  # rows affected
 "\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}".  # insert id
 "\x{02}\x{00}".  # col count
 "\x{09}\x{00}".  # std col type (integer/int)
@@ -66,5 +66,6 @@ Content-Type: application/x-resty-dbd-stream
 "3".             # field data
 "\x{03}\x{00}\x{00}\x{00}".  # field len
 "bob".           # field data
-"\x{00}"         # row list terminator
+"\x{00}\$"         # row list terminator
 --- timeout: 10
+

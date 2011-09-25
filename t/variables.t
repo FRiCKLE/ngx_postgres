@@ -5,7 +5,7 @@ use Test::Nginx::Socket;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 3 + 1 * 4 + 1 * 1 - 5 * 2);
+plan tests => repeat_each() * 54;
 
 $ENV{TEST_NGINX_POSTGRESQL_PORT} ||= 5432;
 
@@ -35,15 +35,15 @@ GET /postgres
 --- response_headers
 Content-Type: application/x-resty-dbd-stream
 X-Test: test
---- response_body eval
-"\x{00}".        # endian
+--- response_body_like eval
+"^\x{00}".        # endian
 "\x{03}\x{00}\x{00}\x{00}".  # format version 0.0.3
 "\x{00}".        # result type
 "\x{00}\x{00}".  # std errcode
 "\x{02}\x{00}".  # driver errcode
 "\x{00}\x{00}".  # driver errstr len
 "".              # driver errstr data
-"\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}".  # rows affected
+"(?:\x{01}|\x{00})\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}".  # rows affected
 "\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}".  # insert id
 "\x{01}\x{00}".  # col count
 "\x{00}\x{80}".  # std col type (unknown/str)
@@ -53,7 +53,7 @@ X-Test: test
 "\x{01}".        # valid row flag
 "\x{04}\x{00}\x{00}\x{00}".  # field len
 "test".          # field data
-"\x{00}"         # row list terminator
+"\x{00}\$"         # row list terminator
 --- timeout: 10
 
 
@@ -267,14 +267,14 @@ Content-Type: text/plain
     location /postgres {
         postgres_pass       database;
         postgres_query      "select '$request_method' as echo";
-        add_header          "X-Affected" $postgres_affected;
+        add_header          "X-Affected" "0$postgres_affected";
     }
 --- request
 GET /postgres
 --- error_code: 200
---- response_headers
-Content-Type: application/x-resty-dbd-stream
-! X-Affected
+--- raw_response_headers_like eval
+"Content-Type: application/x-resty-dbd-stream\r
+.*?X-Affected: 01?(?:\r|\\Z)"
 --- timeout: 10
 
 
