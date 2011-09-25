@@ -30,6 +30,7 @@
 #include "ngx_postgres_ddebug.h"
 #include "ngx_postgres_module.h"
 #include "ngx_postgres_output.h"
+#include <nginx.h>
 
 
 ngx_int_t
@@ -580,7 +581,11 @@ ngx_postgres_output_chain(ngx_http_request_t *r, ngx_chain_t *cl)
         return rc;
     }
 
+#if defined(nginx_version) && nginx_version >= 1001004
+    ngx_chain_update_chains(r->pool, &u->free_bufs, &u->busy_bufs, &cl, u->output.tag);
+#else
     ngx_chain_update_chains(&u->free_bufs, &u->busy_bufs, &cl, u->output.tag);
+#endif
 
     dd("returning rc:%d", (int) rc);
     return rc;
