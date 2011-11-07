@@ -26,7 +26,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef DDEBUG
 #define DDEBUG 0
+#endif
 #include "ngx_postgres_ddebug.h"
 #include "ngx_postgres_module.h"
 #include "ngx_postgres_keepalive.h"
@@ -201,6 +203,7 @@ ngx_postgres_upstream_init_peer(ngx_http_request_t *r,
         }
 
         pgdt->query = sql;
+
     } else {
         /* simple value */
         dd("using simple value");
@@ -237,7 +240,7 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
     ngx_postgres_upstream_peers_t      *peers;
     ngx_postgres_upstream_peer_t       *peer;
     ngx_connection_t                   *pgxc = NULL;
-    int                                 fd;
+    ngx_socket_t                        fd;
     ngx_event_t                        *rev, *wev;
     ngx_int_t                           rc;
     u_char                             *connstring, *last;
@@ -353,7 +356,11 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
      * internal checks in PQsetnonblocking are taking care of any
      * PQconnectStart failures, so we don't need to check them here.
      */
-    pgdt->pgconn = PQconnectStart((const char *)connstring);
+
+    ngx_log_debug0(NGX_LOG_DEBUG_HTTP, pc->log, 0,
+            "postgres starts connecting");
+
+    pgdt->pgconn = PQconnectStart((const char *) connstring);
     if (PQsetnonblocking(pgdt->pgconn, 1) == -1) {
         ngx_log_error(NGX_LOG_ERR, pc->log, 0,
                       "postgres: connection failed: %s in upstream \"%V\"",
@@ -375,6 +382,8 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
     PQtrace(pgdt->pgconn, stderr);
 #endif
 
+    dd("status after connection start: %d", (int) PQstatus(pgdt->pgconn));
+
     /* take spot in keepalive connection pool */
     pgscf->active_conns++;
 
@@ -388,7 +397,10 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
         goto invalid;
     }
 
-    pgxc = pc->connection = ngx_get_connection(fd, pc->log);
+    ngx_log_debug1(NGX_LOG_DEBUG_HTTP, pc->log, 0,
+            "postgres creates connection fd %d", fd);
+
+    pgxc = ngx_get_connection(fd, pc->log);
 
     if (pgxc == NULL) {
         ngx_log_error(NGX_LOG_ERR, pc->log, 0,
@@ -407,12 +419,15 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
     rev->log = pc->log;
     wev->log = pc->log;
 
+    pc->connection = pgxc;
+
     /* register the connection with postgres connection fd into the
      * nginx event model */
 
     if (ngx_event_flags & NGX_USE_RTSIG_EVENT) {
         dd("NGX_USE_RTSIG_EVENT");
         rc = ngx_add_conn(pgxc);
+
     } else if (ngx_event_flags & NGX_USE_CLEAR_EVENT) {
         dd("NGX_USE_CLEAR_EVENT");
         rc = ngx_add_event(rev, NGX_READ_EVENT, NGX_CLEAR_EVENT);
@@ -452,7 +467,7 @@ invalid:
 failed:
     /* a bit hack-ish way to return error response (setup part) */
     pc->connection = ngx_get_connection(0, pc->log);
-    
+
     dd("returning NGX_AGAIN (NGX_ERROR)");
     return NGX_AGAIN;
 #endif

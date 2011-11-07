@@ -1,4 +1,4 @@
-# vi:filetype=perl
+# vi:filetype=
 
 use lib 'lib';
 use Test::Nginx::Socket;
@@ -8,13 +8,16 @@ repeat_each(2);
 plan tests => repeat_each() * (blocks() * 3);
 
 $ENV{TEST_NGINX_POSTGRESQL_PORT} ||= 5432;
+$ENV{TEST_NGINX_POSTGRESQL_HOST} ||= '127.0.0.1';
 
 our $http_config = <<'_EOC_';
     upstream database {
-        postgres_server  127.0.0.1:$TEST_NGINX_POSTGRESQL_PORT
+        postgres_server  $TEST_NGINX_POSTGRESQL_HOST:$TEST_NGINX_POSTGRESQL_PORT
                          dbname=ngx_test user=ngx_test password=ngx_test;
     }
 _EOC_
+
+#no_long_string();
 
 run_tests();
 
@@ -23,7 +26,7 @@ __DATA__
 === TEST 1: sanity
 --- http_config
     upstream database {
-        postgres_server     127.0.0.1:$TEST_NGINX_POSTGRESQL_PORT
+        postgres_server     $TEST_NGINX_POSTGRESQL_HOST:$TEST_NGINX_POSTGRESQL_PORT
                             dbname=ngx_test user=ngx_test password=ngx_test;
         postgres_keepalive  off;
     }
@@ -274,3 +277,34 @@ Content-Type: application/x-resty-dbd-stream
 "bob".           # field data
 "\x{00}\$"         # row list terminator
 --- timeout: 10
+
+
+
+=== TEST 8: test the bug for nginx stale event handling at least in the epoll module
+libpq will complain about EAGAIN badly in PQconnectPoll when a stale write event occurs
+--- http_config eval: $::http_config
+--- config
+    location /echo {
+        echo hello;
+    }
+    location /proxy {
+        proxy_pass http://127.0.0.1:$server_port/echo;
+    }
+    location /pg {
+        postgres_connect_timeout 500ms;
+        postgres_pass database;
+        postgres_query 'select * from cats order by id';
+        rds_json on;
+    }
+    location /lua {
+        echo_location /proxy;
+        echo_location /pg;
+    }
+--- request
+GET /lua
+--- response_headers
+Content-Type: text/plain
+--- response_body chop
+hello
+[{"id":2,"name":null},{"id":3,"name":"bob"}]
+
