@@ -123,7 +123,7 @@ ngx_postgres_upstream_connect(ngx_http_request_t *r, ngx_connection_t *pgxc,
 
     pgrc = PQconnectPoll(pgdt->pgconn);
 
-    ngx_log_debug0(NGX_LOG_DEBUG_HTTP, pgxc->log, 0,
+    ngx_log_debug1(NGX_LOG_DEBUG_HTTP, pgxc->log, 0,
             "postgres trying to connect, status %d", (int) pgrc);
 
     if (pgrc == PGRES_POLLING_READING || pgrc == PGRES_POLLING_WRITING) {
@@ -152,7 +152,7 @@ ngx_postgres_upstream_connect(ngx_http_request_t *r, ngx_connection_t *pgxc,
 
             pgrc = PQconnectPoll(pgdt->pgconn);
 
-            ngx_log_debug0(NGX_LOG_DEBUG_HTTP, pgxc->log, 0,
+            ngx_log_debug1(NGX_LOG_DEBUG_HTTP, pgxc->log, 0,
                     "postgres re-polling returned %d", (int) pgrc);
 
             if (pgrc == PGRES_POLLING_READING || pgrc == PGRES_POLLING_WRITING)
@@ -210,7 +210,7 @@ ngx_postgres_upstream_connect(ngx_http_request_t *r, ngx_connection_t *pgxc,
         }
 #endif /* DDEBUG */
 
-        ngx_log_debug0(NGX_LOG_DEBUG_HTTP, pgxc->log, 0,
+        ngx_log_debug1(NGX_LOG_DEBUG_HTTP, pgxc->log, 0,
                 "postgres still busy connecting, status %d", (int) pgrc);
 
         return NGX_AGAIN;
