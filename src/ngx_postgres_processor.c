@@ -116,10 +116,7 @@ ngx_int_t
 ngx_postgres_upstream_connect(ngx_http_request_t *r, ngx_connection_t *pgxc,
     ngx_postgres_upstream_peer_data_t *pgdt)
 {
-    ngx_http_upstream_t        *u;
     PostgresPollingStatusType   pgrc;
-
-    u = r->upstream;
 
     pgrc = PQconnectPoll(pgdt->pgconn);
 
