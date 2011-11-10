@@ -28,7 +28,6 @@
 #ifndef _NGX_POSTGRES_UTIL_H_
 #define _NGX_POSTGRES_UTIL_H_
 
-#include <nginx.h>
 #include <ngx_core.h>
 #include <ngx_http.h>
 

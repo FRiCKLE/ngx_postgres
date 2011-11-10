@@ -218,6 +218,12 @@ ngx_postgres_handler(ngx_http_request_t *r)
             ngx_del_timer(c->write);
         }
 
+#if defined(nginx_version) && (nginx_version >= 1001004)
+        if (c->pool) {
+            ngx_destroy_pool(c->pool);
+        }
+#endif
+
         ngx_free_connection(c);
 
         ngx_postgres_upstream_finalize_request(r, u,

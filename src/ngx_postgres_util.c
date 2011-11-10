@@ -26,6 +26,9 @@
  */
 
 #define DDEBUG 0
+
+#include <nginx.h>
+
 #include "ngx_postgres_ddebug.h"
 #include "ngx_postgres_util.h"
 
@@ -97,6 +100,12 @@ ngx_postgres_upstream_finalize_request(ngx_http_request_t *r,
         ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0,
                        "close http upstream connection: %d",
                        u->peer.connection->fd);
+
+#if defined(nginx_version) && (nginx_version >= 1001004)
+        if (u->peer.connection->pool) {
+            ngx_destroy_pool(u->peer.connection->pool);
+        }
+#endif
 
         ngx_close_connection(u->peer.connection);
     }
@@ -248,6 +257,12 @@ ngx_postgres_upstream_next(ngx_http_request_t *r,
             u->peer.connection->ssl->no_send_shutdown = 1;
 
             (void) ngx_ssl_shutdown(u->peer.connection);
+        }
+#endif
+
+#if defined(nginx_version) && (nginx_version >= 1001004)
+        if (u->peer.connection->pool) {
+            ngx_destroy_pool(u->peer.connection->pool);
         }
 #endif
 
