@@ -353,10 +353,12 @@ ngx_postgres_process_response(ngx_http_request_t *r, PGresult *res)
     pgctx->var_rows = PQntuples(res);
 
     /* set $postgres_affected */
-    affected = PQcmdTuples(res);
-    affected_len = ngx_strlen(affected);
-    if (affected_len) {
-        pgctx->var_affected = ngx_atoi((u_char *) affected, affected_len);
+    if (ngx_strncmp(PQcmdStatus(res), "SELECT", sizeof("SELECT") - 1)) {
+        affected = PQcmdTuples(res);
+        affected_len = ngx_strlen(affected);
+        if (affected_len) {
+            pgctx->var_affected = ngx_atoi((u_char *) affected, affected_len);
+        }
     }
 
     if (pglcf->rewrites) {
