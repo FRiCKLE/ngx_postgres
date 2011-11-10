@@ -25,7 +25,9 @@
  * SUCH DAMAGE.
  */
 
+#ifndef DDEBUG
 #define DDEBUG 0
+#endif
 
 #include <nginx.h>
 

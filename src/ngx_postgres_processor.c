@@ -26,7 +26,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef DDEBUG
 #define DDEBUG 0
+#endif
+
 #include "ngx_postgres_ddebug.h"
 #include "ngx_postgres_output.h"
 #include "ngx_postgres_processor.h"
