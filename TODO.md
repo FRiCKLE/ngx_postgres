@@ -1,8 +1,5 @@
 Features that sooner or later will be added to `ngx_postgres`:
 
-* Make sure that we work-around `bytea` data corruption that takes place
-  when using 9.0+ database with older client library or vice-versa.
-
 * Add support for SSL connections to the database.
 
 * Add support for dropping of idle keep-alived connections to the

@@ -292,8 +292,8 @@ GET /postgres
 --- error_code: 200
 --- response_headers
 Content-Type: text/plain
---- response_body chomp
-\001
+--- response_body_like chomp
+^(?:\\001|\\x01)$
 --- timeout: 10
 
 
