@@ -128,16 +128,19 @@ ngx_postgres_upstream_connect(ngx_http_request_t *r, ngx_connection_t *pgxc,
          *  writable event that has already appeared and will never appear
          *  again :)"
          */
-        if (PQstatus(pgdt->pgconn) == CONNECTION_MADE) {
+        if (PQstatus(pgdt->pgconn) == CONNECTION_MADE && pgxc->write->ready) {
             dd("re-polling on connection made");
 
             pgrc = PQconnectPoll(pgdt->pgconn);
+            dd("re-polling rc:%d", (int) pgrc);
 
             if (pgrc == PGRES_POLLING_READING || pgrc == PGRES_POLLING_WRITING)
             {
                 dd("returning NGX_AGAIN");
                 return NGX_AGAIN;
             }
+
+            goto done;
         }
 
 #if defined(DDEBUG) && (DDEBUG)
@@ -179,6 +182,7 @@ ngx_postgres_upstream_connect(ngx_http_request_t *r, ngx_connection_t *pgxc,
         return NGX_AGAIN;
     }
 
+done:
     /* remove connection timeout from new connection */
     if (pgxc->write->timer_set) {
         ngx_del_timer(pgxc->write);
