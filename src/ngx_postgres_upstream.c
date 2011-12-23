@@ -415,26 +415,29 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
 
     if (ngx_event_flags & NGX_USE_RTSIG_EVENT) {
         dd("NGX_USE_RTSIG_EVENT");
-        rc = ngx_add_conn(pgxc);
+        if (ngx_add_conn(pgxc) != NGX_OK) {
+            goto bad_add;
+        }
+
     } else if (ngx_event_flags & NGX_USE_CLEAR_EVENT) {
         dd("NGX_USE_CLEAR_EVENT");
-        rc = ngx_add_event(rev, NGX_READ_EVENT, NGX_CLEAR_EVENT);
-        if (ngx_add_event(wev, NGX_WRITE_EVENT, NGX_CLEAR_EVENT) != NGX_OK) {
-            ngx_log_error(NGX_LOG_ERR, pc->log, 0,
-                          "postgres: failed to add nginx connection");
-
-            goto invalid;
+        if (ngx_add_event(rev, NGX_READ_EVENT, NGX_CLEAR_EVENT) != NGX_OK) {
+            goto bad_add;
         }
+
+        if (ngx_add_event(wev, NGX_WRITE_EVENT, NGX_CLEAR_EVENT) != NGX_OK) {
+            goto bad_add;
+        }
+
     } else {
-        dd("NGX_LEVEL_EVENT");
-        rc = ngx_add_event(rev, NGX_READ_EVENT, NGX_LEVEL_EVENT);
-    }
+        dd("NGX_USE_LEVEL_EVENT");
+        if (ngx_add_event(rev, NGX_READ_EVENT, NGX_LEVEL_EVENT) != NGX_OK) {
+            goto bad_add;
+        }
 
-    if (rc != NGX_OK) {
-        ngx_log_error(NGX_LOG_ERR, pc->log, 0,
-                      "postgres: failed to add nginx connection");
-
-        goto invalid;
+        if (ngx_add_event(wev, NGX_WRITE_EVENT, NGX_LEVEL_EVENT) != NGX_OK) {
+            goto bad_add;
+        }
     }
 
     pgxc->log->action = "connecting to PostgreSQL database";
@@ -442,6 +445,10 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
 
     dd("returning NGX_AGAIN");
     return NGX_AGAIN;
+
+bad_add:
+    ngx_log_error(NGX_LOG_ERR, pc->log, 0,
+                  "postgres: failed to add nginx connection");
 
 invalid:
     ngx_postgres_upstream_free_connection(pc->log, pc->connection,

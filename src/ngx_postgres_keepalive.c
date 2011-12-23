@@ -186,6 +186,22 @@ ngx_postgres_keepalive_free_peer(ngx_peer_connection_t *pc,
     {
         c = pc->connection;
 
+        if (c->read->timer_set) {
+            ngx_del_timer(c->read);
+        }
+
+        if (c->write->timer_set) {
+            ngx_del_timer(c->write);
+        }
+
+        if (c->write->active && (ngx_event_flags & NGX_USE_LEVEL_EVENT)) {
+            if (ngx_del_event(c->write, NGX_WRITE_EVENT, 0) != NGX_OK) {
+                return;
+            }
+        }
+
+        pc->connection = NULL;
+
         ngx_log_debug1(NGX_LOG_DEBUG_HTTP, pc->log, 0,
                        "postgres: free keepalive peer: saving connection %p",
                        c);
@@ -212,16 +228,6 @@ ngx_postgres_keepalive_free_peer(ngx_peer_connection_t *pc,
 
         item->connection = c;
         ngx_queue_insert_head(&pgscf->cache, q);
-
-        pc->connection = NULL;
-
-        if (c->read->timer_set) {
-            ngx_del_timer(c->read);
-        }
-
-        if (c->write->timer_set) {
-            ngx_del_timer(c->write);
-        }
 
         c->write->handler = ngx_postgres_keepalive_dummy_handler;
         c->read->handler = ngx_postgres_keepalive_close_handler;
