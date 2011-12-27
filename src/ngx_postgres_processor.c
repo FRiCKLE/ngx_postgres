@@ -339,7 +339,7 @@ ngx_postgres_upstream_get_result(ngx_http_request_t *r, ngx_connection_t *pgxc,
         dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
         return NGX_HTTP_INTERNAL_SERVER_ERROR;
     }
- 
+
     dd("result received successfully, cols:%d rows:%d",
        PQnfields(res), PQntuples(res));
 

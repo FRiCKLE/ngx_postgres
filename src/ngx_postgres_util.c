@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2010, FRiCKLE Piotr Sikora <info@frickle.com>
  * Copyright (c) 2009-2010, Yichun Zhang <agentzh@gmail.com>
  * Copyright (C) 2002-2010, Igor Sysoev

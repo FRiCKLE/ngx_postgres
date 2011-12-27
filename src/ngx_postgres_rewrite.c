@@ -70,7 +70,7 @@ ngx_postgres_rewrite_changes(ngx_http_request_t *r,
     dd("entering");
 
     pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
- 
+
     if ((pgrcf->key % 2 == 0) && (pgctx->var_affected == 0)) {
         /* no_changes */
         dd("returning");

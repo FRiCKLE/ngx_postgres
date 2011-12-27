@@ -211,7 +211,7 @@ ngx_postgres_upstream_init_peer(ngx_http_request_t *r,
         pgdt->query = query->sv;
     }
 
-    /* set $postgres_query */ 
+    /* set $postgres_query */
     pgctx->var_query = pgdt->query;
 
     dd("returning NGX_OK");
@@ -471,7 +471,7 @@ invalid:
 failed:
     /* a bit hack-ish way to return error response (setup part) */
     pc->connection = ngx_get_connection(0, pc->log);
-    
+
     dd("returning NGX_AGAIN (NGX_ERROR)");
     return NGX_AGAIN;
 #endif

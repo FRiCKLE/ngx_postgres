@@ -15,7 +15,7 @@ Features that sooner or later will be added to `ngx_postgres`:
 
 * Use `PQescapeStringConn()` instead of `PQescapeString()`, this will
   require lazy-evaluation of the variables after we acquire connection,
-  but before we send query to the database.  
+  but before we send query to the database.
   Notes: Don't break `$postgres_query`.
 
 * Cancel long-running queries using `PQcancel()`.

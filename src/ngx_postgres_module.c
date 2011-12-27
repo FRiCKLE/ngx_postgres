@@ -214,7 +214,7 @@ ngx_conf_enum_t ngx_postgres_requirement_options[] = {
 ngx_postgres_rewrite_enum_t ngx_postgres_rewrite_handlers[] = {
     { ngx_string("no_changes"), 0, ngx_postgres_rewrite_changes },
     { ngx_string("changes"),    1, ngx_postgres_rewrite_changes },
-    { ngx_string("no_rows"),    2, ngx_postgres_rewrite_rows }, 
+    { ngx_string("no_rows"),    2, ngx_postgres_rewrite_rows },
     { ngx_string("rows"),       3, ngx_postgres_rewrite_rows },
     { ngx_null_string, 0, NULL }
 };
@@ -304,7 +304,7 @@ ngx_postgres_create_loc_conf(ngx_conf_t *cf)
         return NULL;
     }
 
-    /* 
+    /*
      * set by ngx_pcalloc():
      *
      *     conf->upstream.* = 0 / NULL
