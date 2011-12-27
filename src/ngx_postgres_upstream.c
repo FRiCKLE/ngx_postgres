@@ -356,6 +356,10 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
      * internal checks in PQsetnonblocking are taking care of any
      * PQconnectStart failures, so we don't need to check them here.
      */
+
+    ngx_log_debug0(NGX_LOG_DEBUG_HTTP, pc->log, 0,
+                   "postgres: connecting");
+
     pgdt->pgconn = PQconnectStart((const char *)connstring);
     if (PQsetnonblocking(pgdt->pgconn, 1) == -1) {
         ngx_log_error(NGX_LOG_ERR, pc->log, 0,
@@ -378,6 +382,8 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
     PQtrace(pgdt->pgconn, stderr);
 #endif
 
+    dd("connection status:%d", (int) PQstatus(pgdt->pgconn));
+
     /* take spot in keepalive connection pool */
     pgscf->active_conns++;
 
@@ -390,6 +396,9 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
 
         goto invalid;
     }
+
+    ngx_log_debug1(NGX_LOG_DEBUG_HTTP, pc->log, 0,
+                   "postgres: connection fd:%d", fd);
 
     pgxc = pc->connection = ngx_get_connection(fd, pc->log);
 
