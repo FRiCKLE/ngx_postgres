@@ -1,3 +1,36 @@
+2011-12-27    VERSION 0.9
+    * Improve debug logging.
+      From Yichun Zhang (agentzh).
+
+2011-12-23
+    * Fix compatibility with poll, select and /dev/poll event models.
+      Reported by Yichun Zhang (agentzh).
+
+2011-11-10
+    * Fix compatibility with PostgreSQL 9.x.
+      Reported by Yichun Zhang (agentzh).
+
+    * Fix compatibility with nginx-1.1.4+.
+      From Yichun Zhang (agentzh).
+
+2011-06-21
+    * Enforce writing of proper SQL queries by replacing "row <row>"
+      output format with "text" and returning whole result-set with
+      values separated by newlines when using "postgres_output"
+      directive.
+
+    * Enforce writing of proper SQL queries by requiring result-set
+      to contain exactly single value when using "binary_value" or
+      "value" output formats when using "postgres_output" directive.
+
+2011-06-17
+    * Fix "duplicated last chunk" issue.
+      Reported by Silly Sad, diagnosed by Maxim Dounin.
+
+    * Improve build-time PostgreSQL client library discovery process
+      by using PostgreSQL's pg_config.
+      Patch from Silly Sad.
+
 2010-12-23    VERSION 0.8
     * Add option to return content in binary format using
       "binary_value" output format in "postgres_output" directive.
