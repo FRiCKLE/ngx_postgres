@@ -178,7 +178,8 @@ ngx_postgres_output_text(ngx_http_request_t *r, PGresult *res)
             } else {
                 size = PQgetlength(res, row, col);
                 if (size) {
-                    b->last = ngx_copy(b->last, PQgetvalue(res, row, col), size);
+                    b->last = ngx_copy(b->last, PQgetvalue(res, row, col),
+                                       size);
                 }
             }
 
