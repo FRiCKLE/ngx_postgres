@@ -30,6 +30,7 @@
 #define DDEBUG 0
 #endif
 
+#include <nginx.h>
 #include "ngx_postgres_ddebug.h"
 #include "ngx_postgres_module.h"
 #include "ngx_postgres_keepalive.h"
@@ -563,6 +564,12 @@ ngx_postgres_upstream_free_connection(ngx_log_t *log, ngx_connection_t *c,
 
         rev->closed = 1;
         wev->closed = 1;
+
+#if defined(nginx_version) && (nginx_version >= 1001004)
+        if (c->pool) {
+            ngx_destroy_pool(c->pool);
+        }
+#endif
 
         ngx_free_connection(c);
     }
