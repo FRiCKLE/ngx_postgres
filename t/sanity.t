@@ -5,7 +5,7 @@ use Test::Nginx::Socket;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 3);
+plan tests => repeat_each() * (blocks() * 5);
 
 $ENV{TEST_NGINX_POSTGRESQL_HOST} ||= '127.0.0.1';
 $ENV{TEST_NGINX_POSTGRESQL_PORT} ||= 5432;
@@ -69,6 +69,9 @@ Content-Type: application/x-resty-dbd-stream
 "bob".           # field data
 "\x{00}"         # row list terminator
 --- timeout: 10
+--- no_error_log
+[alert]
+[error]
 
 
 
@@ -115,6 +118,9 @@ Content-Type: application/x-resty-dbd-stream
 "bob".           # field data
 "\x{00}"         # row list terminator
 --- timeout: 10
+--- no_error_log
+[alert]
+[error]
 
 
 
@@ -142,6 +148,10 @@ Content-Type: application/x-resty-dbd-stream
 "\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}".  # insert id
 "\x{00}\x{00}"   # col count
 --- timeout: 10
+--- no_error_log
+[alert]
+[error]
+--- LAST
 
 
 
@@ -178,6 +188,9 @@ Content-Type: application/x-resty-dbd-stream
 "name".          # col name data
 "\x{00}"         # row list terminator
 --- timeout: 10
+--- no_error_log
+[alert]
+[error]
 
 
 
@@ -206,6 +219,9 @@ Content-Type: application/x-resty-dbd-stream
 "\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}\x{00}".  # insert id
 "\x{00}\x{00}"   # col count
 --- timeout: 10
+--- no_error_log
+[alert]
+[error]
 
 
 
@@ -224,6 +240,9 @@ Content-Type: application/x-resty-dbd-stream
 --- response_body eval
 ""
 --- timeout: 10
+--- no_error_log
+[alert]
+[error]
 
 
 
@@ -275,3 +294,6 @@ Content-Type: application/x-resty-dbd-stream
 "bob".           # field data
 "\x{00}"         # row list terminator
 --- timeout: 10
+--- no_error_log
+[alert]
+[error]

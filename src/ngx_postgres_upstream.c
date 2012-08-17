@@ -572,6 +572,8 @@ ngx_postgres_upstream_free_connection(ngx_log_t *log, ngx_connection_t *c,
 #endif
 
         ngx_free_connection(c);
+
+        c->fd = (ngx_socket_t) -1;
     }
 
     /* free spot in keepalive connection pool */

@@ -269,6 +269,10 @@ ngx_postgres_keepalive_close_handler(ngx_event_t *ev)
     c = ev->data;
     item = c->data;
 
+    if (c->close) {
+        goto close;
+    }
+
     if (PQconsumeInput(item->pgconn) && !PQisBusy(item->pgconn)) {
         res = PQgetResult(item->pgconn);
         if (res == NULL) {
@@ -283,13 +287,12 @@ ngx_postgres_keepalive_close_handler(ngx_event_t *ev)
                       "postgres: received result on idle keepalive connection");
     }
 
+close:
     pgscf = item->srv_conf;
 
+    ngx_postgres_upstream_free_connection(ev->log, c, item->pgconn, pgscf);
+
     ngx_queue_remove(&item->queue);
-
-    ngx_postgres_upstream_free_connection(ev->log, item->connection,
-            item->pgconn, pgscf);
-
     ngx_queue_insert_head(&pgscf->free, &item->queue);
 
     dd("returning");
