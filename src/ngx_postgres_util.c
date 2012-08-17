@@ -120,34 +120,6 @@ ngx_postgres_upstream_finalize_request(ngx_http_request_t *r,
                        u->pipe->temp_file->file.fd);
     }
 
-#if (NGX_HTTP_CACHE)
-
-    if (u->cacheable && r->cache) {
-        time_t  valid;
-
-        ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0,
-                       "http upstream cache fd: %d",
-                       r->cache->file.fd);
-
-        if (rc == NGX_HTTP_BAD_GATEWAY || rc == NGX_HTTP_GATEWAY_TIME_OUT) {
-
-            valid = ngx_http_file_cache_valid(u->conf->cache_valid, rc);
-
-            if (valid) {
-                r->cache->valid_sec = ngx_time() + valid;
-                r->cache->error = rc;
-            }
-        }
-
-# if defined(nginx_version) && (nginx_version >= 8047)
-        ngx_http_file_cache_free(r->cache, u->pipe->temp_file);
-# else
-        ngx_http_file_cache_free(r, u->pipe->temp_file);
-# endif
-    }
-
-#endif
-
     if (u->header_sent
         && (rc == NGX_ERROR || rc >= NGX_HTTP_SPECIAL_RESPONSE))
     {
