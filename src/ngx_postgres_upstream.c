@@ -103,6 +103,9 @@ ngx_postgres_upstream_init(ngx_conf_t *cf, ngx_http_upstream_srv_conf_t *uscf)
             }
 
             peers->peer[n].host.len = ngx_sock_ntop(peers->peer[n].sockaddr,
+#if defined(nginx_version) && (nginx_version >= 1005003)
+                                          peers->peer[n].socklen,
+#endif
                                           peers->peer[n].host.data,
                                           NGX_SOCKADDR_STRLEN, 0);
             if (peers->peer[n].host.len == 0) {
