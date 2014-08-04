@@ -85,6 +85,9 @@ ngx_postgres_keepalive_get_peer_single(ngx_peer_connection_t *pc,
 
         c->idle = 0;
         c->log = pc->log;
+#if defined(nginx_version) && (nginx_version >= 1001004)
+        c->pool->log = pc->log;
+#endif
         c->read->log = pc->log;
         c->write->log = pc->log;
 
@@ -140,6 +143,9 @@ ngx_postgres_keepalive_get_peer_multi(ngx_peer_connection_t *pc,
 
             c->idle = 0;
             c->log = pc->log;
+#if defined(nginx_version) && (nginx_version >= 1001004)
+            c->pool->log = pc->log;
+#endif
             c->read->log = pc->log;
             c->write->log = pc->log;
 
@@ -235,6 +241,9 @@ ngx_postgres_keepalive_free_peer(ngx_peer_connection_t *pc,
         c->data = item;
         c->idle = 1;
         c->log = ngx_cycle->log;
+#if defined(nginx_version) && (nginx_version >= 1001004)
+        c->pool->log = ngx_cycle->log;
+#endif
         c->read->log = ngx_cycle->log;
         c->write->log = ngx_cycle->log;
 
