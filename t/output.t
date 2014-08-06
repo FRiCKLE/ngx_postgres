@@ -82,7 +82,7 @@ test
 
 
 
-=== TEST 5: value - NULL value
+=== TEST 4: value - NULL value
 --- http_config eval: $::http_config
 --- config
     default_type  text/plain;
@@ -99,7 +99,7 @@ GET /postgres
 
 
 
-=== TEST 6: value - empty value
+=== TEST 5: value - empty value
 --- http_config eval: $::http_config
 --- config
     default_type  text/plain;
@@ -116,7 +116,7 @@ GET /postgres
 
 
 
-=== TEST 7: text - sanity
+=== TEST 6: text - sanity
 --- http_config eval: $::http_config
 --- config
     default_type  text/plain;
@@ -143,7 +143,7 @@ Content-Type: text/plain
 
 
 
-=== TEST 8: rds - sanity (configured)
+=== TEST 7: rds - sanity (configured)
 --- http_config eval: $::http_config
 --- config
     location /postgres {
@@ -179,7 +179,7 @@ Content-Type: application/x-resty-dbd-stream
 
 
 
-=== TEST 9: rds - sanity (default)
+=== TEST 8: rds - sanity (default)
 --- http_config eval: $::http_config
 --- config
     location /postgres {
@@ -214,7 +214,7 @@ Content-Type: application/x-resty-dbd-stream
 
 
 
-=== TEST 10: inheritance
+=== TEST 9: inheritance
 --- http_config eval: $::http_config
 --- config
     default_type     text/plain;
@@ -235,7 +235,7 @@ test
 
 
 
-=== TEST 11: inheritance (mixed, don't inherit)
+=== TEST 10: inheritance (mixed, don't inherit)
 --- http_config eval: $::http_config
 --- config
     postgres_output  text;
@@ -256,7 +256,7 @@ GET /postgres
 
 
 
-=== TEST 14: value - sanity (request with known extension)
+=== TEST 11: value - sanity (request with known extension)
 --- http_config eval: $::http_config
 --- config
     default_type  text/plain;
@@ -277,7 +277,7 @@ test
 
 
 
-=== TEST 15: value - bytea returned in text format
+=== TEST 12: value - bytea returned in text format
 --- http_config eval: $::http_config
 --- config
     default_type  text/plain;
@@ -298,7 +298,7 @@ Content-Type: text/plain
 
 
 
-=== TEST 16: binary value - bytea returned in binary format
+=== TEST 13: binary value - bytea returned in binary format
 --- http_config eval: $::http_config
 --- config
     default_type  text/plain;
@@ -319,7 +319,7 @@ Content-Type: text/plain
 
 
 
-=== TEST 17: binary value - int2 returned in binary format
+=== TEST 14: binary value - int2 returned in binary format
 --- http_config eval: $::http_config
 --- config
     default_type  text/plain;
@@ -340,7 +340,7 @@ Content-Type: text/plain
 
 
 
-=== TEST 18: value - "if" pseudo-location
+=== TEST 15: value - "if" pseudo-location
 --- http_config eval: $::http_config
 --- config
     default_type  text/plain;
@@ -366,7 +366,7 @@ Content-Type: text/plain
 
 
 
-=== TEST 19: text - NULL value
+=== TEST 16: text - NULL value
 --- http_config eval: $::http_config
 --- config
     default_type  text/plain;
@@ -393,7 +393,7 @@ Content-Type: text/plain
 
 
 
-=== TEST 20: text - empty result
+=== TEST 17: text - empty result
 --- http_config eval: $::http_config
 --- config
     default_type  text/plain;
@@ -414,7 +414,7 @@ Content-Type: text/plain
 
 
 
-=== TEST 21: value - empty result
+=== TEST 18: value - empty result
 --- http_config eval: $::http_config
 --- config
     default_type  text/plain;
@@ -431,7 +431,7 @@ GET /postgres
 
 
 
-=== TEST 22: value - too many values
+=== TEST 19: value - too many values
 --- http_config eval: $::http_config
 --- config
     default_type  text/plain;
