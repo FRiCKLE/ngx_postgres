@@ -440,6 +440,17 @@ ngx_postgres_conf_server(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         return NGX_CONF_ERROR;
     }
 
+#if defined(nginx_version) && (nginx_version <= 1003000)
+    if (u.naddrs == 0) {
+        ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
+                           "postgres: IPv6 addresses not supported in "
+                           "this version of nginx");
+        return NGX_CONF_ERROR;
+    }
+#endif
+
+    dd("naddrs: %d", (int) u.naddrs);
+
     pgs->addrs = u.addrs;
     pgs->naddrs = u.naddrs;
     pgs->port = u.family == AF_UNIX ? u.default_port : u.port;

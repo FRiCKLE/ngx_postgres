@@ -94,17 +94,12 @@ ngx_postgres_keepalive_get_peer_single(ngx_peer_connection_t *pc,
         pgp->name.data = item->name.data;
         pgp->name.len = item->name.len;
 
-        pgp->socklen = item->socklen;
-        ngx_memcpy(pgp->sockaddr, item->sockaddr, item->socklen);
-
         pgp->pgconn = item->pgconn;
 
         pc->connection = c;
         pc->cached = 1;
 
         pc->name = &pgp->name;
-        pc->socklen = pgp->socklen;
-        pc->sockaddr = &pgp->sockaddr;
 
         dd("returning NGX_DONE");
 

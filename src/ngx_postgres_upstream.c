@@ -291,10 +291,8 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
     pgdt->name.len = peer->name.len;
     pgdt->name.data = peer->name.data;
 
-    pgdt->socklen = peer->socklen;
-    ngx_memcpy(pgdt->sockaddr, peer->sockaddr, peer->socklen);
-
     pc->name = &pgdt->name;
+    pc->sockaddr = peer->sockaddr;
     pc->socklen = peer->socklen;
     pc->sockaddr = &pgdt->sockaddr;
     pc->cached = 0;
