@@ -294,7 +294,6 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
     pc->name = &pgdt->name;
     pc->sockaddr = peer->sockaddr;
     pc->socklen = peer->socklen;
-    pc->sockaddr = &pgdt->sockaddr;
     pc->cached = 0;
 
     if ((pgscf->max_cached) && (!pgscf->single)) {
