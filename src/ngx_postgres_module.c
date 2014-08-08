@@ -453,8 +453,7 @@ ngx_postgres_conf_server(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
     pgs->addrs = u.addrs;
     pgs->naddrs = u.naddrs;
-    pgs->port = u.family == AF_UNIX ? u.default_port : u.port;
-    pgs->family = u.family;
+    pgs->port = u.port;
 
     /* parse various options */
     for (i = 2; i < cf->args->nelts; i++) {

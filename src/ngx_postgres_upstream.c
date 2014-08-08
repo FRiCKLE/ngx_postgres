@@ -91,7 +91,6 @@ ngx_postgres_upstream_init(ngx_conf_t *cf, ngx_http_upstream_srv_conf_t *uscf)
             peers->peer[n].socklen = server[i].addrs[j].socklen;
             peers->peer[n].name = server[i].addrs[j].name;
             peers->peer[n].port = server[i].port;
-            peers->peer[n].family = server[i].family;
             peers->peer[n].dbname = server[i].dbname;
             peers->peer[n].user = server[i].user;
             peers->peer[n].password = server[i].password;
@@ -345,18 +344,12 @@ ngx_postgres_upstream_get_peer(ngx_peer_connection_t *pc, void *data)
 #endif
     }
 
-    if (peer->family != AF_UNIX)
-        last = ngx_snprintf(connstring, len - 1,
-                            "hostaddr=%V port=%d dbname=%V user=%V password=%V"
-                            " sslmode=disable",
-                            &peer->host, peer->port, &peer->dbname, &peer->user,
-                            &peer->password);
-    else
-        last = ngx_snprintf(connstring, len - 1,
-                            "host=%s port=%d dbname=%V user=%V password=%V"
-                            " sslmode=disable",
-                            &peer->host.data[5], peer->port, &peer->dbname, &peer->user,
-                            &peer->password);
+    /* TODO add unix sockets */
+    last = ngx_snprintf(connstring, len - 1,
+                        "hostaddr=%V port=%d dbname=%V user=%V password=%V"
+                        " sslmode=disable",
+                        &peer->host, peer->port, &peer->dbname, &peer->user,
+                        &peer->password);
     *last = '\0';
 
     dd("PostgreSQL connection string: %s", connstring);
