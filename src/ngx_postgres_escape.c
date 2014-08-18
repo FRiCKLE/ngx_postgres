@@ -90,6 +90,7 @@ ngx_postgres_escape_string(ngx_http_script_engine_t *e)
     dd("returning");
 
 done:
+
     v->valid = 1;
     v->no_cacheable = 0;
     v->not_found = 0;

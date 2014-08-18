@@ -872,6 +872,7 @@ ngx_postgres_conf_rewrite(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     pgrcf->handler = e[i].handler;
 
 found:
+
     if (cf->args->nelts == 3) {
         /* default rewrite */
         dd("default rewrite");

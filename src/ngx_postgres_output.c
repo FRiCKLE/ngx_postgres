@@ -260,6 +260,7 @@ ngx_postgres_output_rds(ngx_http_request_t *r, PGresult *res)
     }
 
 done:
+
     last->next = NULL;
 
     /* set output response */

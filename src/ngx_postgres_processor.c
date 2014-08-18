@@ -103,6 +103,7 @@ ngx_postgres_process_events(ngx_http_request_t *r)
     return;
 
 failed:
+
     ngx_postgres_upstream_next(r, u, NGX_HTTP_UPSTREAM_FT_ERROR);
 
     dd("returning");
@@ -200,6 +201,7 @@ ngx_postgres_upstream_connect(ngx_http_request_t *r, ngx_connection_t *pgxc,
     }
 
 done:
+
     /* remove connection timeout from new connection */
     if (pgxc->write->timer_set) {
         ngx_del_timer(pgxc->write);
