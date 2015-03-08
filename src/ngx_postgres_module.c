@@ -284,6 +284,9 @@ ngx_postgres_create_upstream_srv_conf(ngx_conf_t *cf)
     conf->single = 1;
 
     cln = ngx_pool_cleanup_add(cf->pool, 0);
+    if (cln == NULL) {
+        return NULL;
+    }
     cln->handler = ngx_postgres_keepalive_cleanup;
     cln->data = conf;
 
