@@ -29,6 +29,7 @@
 #ifndef _NGX_POSTGRES_DDEBUG_H_
 #define _NGX_POSTGRES_DDEBUG_H_
 
+#include <ngx_config.h>
 #include <ngx_core.h>
 
 #if defined(DDEBUG) && (DDEBUG)
