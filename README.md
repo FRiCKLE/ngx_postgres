@@ -25,11 +25,11 @@ Configuration directives
 ========================
 postgres_server
 ---------------
-* **syntax**: `postgres_server ip[:port] dbname=dbname user=user password=pass`
+* **syntax**: `postgres_server {ip[:portnum]|unix:/socket/dir} [port=portnum] [dbname=dbname] [user=user] [password=pass]`
 * **default**: `none`
 * **context**: `upstream`
 
-Set details about the database server.
+Set details about the database server. Additional port parameter is offered to connect to unix socket with alternative port numbers.
 
 
 postgres_keepalive

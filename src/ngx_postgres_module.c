@@ -442,10 +442,18 @@ ngx_postgres_conf_server(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
     pgs->addrs = u.addrs;
     pgs->naddrs = u.naddrs;
-    pgs->port = u.port;
+    pgs->port = u.family == AF_UNIX ? u.default_port : u.port;
+    pgs->family = u.family;
 
     /* parse various options */
     for (i = 2; i < cf->args->nelts; i++) {
+
+        if (ngx_strncmp(value[i].data, "port=", sizeof("port=") - 1)
+                == 0)
+        {
+            pgs->port = (in_port_t) ngx_atoi(&value[i].data[sizeof("port=") - 1], value[i].len - (sizeof("port=") - 1));
+            continue;
+        }
 
         if (ngx_strncmp(value[i].data, "dbname=", sizeof("dbname=") - 1)
                 == 0)
