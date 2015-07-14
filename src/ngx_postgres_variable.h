@@ -42,6 +42,8 @@ ngx_int_t  ngx_postgres_variable_affected(ngx_http_request_t *,
                ngx_http_variable_value_t *, uintptr_t);
 ngx_int_t  ngx_postgres_variable_query(ngx_http_request_t *,
                ngx_http_variable_value_t *, uintptr_t);
+ngx_int_t  ngx_postgres_variable_error(ngx_http_request_t *,
+               ngx_http_variable_value_t *, uintptr_t);
 ngx_int_t  ngx_postgres_variable_get_custom(ngx_http_request_t *,
                ngx_http_variable_value_t *, uintptr_t);
 ngx_str_t  ngx_postgres_variable_set_custom(ngx_http_request_t *r,

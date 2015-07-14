@@ -290,6 +290,9 @@ ngx_postgres_upstream_get_result(ngx_http_request_t *r, ngx_connection_t *pgxc,
     ExecStatusType   pgrc;
     PGresult        *res;
     ngx_int_t        rc;
+    ngx_postgres_ctx_t  *pgctx;
+    u_char *errormsg;
+    u_char *errorvar;
 
     dd("entering");
 
@@ -331,10 +334,20 @@ ngx_postgres_upstream_get_result(ngx_http_request_t *r, ngx_connection_t *pgxc,
     pgrc = PQresultStatus(res);
     if ((pgrc != PGRES_COMMAND_OK) && (pgrc != PGRES_TUPLES_OK)) {
         dd("receiving result failed");
+
+        pgctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
+
+        errormsg = PQerrorMessage(pgdt->pgconn);
+
         ngx_log_error(NGX_LOG_ERR, pgxc->log, 0,
                       "postgres: failed to receive result: %s: %s",
                       PQresStatus(pgrc),
-                      PQerrorMessage(pgdt->pgconn));
+                      errormsg);
+
+        errorvar = ngx_palloc(r->pool, strlen(errormsg));
+        strcpy(errorvar, errormsg);
+        pgctx->var_error.len = strlen(errorvar);
+        pgctx->var_error.data = errorvar;
 
         PQclear(res);
 
