@@ -368,7 +368,7 @@ You can test core functionality by running:
 You can also test interoperability with following modules:
 
 - [ngx_coolkit](http://github.com/FRiCKLE/ngx_coolkit),
-- [ngx_echo](github.com/agentzh/echo-nginx-module),
+- [ngx_echo](http://github.com/agentzh/echo-nginx-module),
 - [ngx_form_input](http://github.com/calio/form-input-nginx-module),
 - [ngx_set_misc](http://github.com/agentzh/set-misc-nginx-module),
 - [ngx_http_auth_request_module](http://mdounin.ru/hg/ngx_http_auth_request_module/),
