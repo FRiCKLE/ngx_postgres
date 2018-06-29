@@ -52,6 +52,7 @@ ngx_postgres_handler(ngx_http_request_t *r)
 
     dd("entering");
 
+#if defined(nginx_version) && (nginx_version < 13010)
     if (r->subrequest_in_memory) {
         /* TODO: add support for subrequest in memory by
          * emitting output into u->buffer instead */
@@ -63,6 +64,7 @@ ngx_postgres_handler(ngx_http_request_t *r)
         dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
         return NGX_HTTP_INTERNAL_SERVER_ERROR;
     }
+#endif
 
     pglcf = ngx_http_get_module_loc_conf(r, ngx_postgres_module);
 
