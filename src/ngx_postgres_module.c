@@ -1320,12 +1320,14 @@ ngx_postgres_find_upstream(ngx_http_request_t *r, ngx_url_t *url)
             continue;
         }
 
+#if (nginx_version < 1011006)
         if (uscfp[i]->default_port && url->default_port
             && (uscfp[i]->default_port != url->default_port))
         {
             dd("default_port doesn't match");
             continue;
         }
+#endif
 
         dd("returning");
         return uscfp[i];
