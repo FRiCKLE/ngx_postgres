@@ -186,6 +186,8 @@ postgres_result_timeout
 * **default**: `30s`
 * **context**: `http`, `server`, `location`
 
+Set timeout for receiving result from the database.
+
 
 Configuration variables
 =======================
@@ -406,9 +408,9 @@ by running:
 
 License
 =======
-    Copyright (c) 2010-2017, FRiCKLE Piotr Sikora <info@frickle.com>
-    Copyright (c) 2009-2017, Xiaozhe Wang <chaoslawful@gmail.com>
-    Copyright (c) 2009-2017, Yichun Zhang <agentzh@gmail.com>
+    Copyright (c) 2010, FRiCKLE Piotr Sikora <info@frickle.com>
+    Copyright (c) 2009-2010, Xiaozhe Wang <chaoslawful@gmail.com>
+    Copyright (c) 2009-2010, Yichun Zhang <agentzh@gmail.com>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
