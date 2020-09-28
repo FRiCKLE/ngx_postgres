@@ -145,6 +145,32 @@ all empty strings are by default escaped to `NULL` value. This behavior can be
 disabled by prefixing `$unescaped` string with `=` sign.
 
 
+postgres_escape_request_body
+-----------------------
+* **syntax**: `postgres_request_body_escape on/off`
+* **default**: `on`
+* **context**: `location`
+
+The flag provides to double each single quote symbol
+in the complex SQL statements that contain substitutions from client http request body.
+Disabling this option is pretty dangerous.
+
+Please make sure you are NOT using postgres configuration option `standard_conforming_strings: off` (default for PostgreSQL < 9.1).
+Using `standard_conforming_strings: off` will make completely worthless the injection protection and allows an attacker to use control characters to change a query string.
+
+To check this option use: (correct setting below)
+```
+postgres=# SHOW standard_conforming_strings;
+
+Set timeout for receiving result from the database.
+
+ standard_conforming_strings
+-----------------------------
+ on
+(1 row)
+```
+
+
 postgres_connect_timeout
 ------------------------
 * **syntax**: `postgres_connect_timeout timeout`
@@ -159,8 +185,6 @@ postgres_result_timeout
 * **syntax**: `postgres_result_timeout timeout`
 * **default**: `30s`
 * **context**: `http`, `server`, `location`
-
-Set timeout for receiving result from the database.
 
 
 Configuration variables
@@ -382,9 +406,9 @@ by running:
 
 License
 =======
-    Copyright (c) 2010, FRiCKLE Piotr Sikora <info@frickle.com>
-    Copyright (c) 2009-2010, Xiaozhe Wang <chaoslawful@gmail.com>
-    Copyright (c) 2009-2010, Yichun Zhang <agentzh@gmail.com>
+    Copyright (c) 2010-2017, FRiCKLE Piotr Sikora <info@frickle.com>
+    Copyright (c) 2009-2017, Xiaozhe Wang <chaoslawful@gmail.com>
+    Copyright (c) 2009-2017, Yichun Zhang <agentzh@gmail.com>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without

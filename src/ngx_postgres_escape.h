@@ -31,6 +31,7 @@
 #include <ngx_http.h>
 
 
-void       ngx_postgres_escape_string(ngx_http_script_engine_t *);
-
+void     ngx_postgres_escape_string(ngx_http_script_engine_t *);
+size_t   ngx_postgres_upstream_var_len_with_quotes(ngx_http_script_engine_t *e);
+void     ngx_postgres_upstream_replace_quotes(ngx_http_script_engine_t *e);
 #endif /* _NGX_POSTGRES_ESCAPE_H_ */

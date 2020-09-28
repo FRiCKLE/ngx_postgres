@@ -34,6 +34,8 @@
 
 
 ngx_int_t  ngx_postgres_handler(ngx_http_request_t *);
+ngx_int_t  ngx_postgres_read_req_body(ngx_http_request_t *r);
+void       ngx_postgres_body_handler(ngx_http_request_t *r);
 void       ngx_postgres_wev_handler(ngx_http_request_t *,
                ngx_http_upstream_t *);
 void       ngx_postgres_rev_handler(ngx_http_request_t *,

@@ -161,6 +161,10 @@ typedef struct {
     unsigned                            output_binary:1;
     /* custom variables */
     ngx_array_t                        *variables;
+    /* request body substitution mode */
+    /* on - adds escape symbols to quote symbols */
+    /* off - copy request body into sql with no changes */
+    ngx_flag_t                          escape_request_body;
 } ngx_postgres_loc_conf_t;
 
 typedef struct {
@@ -171,6 +175,10 @@ typedef struct {
     ngx_str_t                           var_query;
     ngx_array_t                        *variables;
     ngx_int_t                           status;
+    /* Flag to save state of request body recive
+     *   true - waiting for more request body data;
+     *   false - no need to wait */
+    ngx_flag_t                          waiting_more_body:1;
 } ngx_postgres_ctx_t;
 
 

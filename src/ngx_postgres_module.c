@@ -120,8 +120,23 @@ static ngx_command_t ngx_postgres_module_commands[] = {
       offsetof(ngx_postgres_loc_conf_t, upstream.read_timeout),
       NULL },
 
+     /* The flag add extra quote (as escape symbol) for each single quote symbol
+      * in the variable if the variable is substituted to the SQL.
+      * Setting <escape_request_body: off> disables the escape character
+      * substitution in the SQL string before single quotes.
+      * Disabling this option is pretty dangerous.
+      *
+      * default value: on */
+    { ngx_string("postgres_escape_request_body"),
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_FLAG,
+      ngx_conf_set_flag_slot,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      offsetof(ngx_postgres_loc_conf_t, escape_request_body),
+      NULL },
+
       ngx_null_command
 };
+
 
 static ngx_http_variable_t ngx_postgres_module_variables[] = {
 
@@ -143,6 +158,7 @@ static ngx_http_variable_t ngx_postgres_module_variables[] = {
 
     { ngx_null_string, NULL, NULL, 0, 0, 0 }
 };
+
 
 static ngx_http_module_t ngx_postgres_module_ctx = {
     ngx_postgres_add_variables,             /* preconfiguration */
@@ -228,6 +244,15 @@ ngx_postgres_output_enum_t ngx_postgres_output_handlers[] = {
     { ngx_null_string, 0, NULL }
 };
 
+static ngx_str_t request_body_var_name = ngx_string("request_body");
+
+static ngx_int_t ngx_postgres_compile_with_quote_replace
+                                        (ngx_http_compile_complex_value_t *ccv);
+static ngx_int_t ngx_postgres_add_quotes_escape_hook
+                                                (ngx_http_script_compile_t *sc);
+static void ngx_postgres_replace_script_for_variable(ngx_array_t *array,
+        ngx_int_t var_index, ngx_http_script_code_pt old_value,
+        ngx_http_script_code_pt new_value);
 
 ngx_int_t
 ngx_postgres_add_variables(ngx_conf_t *cf)
@@ -321,6 +346,7 @@ ngx_postgres_create_loc_conf(ngx_conf_t *cf)
     conf->rewrites = NGX_CONF_UNSET_PTR;
     conf->output_handler = NGX_CONF_UNSET_PTR;
     conf->variables = NGX_CONF_UNSET_PTR;
+    conf->escape_request_body = NGX_CONF_UNSET;
 
     /* the hardcoded values */
     conf->upstream.cyclic_temp_file = 0;
@@ -335,6 +361,7 @@ ngx_postgres_create_loc_conf(ngx_conf_t *cf)
     conf->upstream.intercept_404 = 1;
     conf->upstream.pass_request_headers = 0;
     conf->upstream.pass_request_body = 0;
+
 
     dd("returning");
     return conf;
@@ -372,6 +399,7 @@ ngx_postgres_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
             /* default */
             conf->output_handler = ngx_postgres_output_rds;
             conf->output_binary = 0;
+
         } else {
             /* merge */
             conf->output_handler = prev->output_handler;
@@ -381,9 +409,21 @@ ngx_postgres_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
 
     ngx_conf_merge_ptr_value(conf->variables, prev->variables, NULL);
 
+    if (conf->escape_request_body == NGX_CONF_UNSET) {
+        if (prev->escape_request_body == NGX_CONF_UNSET) {
+            /* default value: on */
+            conf->escape_request_body = 1;
+
+        } else {
+            /* merge */
+            conf->escape_request_body = prev->escape_request_body;
+        }
+    }
+
     dd("returning NGX_CONF_OK");
     return NGX_CONF_OK;
 }
+
 
 /*
  * Based on: ngx_http_upstream.c/ngx_http_upstream_server
@@ -793,9 +833,24 @@ ngx_postgres_conf_query(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         ccv.value = &sql;
         ccv.complex_value = query->cv;
 
-        if (ngx_http_compile_complex_value(&ccv) != NGX_OK) {
-            dd("returning NGX_CONF_ERROR");
-            return NGX_CONF_ERROR;
+        if (pglcf->escape_request_body) {
+            /* Double the quote chars(') in values to prevent SQL injection */
+            /* Add extra function handlers in the variable treatment byte-code*/
+            if (ngx_postgres_compile_with_quote_replace(&ccv) != NGX_OK) {
+                ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
+                    "postgres: error while compile script bytecode to quote "
+                    "replace in \"%V\" \"%V\" \"%V\" directive. The mechanism "
+                    "activated by flag <postgres_escape_request_body on> "
+                    "works incorrectly.", &cmd->name, &value[1], &value[2]);
+                dd("returning NGX_CONF_ERROR");
+                return NGX_CONF_ERROR;
+            }
+
+        } else {
+            if (ngx_http_compile_complex_value(&ccv) != NGX_OK) {
+                dd("returning NGX_CONF_ERROR");
+                return NGX_CONF_ERROR;
+            }
         }
     } else {
         /* simple value */
@@ -1320,12 +1375,14 @@ ngx_postgres_find_upstream(ngx_http_request_t *r, ngx_url_t *url)
             continue;
         }
 
+  #if (nginx_version < 1011006)
         if (uscfp[i]->default_port && url->default_port
             && (uscfp[i]->default_port != url->default_port))
         {
             dd("default_port doesn't match");
             continue;
         }
+  #endif
 
         dd("returning");
         return uscfp[i];
@@ -1333,4 +1390,176 @@ ngx_postgres_find_upstream(ngx_http_request_t *r, ngx_url_t *url)
 
     dd("returning NULL");
     return NULL;
+}
+
+
+/* Compile complex value with extra functions to double the quote chars(') */
+static ngx_int_t
+ngx_postgres_compile_with_quote_replace(ngx_http_compile_complex_value_t *ccv)
+{
+    ngx_str_t                  *v;
+    ngx_uint_t                  i, n, nv, nc;
+    ngx_array_t                 flushes, lengths, values, *pf, *pl, *pv;
+    ngx_http_script_compile_t   sc;
+
+    v = ccv->value;
+
+    nv = 0;
+    nc = 0;
+
+    for (i = 0; i < v->len; i++) {
+        if (v->data[i] == '$') {
+            if (v->data[i + 1] >= '1' && v->data[i + 1] <= '9') {
+                nc++;
+
+            } else {
+                nv++;
+            }
+        }
+    }
+
+    if ((v->len == 0 || v->data[0] != '$')
+        && (ccv->conf_prefix || ccv->root_prefix))
+    {
+        if (ngx_conf_full_name(ccv->cf->cycle, v, ccv->conf_prefix) != NGX_OK) {
+            return NGX_ERROR;
+        }
+
+        ccv->conf_prefix = 0;
+        ccv->root_prefix = 0;
+    }
+
+    ccv->complex_value->value = *v;
+    ccv->complex_value->flushes = NULL;
+    ccv->complex_value->lengths = NULL;
+    ccv->complex_value->values = NULL;
+
+    if (nv == 0 && nc == 0) {
+        return NGX_OK;
+    }
+
+    n = nv + 1;
+
+    if (ngx_array_init(&flushes, ccv->cf->pool, n, sizeof(ngx_uint_t))
+        != NGX_OK)
+    {
+        return NGX_ERROR;
+    }
+
+    n = nv * (2 * sizeof(ngx_http_script_copy_code_t)
+                + sizeof(ngx_http_script_var_code_t))
+                + sizeof(uintptr_t);
+
+    if (ngx_array_init(&lengths, ccv->cf->pool, n, 1) != NGX_OK) {
+        return NGX_ERROR;
+    }
+
+    n = (nv * (2 * sizeof(ngx_http_script_copy_code_t)
+                   + sizeof(ngx_http_script_var_code_t))
+                + sizeof(uintptr_t)
+                + v->len
+                + sizeof(uintptr_t) - 1)
+            & ~(sizeof(uintptr_t) - 1);
+
+    if (ngx_array_init(&values, ccv->cf->pool, n, 1) != NGX_OK) {
+        return NGX_ERROR;
+    }
+
+    pf = &flushes;
+    pl = &lengths;
+    pv = &values;
+
+    ngx_memzero(&sc, sizeof(ngx_http_script_compile_t));
+
+    sc.cf = ccv->cf;
+    sc.source = v;
+    sc.flushes = &pf;
+    sc.lengths = &pl;
+    sc.values = &pv;
+    sc.complete_lengths = 1;
+    sc.complete_values = 1;
+    sc.zero = ccv->zero;
+    sc.conf_prefix = ccv->conf_prefix;
+    sc.root_prefix = ccv->root_prefix;
+
+    if (ngx_http_script_compile(&sc) != NGX_OK) {
+        return NGX_ERROR;
+    }
+
+    if (ngx_postgres_add_quotes_escape_hook(&sc) != NGX_OK) {
+        return NGX_ERROR;
+    }
+
+    if (flushes.nelts) {
+        ccv->complex_value->flushes = flushes.elts;
+        ccv->complex_value->flushes[flushes.nelts] = (ngx_uint_t) -1;
+    }
+
+    ccv->complex_value->lengths = lengths.elts;
+    ccv->complex_value->values = values.elts;
+
+    return NGX_OK;
+}
+
+
+/*
+ * Add a hook to the script for copying variable values.
+ * The hook is needed to escape quotes in a variable request_body
+ * which gets value only during the content phase and
+ * cannot be handled by the postgres_escape directive during the rewite phase.
+ *
+ * Escaping quotes helps to prevent SQL injection
+ */
+static ngx_int_t
+ngx_postgres_add_quotes_escape_hook(ngx_http_script_compile_t *sc)
+{
+    ngx_int_t var_index;
+    if ((sc != NULL) && (sc->lengths != NULL) && (sc->values != NULL)) {
+
+        var_index = ngx_http_get_variable_index(sc->cf, &request_body_var_name);
+
+        /* Replace code pointers with functions for processing sql query
+         * variables in bytecode. Mounted functions can replace single quote
+         * characters in var text. */
+        ngx_postgres_replace_script_for_variable(*sc->lengths, var_index,
+            (ngx_http_script_code_pt)(void *)ngx_http_script_copy_var_len_code,
+            (ngx_http_script_code_pt)(void *)
+                                     ngx_postgres_upstream_var_len_with_quotes);
+        ngx_postgres_replace_script_for_variable(*sc->values, var_index,
+            (ngx_http_script_code_pt)(void *)ngx_http_script_copy_var_code,
+            (ngx_http_script_code_pt)(void *)
+                                          ngx_postgres_upstream_replace_quotes);
+        return NGX_OK;
+    }
+
+    else {
+        return NGX_ERROR;
+    }
+}
+
+
+static void
+ngx_postgres_replace_script_for_variable(ngx_array_t *array,
+    ngx_int_t var_index, ngx_http_script_code_pt old_value,
+    ngx_http_script_code_pt new_value)
+{
+    ngx_http_script_code_pt     *cur;
+    ngx_http_script_code_pt     *upper_bound;
+    ngx_http_script_code_pt      code;
+    ngx_http_script_var_code_t  *var_code;
+    size_t                       i;
+
+    upper_bound = (ngx_http_script_code_pt *) array->elts + array->nalloc;
+    cur = (ngx_http_script_code_pt *) array->elts;
+
+    for (i = 0; (ngx_uint_t)&cur[i] < (ngx_uint_t)upper_bound; i++) {
+        code = cur[i];
+        if (code == old_value) {
+            var_code = (ngx_http_script_var_code_t *)&cur[i];
+            if ((ngx_int_t) var_code->index == var_index)
+            {
+                cur[i] = new_value;
+            }
+        }
+    }
 }
