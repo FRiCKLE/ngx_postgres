@@ -145,6 +145,32 @@ all empty strings are by default escaped to `NULL` value. This behavior can be
 disabled by prefixing `$unescaped` string with `=` sign.
 
 
+postgres_escape_request_body
+-----------------------
+* **syntax**: `postgres_request_body_escape on/off`
+* **default**: `on`
+* **context**: `location`
+
+The flag provides to double each single quote symbol
+in the complex SQL statements that contain substitutions from client http request body.
+Disabling this option is pretty dangerous.
+
+Please make sure you are NOT using postgres configuration option `standard_conforming_strings: off` (default for PostgreSQL < 9.1).
+Using `standard_conforming_strings: off` will make completely worthless the injection protection and allows an attacker to use control characters to change a query string.
+
+To check this option use: (correct setting below)
+```
+postgres=# SHOW standard_conforming_strings;
+
+Set timeout for receiving result from the database.
+
+ standard_conforming_strings
+-----------------------------
+ on
+(1 row)
+```
+
+
 postgres_connect_timeout
 ------------------------
 * **syntax**: `postgres_connect_timeout timeout`
@@ -342,6 +368,7 @@ Required modules (other than `ngx_postgres`):
 
 - [ngx_rds_json](http://github.com/agentzh/rds-json-nginx-module).
 
+
 Sample configuration #6
 -----------------------
 Use GET parameter in SQL query.
@@ -356,6 +383,24 @@ Use GET parameter in SQL query.
 Required modules (other than `ngx_postgres`):
 
 - [ngx_set_misc](http://github.com/agentzh/set-misc-nginx-module).
+
+
+Sample configuration #7
+-----------------------
+Use POST data to parameter in SQL query.
+
+    location /sms/(?<id>\d+) {
+        postgres_pass     database;
+        postgres_escape   $id;
+        postgres_query    POST      "UPDATE sms SET sms_recipt = '$request_body' WHERE id=$id RETURNING 'ACK'";
+        postgres_rewrite  POST      changes 200;
+        postgres_rewrite  POST      no_changes 410;
+        postgres_output   value;
+    }
+
+The variable `request_body` cannot be processed by the `postgres_escape` directive during the rewrite phase. Therefore, for security reasons, the  `request_body` value that is used in `postgres_query` is always processing to escape string literals during the content phase without the need for `postgres_escape`.
+
+This behavior can be disabled by directive `postgres_escape_request_body off`.
 
 Testing
 =======

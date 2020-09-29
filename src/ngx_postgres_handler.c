@@ -45,7 +45,6 @@ ngx_postgres_handler(ngx_http_request_t *r)
     ngx_postgres_ctx_t        *pgctx;
     ngx_http_core_loc_conf_t  *clcf;
     ngx_http_upstream_t       *u;
-    ngx_connection_t          *c;
     ngx_str_t                  host;
     ngx_url_t                  url;
     ngx_int_t                  rc;
@@ -80,12 +79,6 @@ ngx_postgres_handler(ngx_http_request_t *r)
 
         dd("returning NGX_HTTP_INTERNAL_SERVER_ERROR");
         return NGX_HTTP_INTERNAL_SERVER_ERROR;
-    }
-
-    rc = ngx_http_discard_request_body(r);
-    if (rc != NGX_OK) {
-        dd("returning rc:%d", (int) rc);
-        return rc;
     }
 
 #if defined(nginx_version) \
@@ -209,8 +202,110 @@ ngx_postgres_handler(ngx_http_request_t *r)
     r->main->count++;
 #endif
 
-    ngx_http_upstream_init(r);
+    rc = (ngx_int_t) ngx_postgres_read_req_body(r);
 
+    if (rc >= NGX_HTTP_SPECIAL_RESPONSE) {
+        ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
+          "postgres: Where is a special response while reading request body. "
+          "Return code rc=%d", rc);
+        return rc;
+    }
+
+    return NGX_DONE;
+}
+
+
+ngx_int_t
+ngx_postgres_read_req_body(ngx_http_request_t *r)
+{
+    ngx_int_t                    rc;
+    ngx_postgres_ctx_t          *ctx;
+    rc = NGX_OK;
+
+    if (r == NULL) {
+        /* postgres: Error. First argument (ngx_http_request_t *r) in function
+           ngx_postgres_read_req_body() can not be NULL (r = NULL) */
+        return NGX_HTTP_INTERNAL_SERVER_ERROR;
+    }
+
+    r->request_body_in_single_buf = 1;
+    r->request_body_in_persistent_file = 1;
+    r->request_body_in_clean_file = 1;
+
+#if 1
+    if (r->request_body_in_file_only) {
+        r->request_body_file_log_level = 0;
+    }
+#endif
+
+    ctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
+    if (ctx == NULL) {
+        ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
+        "postgres: Error. Unable to get module context. "
+        "Method ngx_http_get_module_ctx(r, ngx_postgres_module) "
+        "returns ctx == NULL", rc);
+        return NGX_HTTP_INTERNAL_SERVER_ERROR;
+    }
+
+    ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0,
+                   "postgres: start to read buffered request body");
+
+    rc = ngx_http_read_client_request_body(r, ngx_postgres_body_handler);
+
+#if (nginx_version < 1002006) ||                                             \
+        (nginx_version >= 1003000 && nginx_version < 1003009)
+    r->main->count--;
+#endif
+
+    if (rc >= NGX_HTTP_SPECIAL_RESPONSE) {
+        ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0,
+         "postgres: http read client request body returned error code %i", rc);
+
+        return NGX_DONE;
+    }
+
+#if (nginx_version >= 1002006 && nginx_version < 1003000) ||                 \
+        nginx_version >= 1003009
+    r->main->count--;
+    ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0,
+        "postgres: decrement r->main->count: %d", (int) r->main->count);
+#endif
+
+    if (rc == NGX_AGAIN) {
+        ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0,
+          "postgres: read buffered request body requires I/O interruptions");
+
+        ctx->waiting_more_body = 1;
+        return NGX_AGAIN;
+    }
+
+    /* rc == NGX_OK */
+
+    ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0,
+        "postgres: has read buffered request body in a single run");
+    return NGX_DONE;
+}
+
+
+void
+ngx_postgres_body_handler(ngx_http_request_t *r)
+{
+    ngx_postgres_ctx_t        *ctx;
+    ngx_http_upstream_t       *u;
+    ngx_connection_t          *c;
+
+    ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0,
+                   "postgres: req body post read, c:%ud", r->main->count);
+
+    ctx = ngx_http_get_module_ctx(r, ngx_postgres_module);
+
+    if (ctx->waiting_more_body) {
+        ctx->waiting_more_body = 0;
+        r->read_event_handler = ngx_http_block_reading;
+    }
+
+    ngx_http_upstream_init(r);
+    u = r->upstream;
     /* override the read/write event handler to our own */
     u->write_event_handler = ngx_postgres_wev_handler;
     u->read_event_handler = ngx_postgres_rev_handler;
@@ -236,13 +331,14 @@ ngx_postgres_handler(ngx_http_request_t *r)
 #if defined(nginx_version) && (nginx_version >= 8017)
                                                NGX_HTTP_SERVICE_UNAVAILABLE);
 #else
-            pgctx->status ? pgctx->status : NGX_HTTP_INTERNAL_SERVER_ERROR);
+            ctx->status ? ctx->status : NGX_HTTP_INTERNAL_SERVER_ERROR);
 #endif
     }
 
     dd("returning NGX_DONE");
-    return NGX_DONE;
+    return;
 }
+
 
 void
 ngx_postgres_wev_handler(ngx_http_request_t *r, ngx_http_upstream_t *u)
