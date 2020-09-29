@@ -368,6 +368,7 @@ Required modules (other than `ngx_postgres`):
 
 - [ngx_rds_json](http://github.com/agentzh/rds-json-nginx-module).
 
+
 Sample configuration #6
 -----------------------
 Use GET parameter in SQL query.
@@ -382,6 +383,24 @@ Use GET parameter in SQL query.
 Required modules (other than `ngx_postgres`):
 
 - [ngx_set_misc](http://github.com/agentzh/set-misc-nginx-module).
+
+
+Sample configuration #7
+-----------------------
+Use POST data to parameter in SQL query.
+
+    location /sms/(?<id>\d+) {
+        postgres_pass     database;
+        postgres_escape   $id;
+        postgres_query    POST      "UPDATE sms SET sms_recipt = '$request_body' WHERE id=$id RETURNING 'ACK'";
+        postgres_rewrite  POST      changes 200;
+        postgres_rewrite  POST      no_changes 410;
+        postgres_output   value;
+    }
+
+The variable `request_body` cannot be processed by the `postgres_escape` directive during the rewrite phase. Therefore, for security reasons, the  `request_body` value that is used in `postgres_query` is always processing to escape string literals during the content phase without the need for `postgres_escape`.
+
+This behavior can be disabled by directive `postgres_escape_request_body off`.
 
 Testing
 =======
